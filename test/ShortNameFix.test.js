@@ -27,9 +27,9 @@ function namehash(name) {
 
 const ONE_YEAR = BigInt(365 * 24 * 60 * 60);
 
-// Expected annual prices (matching deployed ArcNSPriceOracle)
-const PRICE_1_CHAR  = 640_000_000n; // $640/yr
-const PRICE_2_CHAR  = 160_000_000n; // $160/yr
+// Expected annual prices (matching updated ArcNSPriceOracle after upgrade)
+const PRICE_1_CHAR  =  50_000_000n; //  $50/yr
+const PRICE_2_CHAR  =  25_000_000n; //  $25/yr
 const PRICE_5_PLUS  =   2_000_000n; //   $2/yr
 
 describe("ShortNameFix — 1-char & 2-char domain support", function () {
@@ -56,9 +56,16 @@ describe("ShortNameFix — 1-char & 2-char domain support", function () {
       initializer: "initialize",
     });
 
-    // Deploy old ArcNSPriceOracle (matches what's deployed on testnet)
+    // Deploy old ArcNSPriceOracle and update prices to $50/$25/$15/$10/$2
     const PriceOracle = await ethers.getContractFactory("ArcNSPriceOracle");
     priceOracle = await PriceOracle.deploy();
+    await priceOracle.setPrices(
+      50_000_000n,  //  $50/yr — 1 char
+      25_000_000n,  //  $25/yr — 2 chars
+      15_000_000n,  //  $15/yr — 3 chars
+      10_000_000n,  //  $10/yr — 4 chars
+       2_000_000n,  //   $2/yr — 5+ chars
+    );
 
     // Deploy BaseRegistrar
     const BaseRegistrar = await ethers.getContractFactory("ArcNSBaseRegistrar");
@@ -95,9 +102,7 @@ describe("ShortNameFix — 1-char & 2-char domain support", function () {
     const CONTROLLER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("CONTROLLER_ROLE"));
     await resolverV2.grantRole(CONTROLLER_ROLE, await controller.getAddress());
 
-    // Fund alice with enough for 1-char name ($640) + buffer — call faucet multiple times
-    await usdc.faucet(alice.address, 10_000 * 10 ** 6);
-    await usdc.faucet(alice.address, 10_000 * 10 ** 6);
+    // Fund alice with enough for 1-char name ($50) + buffer
     await usdc.faucet(alice.address, 10_000 * 10 ** 6);
   });
 

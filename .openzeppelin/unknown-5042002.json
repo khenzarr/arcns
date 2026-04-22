@@ -819,6 +819,253 @@
           ]
         }
       }
+    },
+    "f255697da6a43c6d3a62fbdbbb76fbcc14bfac24bfaef7e3c5cb90c2cb3633f4": {
+      "address": "0x708C3FCFadad87cCc3e8bDfa4b2c9a3aEd6b7f92",
+      "txHash": "0x549ccd45b4ebcb71cec517b87bcc2505feea2043abc4b4f0ca5e79b7ec66c4b7",
+      "layout": {
+        "solcVersion": "0.8.26",
+        "storage": [
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:28"
+          },
+          {
+            "label": "base",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(ArcNSBaseRegistrar)12587",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:62"
+          },
+          {
+            "label": "priceOracle",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_contract(IArcNSPriceOracle)10300",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:63"
+          },
+          {
+            "label": "usdc",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_contract(IERC20)1921",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:65"
+          },
+          {
+            "label": "registry",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_contract(IArcNSRegistry)10438",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:65"
+          },
+          {
+            "label": "resolver",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_contract(ArcNSResolverV2)13217",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:66"
+          },
+          {
+            "label": "treasury",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_address",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:66"
+          },
+          {
+            "label": "commitments",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_mapping(t_bytes32,t_uint256)",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:67"
+          },
+          {
+            "label": "usedCommitments",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_mapping(t_bytes32,t_bool)",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:67"
+          },
+          {
+            "label": "approvedResolvers",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "ArcNSRegistrarControllerV2",
+            "src": "contracts\\proxy\\ArcNSRegistrarControllerV2.sol:69"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_bytes32": {
+            "label": "bytes32",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_struct(RoleData)24_storage)": {
+            "label": "mapping(bytes32 => struct AccessControlUpgradeable.RoleData)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(AccessControlStorage)34_storage": {
+            "label": "struct AccessControlUpgradeable.AccessControlStorage",
+            "members": [
+              {
+                "label": "_roles",
+                "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(InitializableStorage)602_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)187_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(RoleData)24_storage": {
+            "label": "struct AccessControlUpgradeable.RoleData",
+            "members": [
+              {
+                "label": "hasRole",
+                "type": "t_mapping(t_address,t_bool)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "adminRole",
+                "type": "t_bytes32",
+                "offset": 0,
+                "slot": "1"
+              }
+            ],
+            "numberOfBytes": "64"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_contract(ArcNSBaseRegistrar)12587": {
+            "label": "contract ArcNSBaseRegistrar",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ArcNSResolverV2)13217": {
+            "label": "contract ArcNSResolverV2",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IArcNSPriceOracle)10300": {
+            "label": "contract IArcNSPriceOracle",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IArcNSRegistry)10438": {
+            "label": "contract IArcNSRegistry",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IERC20)1921": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_bytes32,t_bool)": {
+            "label": "mapping(bytes32 => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_bytes32,t_uint256)": {
+            "label": "mapping(bytes32 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.AccessControl": [
+            {
+              "contract": "AccessControlUpgradeable",
+              "label": "_roles",
+              "type": "t_mapping(t_bytes32,t_struct(RoleData)24_storage)",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\AccessControlUpgradeable.sol:61",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
     }
   }
 }

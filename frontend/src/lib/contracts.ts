@@ -110,9 +110,9 @@ export const ERC20_ABI = parseAbi([
 // ─── Pricing tiers (mirrors deployed ArcNSPriceOracle on Arc Testnet) ─────────
 
 export const PRICE_TIERS = [
-  { chars: 1, label: "1 character",   annualUSDC: 640_000_000n },  // $640/yr
-  { chars: 2, label: "2 characters",  annualUSDC: 160_000_000n },  // $160/yr
-  { chars: 3, label: "3 characters",  annualUSDC:  40_000_000n },  //  $40/yr
+  { chars: 1, label: "1 character",   annualUSDC:  50_000_000n },  //  $50/yr
+  { chars: 2, label: "2 characters",  annualUSDC:  25_000_000n },  //  $25/yr
+  { chars: 3, label: "3 characters",  annualUSDC:  15_000_000n },  //  $15/yr
   { chars: 4, label: "4 characters",  annualUSDC:  10_000_000n },  //  $10/yr
   { chars: 5, label: "5+ characters", annualUSDC:   2_000_000n },  //   $2/yr
 ];
