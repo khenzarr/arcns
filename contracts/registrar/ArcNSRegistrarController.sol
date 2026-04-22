@@ -19,9 +19,11 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
     // ─── Constants ────────────────────────────────────────────────────────────
 
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
+    uint256 public constant MAX_REGISTRATION_DURATION = 10 * 365 days; // 10 years cap
     uint256 public constant MIN_COMMITMENT_AGE        = 60;      // seconds
     uint256 public constant MAX_COMMITMENT_AGE        = 24 hours;
     uint256 public constant MIN_NAME_LENGTH           = 3;
+    uint256 public constant MAX_RESOLVER_DATA_ITEMS   = 10;      // DoS guard
 
     // ─── State ────────────────────────────────────────────────────────────────
 
@@ -80,7 +82,28 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
         emit CommitmentMade(commitment);
     }
 
-    /// @notice Generate commitment hash off-chain (or call this view)
+    /// @notice Generate commitment hash — caller must pass their own address as `caller`
+    /// @dev Binds commitment to: label, owner, duration, secret, resolverAddr, data,
+    ///      reverseRecord, caller (msg.sender), chainId, and this controller address.
+    ///      This prevents replay across chains, forks, and different controllers.
+    function makeCommitment(
+        string   memory name_,
+        address         owner_,
+        uint256         duration,
+        bytes32         secret,
+        address         resolverAddr,
+        bytes[] memory  data,
+        bool            reverseRecord,
+        address         caller
+    ) public view returns (bytes32) {
+        bytes32 label = keccak256(bytes(name_));
+        return keccak256(abi.encode(
+            label, owner_, duration, secret, resolverAddr, data, reverseRecord,
+            caller, block.chainid, address(this)
+        ));
+    }
+
+    /// @notice Convenience overload — uses msg.sender as caller (for on-chain calls)
     function makeCommitment(
         string   memory name_,
         address         owner_,
@@ -89,9 +112,8 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
         address         resolverAddr,
         bytes[] memory  data,
         bool            reverseRecord
-    ) public pure returns (bytes32) {
-        bytes32 label = keccak256(bytes(name_));
-        return keccak256(abi.encode(label, owner_, duration, secret, resolverAddr, data, reverseRecord));
+    ) public view returns (bytes32) {
+        return makeCommitment(name_, owner_, duration, secret, resolverAddr, data, reverseRecord, msg.sender);
     }
 
     /// @notice Step 2: Register after commitment matures
@@ -105,13 +127,14 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
         bytes[] calldata  data,
         bool              reverseRecord
     ) external nonReentrant {
-        // Validate commitment
-        bytes32 commitment = makeCommitment(name_, owner_, duration, secret, resolverAddr, data, reverseRecord);
+        // Validate commitment — recompute hash binding msg.sender
+        bytes32 commitment = makeCommitment(name_, owner_, duration, secret, resolverAddr, data, reverseRecord, msg.sender);
         _validateCommitment(commitment);
 
         // Validate name
         require(_validName(name_), "Controller: invalid name");
         require(duration >= MIN_REGISTRATION_DURATION, "Controller: duration too short");
+        require(duration <= MAX_REGISTRATION_DURATION, "Controller: duration too long");
 
         // Calculate and collect payment
         IArcNSPriceOracle.Price memory p = rentPrice(name_, duration);
@@ -144,6 +167,8 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
 
     /// @notice Renew an existing name
     function renew(string calldata name_, uint256 duration) external nonReentrant {
+        require(duration >= MIN_REGISTRATION_DURATION, "Controller: duration too short");
+        require(duration <= MAX_REGISTRATION_DURATION, "Controller: duration too long");
         IArcNSPriceOracle.Price memory p = rentPrice(name_, duration);
         uint256 cost = p.base + p.premium;
         usdc.safeTransferFrom(msg.sender, treasury, cost);
@@ -189,6 +214,7 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     function _validateCommitment(bytes32 commitment) internal {
+        require(commitments[commitment] != 0,                                                    "Controller: commitment not found");
         require(commitments[commitment] + MIN_COMMITMENT_AGE <= block.timestamp, "Controller: commitment too new");
         require(commitments[commitment] + MAX_COMMITMENT_AGE > block.timestamp,  "Controller: commitment expired");
         delete commitments[commitment];
@@ -209,8 +235,27 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
         return true;
     }
 
+    // Allowed resolver selectors for data[] calls in register()
+    // setAddr(bytes32,address), setAddr(bytes32,uint256,bytes),
+    // setText(bytes32,string,string), setContenthash(bytes32,bytes)
+    bytes4 private constant SEL_SET_ADDR_EVM   = bytes4(keccak256("setAddr(bytes32,address)"));
+    bytes4 private constant SEL_SET_ADDR_COIN  = bytes4(keccak256("setAddr(bytes32,uint256,bytes)"));
+    bytes4 private constant SEL_SET_TEXT       = bytes4(keccak256("setText(bytes32,string,string)"));
+    bytes4 private constant SEL_SET_CONTENTHASH = bytes4(keccak256("setContenthash(bytes32,bytes)"));
+
     function _setRecords(address resolverAddr, bytes32 node, bytes[] calldata data) internal {
+        require(data.length <= MAX_RESOLVER_DATA_ITEMS, "Controller: too many data items");
         for (uint256 i = 0; i < data.length; i++) {
+            require(data[i].length >= 36, "Controller: data item too short");
+            // Whitelist: only allow known resolver write selectors
+            bytes4 sel = bytes4(data[i][:4]);
+            require(
+                sel == SEL_SET_ADDR_EVM   ||
+                sel == SEL_SET_ADDR_COIN  ||
+                sel == SEL_SET_TEXT       ||
+                sel == SEL_SET_CONTENTHASH,
+                "Controller: disallowed selector"
+            );
             // Inject node into each call (first 36 bytes: selector + node)
             bytes memory call_ = abi.encodePacked(data[i][:4], node, data[i][36:]);
             (bool success,) = resolverAddr.call(call_);

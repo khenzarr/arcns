@@ -18,7 +18,10 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
     record = new ResolverRecord(nodeHex);
     record.domain = nodeHex;
     record.texts = [];
+    record.blockNumber = event.block.number;
+    record.timestamp = event.block.timestamp;
   }
+  // Always overwrite addr — latest event wins
   record.addr = event.params.a;
   record.blockNumber = event.block.number;
   record.timestamp = event.block.timestamp;
@@ -110,7 +113,10 @@ export function handleContenthashChanged(event: ContenthashChangedEvent): void {
     record = new ResolverRecord(nodeHex);
     record.domain = nodeHex;
     record.texts = [];
+    record.blockNumber = event.block.number;
+    record.timestamp = event.block.timestamp;
   }
+  // Always overwrite contenthash — latest event wins
   record.contenthash = event.params.hash;
   record.blockNumber = event.block.number;
   record.timestamp = event.block.timestamp;

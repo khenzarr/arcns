@@ -18,16 +18,23 @@ export const CONTRACTS = {
   treasury:         (process.env.NEXT_PUBLIC_TREASURY_ADDRESS          ?? "0xbbDF5bC7D63B1b7223556d4899905d56589A682d") as `0x${string}`,
 } as const;
 
-// ─── V2 Controller ABI — includes maxCost on register() and renew() ───────────
-// Matches deployed ArcNSRegistrarControllerV2
+// ─── V2 Controller ABI — matches ArcNSRegistrarController ────────────────────
 
 export const CONTROLLER_ABI = parseAbi([
   "function available(string name) view returns (bool)",
   "function rentPrice(string name, uint256 duration) view returns (uint256, uint256)",
-  "function makeCommitment(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord) pure returns (bytes32)",
+  // 8-param overload: explicit caller binding (chainId + address(this) included on-chain)
+  "function makeCommitment(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord, address caller) view returns (bytes32)",
+  // 7-param convenience overload: uses msg.sender as caller
+  "function makeCommitment(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord) view returns (bytes32)",
   "function commit(bytes32 commitment)",
-  "function register(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord, uint256 maxCost)",
-  "function renew(string name, uint256 duration, uint256 maxCost)",
+  "function register(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord)",
+  "function renew(string name, uint256 duration)",
+  "function commitments(bytes32) view returns (uint256)",
+  "function MIN_COMMITMENT_AGE() view returns (uint256)",
+  "function MAX_COMMITMENT_AGE() view returns (uint256)",
+  "function MIN_REGISTRATION_DURATION() view returns (uint256)",
+  "function MAX_REGISTRATION_DURATION() view returns (uint256)",
   "event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 cost, uint256 expires)",
   "event NameRenewed(string name, bytes32 indexed label, uint256 cost, uint256 expires)",
   "event CommitmentMade(bytes32 indexed commitment)",

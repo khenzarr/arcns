@@ -1,4 +1,4 @@
-import { createConfig, http } from "wagmi";
+import { createConfig, http, fallback } from "wagmi";
 import { injected, walletConnect } from "wagmi/connectors";
 import { arcTestnet } from "./chains";
 
@@ -10,6 +10,8 @@ import { arcTestnet } from "./chains";
  * Deliberately avoids @metamask/sdk to prevent:
  *   - @react-native-async-storage/async-storage build errors
  *   - pino-pretty missing module errors
+ *
+ * Uses fallback transport so wallet txs never fail due to a single RPC outage.
  */
 export const wagmiConfig = createConfig({
   chains: [arcTestnet],
@@ -27,7 +29,11 @@ export const wagmiConfig = createConfig({
     }),
   ],
   transports: {
-    [arcTestnet.id]: http("https://rpc.testnet.arc.network"),
+    [arcTestnet.id]: fallback([
+      http("https://rpc.testnet.arc.network"),
+      http("https://rpc.blockdaemon.testnet.arc.network"),
+      http("https://rpc.quicknode.testnet.arc.network"),
+    ], { rank: false }),
   },
   ssr: true,
 });

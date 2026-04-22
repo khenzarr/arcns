@@ -137,12 +137,15 @@ export function useRegistrationV2() {
       crypto.getRandomValues(secretBytes);
       const secret = `0x${Array.from(secretBytes).map(b => b.toString(16).padStart(2, "0")).join("")}` as `0x${string}`;
       const labelHash = keccak256(stringToBytes(label));
+      // Commitment binds to: caller, chainId, controller address — matches on-chain makeCommitment
+      const chainId = BigInt(5042002); // Arc Testnet — must match block.chainid on-chain
       const commitment = keccak256(encodeAbiParameters(
         [
           { type: "bytes32" }, { type: "address" }, { type: "uint256" },
           { type: "bytes32" }, { type: "address" }, { type: "bytes[]" }, { type: "bool" },
+          { type: "address" }, { type: "uint256" }, { type: "address" },
         ],
-        [labelHash, address, duration, secret, resolverAddr, [], setReverse]
+        [labelHash, address, duration, secret, resolverAddr, [], setReverse, address, chainId, controller]
       ));
 
       await writeContractAsync({
@@ -160,7 +163,7 @@ export function useRegistrationV2() {
         address: controller,
         abi: CONTROLLER_ABI,
         functionName: "register",
-        args: [label, address, duration, secret, resolverAddr, [], setReverse, maxCost],
+        args: [label, address, duration, secret, resolverAddr, [], setReverse],
       });
       setTxHash(tx);
       setStep("done");
@@ -202,7 +205,7 @@ export function useBulkRenew() {
           address: controller,
           abi: CONTROLLER_ABI,
           functionName: "renew",
-          args: [label, duration, maxCost],
+          args: [label, duration],
         });
         newResults.push({ name: `${label}.${tld}`, success: true });
       } catch {

@@ -10,6 +10,7 @@ export interface ChainConfig {
   chainId: number;
   name: string;
   rpcUrl: string;
+  fallbackRpcUrls: string[];
   blockExplorer: string;
   contracts: {
     registry: `0x${string}`;
@@ -34,6 +35,10 @@ export const CHAIN_CONFIGS: Record<number, ChainConfig> = {
     chainId: 5042002,
     name: "Arc Testnet",
     rpcUrl: "https://rpc.testnet.arc.network",
+    fallbackRpcUrls: [
+      "https://rpc.blockdaemon.testnet.arc.network",
+      "https://rpc.quicknode.testnet.arc.network",
+    ],
     blockExplorer: "https://testnet.arcscan.app",
     contracts: {
       registry:         "0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a",

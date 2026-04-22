@@ -3,6 +3,13 @@ enum RegistrationType {
   CIRCLE
 }
 
+enum DomainEventType {
+  REGISTER
+  RENEW
+  TRANSFER
+  EXPIRE
+}
+
 type Domain @entity(immutable: false) {
   id: ID!                      # namehash as hex
   name: String!                # full name e.g. "alice.arc"
@@ -15,6 +22,7 @@ type Domain @entity(immutable: false) {
   registrationType: RegistrationType!
   resolverRecord: ResolverRecord
   registrations: [Registration!]! @derivedFrom(field: "domain")
+  events: [DomainEvent!]! @derivedFrom(field: "domain")
 }
 
 type Account @entity(immutable: false) {
@@ -30,6 +38,18 @@ type Registration @entity(immutable: true) {
   cost: BigInt!
   duration: BigInt!
   expiresAt: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DomainEvent @entity(immutable: true) {
+  id: ID!                      # txHash-logIndex
+  domain: Domain!
+  eventType: DomainEventType!
+  from: Bytes                  # previous owner (TRANSFER) or zero
+  to: Bytes                    # new owner (REGISTER/TRANSFER)
+  cost: BigInt                 # USDC cost (REGISTER/RENEW)
   blockNumber: BigInt!
   timestamp: BigInt!
   transactionHash: Bytes!

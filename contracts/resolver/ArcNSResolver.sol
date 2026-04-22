@@ -52,6 +52,10 @@ contract ArcNSResolver is IArcNSResolver, Ownable {
 
     /// @notice Set multi-coin address
     function setAddr(bytes32 node, uint coinType, bytes memory newAddress) public authorised(node) {
+        // For EVM (coinType 60), enforce exactly 20 bytes to prevent _bytesToAddress revert
+        if (coinType == 60) {
+            require(newAddress.length == 20, "Resolver: invalid EVM address length");
+        }
         emit AddressChanged(node, coinType, newAddress);
         if (coinType == 60) emit AddrChanged(node, _bytesToAddress(newAddress));
         _addresses[node][coinType] = newAddress;
@@ -101,6 +105,7 @@ contract ArcNSResolver is IArcNSResolver, Ownable {
     }
 
     /// @notice Called by controller to set reverse record in one tx
+    /// @dev Silently skips empty names — never stores "" as a reverse record
     function setNameForAddr(
         address addr_,
         address /*owner_*/,
@@ -112,6 +117,8 @@ contract ArcNSResolver is IArcNSResolver, Ownable {
             trustedControllers[msg.sender],
             "Resolver: not authorised for addr"
         );
+        // Guard: never store empty string as reverse name
+        if (bytes(name_).length == 0) return;
         bytes32 node = _reverseNode(addr_);
         _names[node] = name_;
         emit NameChanged(node, name_);

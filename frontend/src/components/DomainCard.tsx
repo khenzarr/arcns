@@ -23,10 +23,11 @@ interface PriceBreakdownProps {
   totalCost: bigint;
   hasPremium: boolean;
   tierLabel: string;
+  gasEstimateEth?: string | null;
 }
 
 function PriceBreakdown({
-  isPriceLoading, baseCost, premiumCost, totalCost, hasPremium, tierLabel,
+  isPriceLoading, baseCost, premiumCost, totalCost, hasPremium, tierLabel, gasEstimateEth,
 }: PriceBreakdownProps): JSX.Element | null {
   // Loading skeleton — never show $0.00
   if (isPriceLoading) {
@@ -69,6 +70,12 @@ function PriceBreakdown({
         <span className="font-semibold text-gray-700">Total</span>
         <span className="font-bold text-gray-900 text-lg">{formatUSDC(totalCost)}</span>
       </div>
+      {gasEstimateEth ? (
+        <div className="flex justify-between text-sm">
+          <span className="text-gray-400">Est. gas</span>
+          <span className="text-gray-500">~{gasEstimateEth} ETH</span>
+        </div>
+      ) : null}
       <p className="text-xs text-gray-400">Paid in USDC · Arc Testnet</p>
     </div>
   );
@@ -116,7 +123,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
     isPriceLoading, base: baseCost, premium: premiumCost, totalCost, maxCost, hasPremium,
     needsApproval, allowance, refetchAllowance,
     sufficient, shortfall,
-    controller,
+    controller, gasEstimateEth,
   } = useDomainResolutionPipeline(label, tld, duration);
 
   const priceTier = getPriceTier(label);
@@ -222,6 +229,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             totalCost={totalCost}
             hasPremium={hasPremium}
             tierLabel={priceTier.label}
+            gasEstimateEth={gasEstimateEth}
           />
         ) : null}
 

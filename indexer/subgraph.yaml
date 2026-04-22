@@ -18,6 +18,7 @@ dataSources:
         - Domain
         - Registration
         - Account
+        - DomainEvent
       abis:
         - name: Controller
           file: ./abis/ArcNSRegistrarControllerV2.json
@@ -44,6 +45,7 @@ dataSources:
         - Domain
         - Registration
         - Account
+        - DomainEvent
       abis:
         - name: Controller
           file: ./abis/ArcNSRegistrarControllerV2.json
@@ -97,6 +99,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Domain
+        - DomainEvent
       abis:
         - name: Registry
           file: ./abis/ArcNSRegistry.json

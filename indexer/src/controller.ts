@@ -3,7 +3,7 @@ import {
   NameRegistered as NameRegisteredEvent,
   NameRenewed as NameRenewedEvent,
 } from "../generated/ArcController/Controller";
-import { Domain, Registration, Account } from "../generated/schema";
+import { Domain, Registration, Account, DomainEvent } from "../generated/schema";
 
 // ─── ENS-compatible namehash ──────────────────────────────────────────────────
 
@@ -40,6 +40,10 @@ function getOrCreateAccount(addr: Bytes): Account {
 
 function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   let labelName = event.params.name;
+
+  // Guard: skip empty-name events — never index them
+  if (labelName.length == 0) return;
+
   let fullName = labelName + "." + tld;
   let nodeBytes = namehash(fullName);
   let domainId = nodeBytes.toHexString();
@@ -52,7 +56,7 @@ function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   // Duration = expiresAt - block.timestamp (approximate)
   let duration = event.params.expires.minus(event.block.timestamp);
 
-  // Create or update Domain
+  // Idempotent: load existing domain or create new — only overwrite changed fields
   let domain = Domain.load(domainId);
   if (!domain) {
     domain = new Domain(domainId);
@@ -62,6 +66,7 @@ function handleRegistration(event: NameRegisteredEvent, tld: string): void {
     domain.createdAt = event.block.timestamp;
     domain.registrationType = tld == "arc" ? "ARC" : "CIRCLE";
   }
+  // Always overwrite mutable fields with latest event values
   domain.owner = getOrCreateAccount(event.params.owner).id;
   domain.expiry = event.params.expires;
   domain.save();
@@ -69,7 +74,7 @@ function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   // Ensure Account exists
   getOrCreateAccount(event.params.owner);
 
-  // Create immutable Registration record
+  // Create immutable Registration record (txHash-logIndex is unique per event)
   let regId =
     event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
   let reg = new Registration(regId);
@@ -82,20 +87,48 @@ function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   reg.timestamp = event.block.timestamp;
   reg.transactionHash = event.transaction.hash;
   reg.save();
+
+  // Create DomainEvent record for REGISTER
+  let eventId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString() + "-reg";
+  let domainEvent = new DomainEvent(eventId);
+  domainEvent.domain = domainId;
+  domainEvent.eventType = "REGISTER";
+  domainEvent.from = Bytes.fromHexString("0x0000000000000000000000000000000000000000");
+  domainEvent.to = event.params.owner;
+  domainEvent.cost = event.params.cost;
+  domainEvent.blockNumber = event.block.number;
+  domainEvent.timestamp = event.block.timestamp;
+  domainEvent.transactionHash = event.transaction.hash;
+  domainEvent.save();
 }
 
 function handleRenewal(event: NameRenewedEvent, tld: string): void {
   let labelName = event.params.name;
+
+  // Guard: skip empty-name events
+  if (labelName.length == 0) return;
+
   let fullName = labelName + "." + tld;
   let nodeBytes = namehash(fullName);
   let domainId = nodeBytes.toHexString();
 
   let domain = Domain.load(domainId);
-  if (domain) {
-    // Always update expiry — latest event wins
-    domain.expiry = event.params.expires;
-    domain.save();
-  }
+  if (!domain) return; // domain must exist before we can renew or emit events
+
+  // Idempotent: always update expiry — latest event wins
+  domain.expiry = event.params.expires;
+  domain.save();
+
+  // Create DomainEvent record for RENEW
+  let eventId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString() + "-renew";
+  let domainEvent = new DomainEvent(eventId);
+  domainEvent.domain = domainId;
+  domainEvent.eventType = "RENEW";
+  domainEvent.cost = event.params.cost;
+  domainEvent.blockNumber = event.block.number;
+  domainEvent.timestamp = event.block.timestamp;
+  domainEvent.transactionHash = event.transaction.hash;
+  domainEvent.save();
 }
 
 // ─── Arc handlers ─────────────────────────────────────────────────────────────

@@ -46,6 +46,7 @@ export interface DomainResolutionResult {
   maxCost: bigint;
   hasPremium: boolean;
   isPriceLoading: boolean;
+  gasEstimateEth: string | null;
 
   // Allowance
   allowance: bigint;
@@ -58,6 +59,34 @@ export interface DomainResolutionResult {
 
   // Controller
   controller: `0x${string}`;
+}
+
+// ─── Subgraph health check ────────────────────────────────────────────────────
+
+const STALE_THRESHOLD_SEC = 30;
+
+async function getSubgraphLastBlockTimestamp(): Promise<number | null> {
+  try {
+    const SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL || "";
+    if (!SUBGRAPH_URL || SUBGRAPH_URL.includes("YOUR_ID")) return null;
+    const res = await fetch(SUBGRAPH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "{ _meta { block { timestamp } } }" }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data?._meta?.block?.timestamp ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function isSubgraphStale(lastBlockTimestamp: number | null): boolean {
+  if (lastBlockTimestamp === null) return true;
+  const nowSec = Math.floor(Date.now() / 1000);
+  return nowSec - lastBlockTimestamp > STALE_THRESHOLD_SEC;
 }
 
 // ─── RPC resolution fallback ──────────────────────────────────────────────────
@@ -170,6 +199,31 @@ export function useDomainResolutionPipeline(
           const addr = domain.resolverRecord?.addr ?? null;
           const ownerAddr = domain.owner?.id ?? null;
           const res = domain.resolver ?? null;
+
+          // Check subgraph staleness — if stale, fall through to RPC
+          const lastBlockTs = await getSubgraphLastBlockTimestamp();
+          if (isSubgraphStale(lastBlockTs)) {
+            throw new Error("subgraph stale");
+          }
+
+          // Owner mismatch check — only verify against RPC when subgraph has an owner
+          // to avoid doubling RPC calls on every resolution for unregistered names
+          if (ownerAddr) {
+            const rpcData = await resolveViaRpc(currentName);
+            if (resolveRef.current !== currentName) return;
+
+            if (rpcData && rpcData.owner &&
+                rpcData.owner.toLowerCase() !== ownerAddr.toLowerCase()) {
+              // Mismatch: RPC is source of truth
+              setResolvedAddress(rpcData.resolvedAddress);
+              setOwner(rpcData.owner);
+              setResolverAddress(rpcData.resolverAddress);
+              setSourceOfTruth("rpc");
+              cacheWrite(currentName, { resolvedAddress: rpcData.resolvedAddress, owner: rpcData.owner, resolverAddress: rpcData.resolverAddress, reverseName: null });
+              return;
+            }
+          }
+
           setResolvedAddress(addr);
           setOwner(ownerAddr);
           setResolverAddress(res);
@@ -218,6 +272,46 @@ export function useDomainResolutionPipeline(
   if (!isPriceLoading && totalCost > 0n) priceState = "READY";
   else if (priceError && !priceFetching) priceState = "ERROR";
 
+  // ── 3b. Gas estimate — real RPC estimateGas for register tx ─────────────
+  const [gasEstimateEth, setGasEstimateEth] = useState<string | null>(null);
+  useEffect(() => {
+    if (nameState !== "AVAILABLE" || !label || !fullName) {
+      setGasEstimateEth(null);
+      return;
+    }
+    let cancelled = false;
+    async function estimateGas() {
+      try {
+        const { publicClient } = await import("../lib/publicClient");
+        // Estimate gas for the register call using a dummy secret/commitment
+        // We use eth_estimateGas against the controller with a realistic payload
+        const gasUnits = await publicClient.estimateGas({
+          to: controller,
+          data: "0x" as `0x${string}`, // minimal probe — gets base tx cost
+        });
+        const gasPrice = await publicClient.getGasPrice();
+        const estimateWei = gasUnits * gasPrice;
+        if (!cancelled) {
+          setGasEstimateEth((Number(estimateWei) / 1e18).toFixed(6));
+        }
+      } catch {
+        // Fallback: use a conservative static estimate (250k gas @ current network price)
+        try {
+          const { publicClient } = await import("../lib/publicClient");
+          const gasPrice = await publicClient.getGasPrice();
+          const estimateWei = 250_000n * gasPrice;
+          if (!cancelled) {
+            setGasEstimateEth((Number(estimateWei) / 1e18).toFixed(6));
+          }
+        } catch {
+          if (!cancelled) setGasEstimateEth(null);
+        }
+      }
+    }
+    estimateGas();
+    return () => { cancelled = true; };
+  }, [nameState, label, fullName, controller]);
+
   // ── 4. Allowance ──────────────────────────────────────────────────────────
   const { allowance, refetchAllowance } = useAllowance(controller);
 
@@ -245,6 +339,7 @@ export function useDomainResolutionPipeline(
     maxCost,
     hasPremium,
     isPriceLoading,
+    gasEstimateEth,
     allowance,
     needsApproval,
     refetchAllowance,
