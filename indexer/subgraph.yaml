@@ -17,6 +17,7 @@ dataSources:
       entities:
         - Domain
         - Registration
+        - Account
       abis:
         - name: Controller
           file: ./abis/ArcNSRegistrarControllerV2.json
@@ -42,6 +43,7 @@ dataSources:
       entities:
         - Domain
         - Registration
+        - Account
       abis:
         - name: Controller
           file: ./abis/ArcNSRegistrarControllerV2.json
@@ -51,54 +53,6 @@ dataSources:
         - event: NameRenewed(string,indexed bytes32,uint256,uint256)
           handler: handleCircleNameRenewed
       file: ./src/controller.ts
-
-  # ── Arc Registrar ───────────────────────────────────────────────────────────
-  - kind: ethereum
-    name: ArcRegistrar
-    network: arc-testnet
-    source:
-      address: "0xb156d9726661E92C541e3a267ee8710Fdcd24969"
-      abi: BaseRegistrar
-      startBlock: 38332349
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - Domain
-      abis:
-        - name: BaseRegistrar
-          file: ./abis/ArcNSBaseRegistrar.json
-      eventHandlers:
-        - event: NameRegistered(indexed uint256,indexed address,uint256)
-          handler: handleArcRegistrarNameRegistered
-        - event: NameRenewed(indexed uint256,uint256)
-          handler: handleArcRegistrarNameRenewed
-      file: ./src/registrar.ts
-
-  # ── Circle Registrar ────────────────────────────────────────────────────────
-  - kind: ethereum
-    name: CircleRegistrar
-    network: arc-testnet
-    source:
-      address: "0xBdfF2790Dd72E86C3510Cc8374EaC5E2E0659c5e"
-      abi: BaseRegistrar
-      startBlock: 38332349
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - Domain
-      abis:
-        - name: BaseRegistrar
-          file: ./abis/ArcNSBaseRegistrar.json
-      eventHandlers:
-        - event: NameRegistered(indexed uint256,indexed address,uint256)
-          handler: handleCircleRegistrarNameRegistered
-        - event: NameRenewed(indexed uint256,uint256)
-          handler: handleCircleRegistrarNameRenewed
-      file: ./src/registrar.ts
 
   # ── Resolver ────────────────────────────────────────────────────────────────
   - kind: ethereum
@@ -123,6 +77,10 @@ dataSources:
           handler: handleAddrChanged
         - event: NameChanged(indexed bytes32,string)
           handler: handleNameChanged
+        - event: TextChanged(indexed bytes32,indexed string,string,string)
+          handler: handleTextChanged
+        - event: ContenthashChanged(indexed bytes32,bytes)
+          handler: handleContenthashChanged
       file: ./src/resolver.ts
 
   # ── Registry ────────────────────────────────────────────────────────────────
@@ -162,7 +120,8 @@ dataSources:
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - Domain
+        - ReverseRecord
+        - Account
       abis:
         - name: ReverseRegistrar
           file: ./abis/ArcNSReverseRegistrar.json

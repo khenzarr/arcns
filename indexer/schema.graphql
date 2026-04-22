@@ -1,32 +1,55 @@
+enum RegistrationType {
+  ARC
+  CIRCLE
+}
+
 type Domain @entity(immutable: false) {
-  id: ID!
-  name: String!
-  owner: Bytes!
-  resolver: Bytes
-  label: Bytes
-  tld: String
-  registeredAt: BigInt
-  expiresAt: BigInt
-  cost: BigInt
-  reverseName: String
-  addrRecord: ResolverRecord
+  id: ID!                      # namehash as hex
+  name: String!                # full name e.g. "alice.arc"
+  labelName: String!           # label only e.g. "alice"
+  labelhash: Bytes!            # keccak256(label)
+  owner: Account!              # current owner
+  resolver: Bytes              # resolver contract address
+  createdAt: BigInt!
+  expiry: BigInt!
+  registrationType: RegistrationType!
+  resolverRecord: ResolverRecord
+  registrations: [Registration!]! @derivedFrom(field: "domain")
+}
+
+type Account @entity(immutable: false) {
+  id: ID!                      # lowercase address
+  domains: [Domain!]! @derivedFrom(field: "owner")
+  reverseName: String          # primary name for this address
 }
 
 type Registration @entity(immutable: true) {
-  id: ID!
-  label: String!
-  owner: Bytes!
+  id: ID!                      # txHash-logIndex
+  domain: Domain!
+  registrant: Bytes!
   cost: BigInt!
-  expires: BigInt!
+  duration: BigInt!
+  expiresAt: BigInt!
   blockNumber: BigInt!
   timestamp: BigInt!
   transactionHash: Bytes!
 }
 
 type ResolverRecord @entity(immutable: false) {
-  id: ID!
-  node: Bytes!
-  address: Bytes!
+  id: ID!                      # domain namehash
+  domain: Domain!
+  addr: Bytes                  # resolved EVM address
+  contenthash: Bytes           # content hash
+  texts: [String!]!            # text record keys
   blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type ReverseRecord @entity(immutable: false) {
+  id: ID!                      # lowercase address
+  name: String!                # primary name e.g. "alice.arc"
+  node: Bytes!                 # reverse node hash
+  blockNumber: BigInt!
+  logIndex: BigInt!
   timestamp: BigInt!
 }

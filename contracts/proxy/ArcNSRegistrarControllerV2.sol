@@ -134,6 +134,22 @@ contract ArcNSRegistrarControllerV2 is
         return keccak256(abi.encode(label, owner_, duration, secret, resolverAddr, data, reverseRecord));
     }
 
+    /// @notice Compute commitment that binds to msg.sender (front-run protection)
+    /// @dev Use this on-chain; makeCommitment is for off-chain preview only
+    function makeCommitmentWithSender(
+        string   memory name_,
+        address         owner_,
+        uint256         duration,
+        bytes32         secret,
+        address         resolverAddr,
+        bytes[] memory  data,
+        bool            reverseRecord,
+        address         sender
+    ) public pure returns (bytes32) {
+        bytes32 label = keccak256(bytes(name_));
+        return keccak256(abi.encode(label, owner_, duration, secret, resolverAddr, data, reverseRecord, sender));
+    }
+
     /// @notice Register a name
     /// @param maxCost FIX C-03: slippage protection — revert if price exceeds this
     function register(
@@ -146,7 +162,8 @@ contract ArcNSRegistrarControllerV2 is
         bool              reverseRecord,
         uint256           maxCost
     ) external nonReentrant whenNotPaused {
-        bytes32 commitment = makeCommitment(name_, owner_, duration, secret, resolverAddr, data, reverseRecord);
+        // Commitment binds to msg.sender — prevents front-running
+        bytes32 commitment = makeCommitmentWithSender(name_, owner_, duration, secret, resolverAddr, data, reverseRecord, msg.sender);
         _validateCommitment(commitment);
 
         require(_validName(name_), "Controller: invalid name");

@@ -394,12 +394,14 @@ export function useRegistration() {
       crypto.getRandomValues(secretBytes);
       const secret = `0x${Array.from(secretBytes).map(b => b.toString(16).padStart(2, "0")).join("")}` as `0x${string}`;
       const labelHash = keccak256(stringToBytes(label));
+      // Commitment includes msg.sender (address) to prevent front-running
       const commitment = keccak256(encodeAbiParameters(
         [
           { type: "bytes32" }, { type: "address" }, { type: "uint256" },
           { type: "bytes32" }, { type: "address" }, { type: "bytes[]" }, { type: "bool" },
+          { type: "address" }, // sender binding — anti front-run
         ],
-        [labelHash, address, duration, secret, resolverAddr, [], setReverse]
+        [labelHash, address, duration, secret, resolverAddr, [], setReverse, address]
       ));
       await writeContractAsync({
         address: controller,

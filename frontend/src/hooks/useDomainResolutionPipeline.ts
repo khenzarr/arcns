@@ -1,50 +1,114 @@
 "use client";
 
 /**
- * useDomainResolutionPipeline
+ * useDomainResolutionPipeline — ENS-grade resolution pipeline
  *
- * Single source of truth for all domain state:
- *   - availability (cache-first, optimistic)
- *   - price (from RPC, never stale)
- *   - allowance (live, refetched after approval)
- *   - derived flags (needsApproval, sufficient, etc.)
+ * Source of truth order:
+ *   1. Subgraph  (primary, staleTime 15s)
+ *   2. RPC       (fallback when subgraph misses or is stale)
+ *   3. Cache     (localStorage, TTL 60–120s)
  *
- * No other component should compute these independently.
+ * NEVER shows ERROR state — always CHECKING on failure.
+ * Optimistic updates on registration for instant UI feedback.
  */
 
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAccount } from "wagmi";
 import { useAvailability, useRentPrice, useAllowance, useBalanceSafety } from "./useArcNS";
 import { getNameState, type NameState } from "../lib/domain";
 import { CONTRACTS } from "../lib/contracts";
+import { namehash } from "../lib/namehash";
+import { getDomainByName } from "../lib/graphql";
+import { cacheRead, cacheWrite, cacheInvalidate as cacheInvalidateResolve, cacheOptimistic } from "../lib/resolveCache";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type PriceState = "LOADING" | "READY" | "ERROR";
+export type SourceOfTruth = "subgraph" | "rpc" | "cache";
 
 export interface DomainResolutionResult {
-  // ── Availability ──────────────────────────────────────────────────────────
+  // Availability
   nameState: NameState;
   isRefetching: boolean;
 
-  // ── Price ─────────────────────────────────────────────────────────────────
+  // Resolution data
+  owner: string | null;
+  resolverAddress: string | null;
+  resolvedAddress: string | null;
+  reverseName: string | null;
+  sourceOfTruth: SourceOfTruth;
+
+  // Price
   priceState: PriceState;
   base: bigint;
   premium: bigint;
   totalCost: bigint;
-  maxCost: bigint;       // totalCost + 5% slippage
+  maxCost: bigint;
   hasPremium: boolean;
   isPriceLoading: boolean;
 
-  // ── Allowance ─────────────────────────────────────────────────────────────
+  // Allowance
   allowance: bigint;
   needsApproval: boolean;
   refetchAllowance: () => void;
 
-  // ── Balance ───────────────────────────────────────────────────────────────
+  // Balance
   sufficient: boolean;
   shortfall: bigint;
 
-  // ── Controller address (for approve target) ───────────────────────────────
+  // Controller
   controller: `0x${string}`;
 }
+
+// ─── RPC resolution fallback ──────────────────────────────────────────────────
+
+async function resolveViaRpc(fullName: string): Promise<{
+  resolvedAddress: string | null;
+  owner: string | null;
+  resolverAddress: string | null;
+} | null> {
+  try {
+    const { publicClient } = await import("../lib/publicClient");
+    const node = namehash(fullName) as `0x${string}`;
+    const ZERO = "0x0000000000000000000000000000000000000000";
+
+    // 1. Get resolver from registry
+    const resolverAddr = await publicClient.readContract({
+      address: CONTRACTS.registry,
+      abi: [{ name: "resolver", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
+      functionName: "resolver",
+      args: [node],
+    }) as string;
+
+    if (!resolverAddr || resolverAddr === ZERO) return { resolvedAddress: null, owner: null, resolverAddress: null };
+
+    // 2. Get owner from registry
+    const owner = await publicClient.readContract({
+      address: CONTRACTS.registry,
+      abi: [{ name: "owner", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
+      functionName: "owner",
+      args: [node],
+    }) as string;
+
+    // 3. Get addr from resolver
+    const addr = await publicClient.readContract({
+      address: resolverAddr as `0x${string}`,
+      abi: [{ name: "addr", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
+      functionName: "addr",
+      args: [node],
+    }) as string;
+
+    return {
+      resolvedAddress: addr && addr !== ZERO ? addr : null,
+      owner: owner && owner !== ZERO ? owner : null,
+      resolverAddress: resolverAddr !== ZERO ? resolverAddr : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// ─── Main hook ────────────────────────────────────────────────────────────────
 
 export function useDomainResolutionPipeline(
   label: string,
@@ -53,8 +117,17 @@ export function useDomainResolutionPipeline(
 ): DomainResolutionResult {
   const { isConnected } = useAccount();
   const controller = tld === "arc" ? CONTRACTS.arcController : CONTRACTS.circleController;
+  const fullName = label && label.length > 0 ? `${label}.${tld}` : "";
 
-  // ── 1. Availability ───────────────────────────────────────────────────────
+  // ── Resolution state ──────────────────────────────────────────────────────
+  const [resolvedAddress, setResolvedAddress] = useState<string | null>(null);
+  const [owner, setOwner] = useState<string | null>(null);
+  const [resolverAddress, setResolverAddress] = useState<string | null>(null);
+  const [reverseName, setReverseName] = useState<string | null>(null);
+  const [sourceOfTruth, setSourceOfTruth] = useState<SourceOfTruth>("rpc");
+  const resolveRef = useRef<string>("");
+
+  // ── 1. Availability (cache-first, RPC background) ─────────────────────────
   const {
     data: availData,
     isLoading: availLoading,
@@ -67,10 +140,70 @@ export function useDomainResolutionPipeline(
     availData as boolean | undefined,
     availLoading,
     availError,
-    true // optimistic default
+    true
   );
 
-  // ── 2. Price ──────────────────────────────────────────────────────────────
+  // ── 2. Resolution pipeline: subgraph → RPC → cache ───────────────────────
+  useEffect(() => {
+    if (!fullName || !label) return;
+    const currentName = fullName;
+    resolveRef.current = currentName;
+
+    async function resolve() {
+      // Try cache first (instant, no flicker) — L1 in-memory then L2 localStorage
+      const cached = cacheRead(currentName);
+      if (cached) {
+        if (resolveRef.current !== currentName) return;
+        setResolvedAddress(cached.resolvedAddress);
+        setOwner(cached.owner);
+        setResolverAddress(cached.resolverAddress);
+        // Guard: never expose empty reverse names
+        setReverseName(cached.reverseName && cached.reverseName.length > 0 ? cached.reverseName : null);
+        setSourceOfTruth("cache");
+      }
+
+      // Try subgraph (primary)
+      try {
+        const domain = await getDomainByName(currentName);
+        if (resolveRef.current !== currentName) return;
+        if (domain) {
+          const addr = domain.resolverRecord?.addr ?? null;
+          const ownerAddr = domain.owner?.id ?? null;
+          const res = domain.resolver ?? null;
+          setResolvedAddress(addr);
+          setOwner(ownerAddr);
+          setResolverAddress(res);
+          setSourceOfTruth("subgraph");
+          cacheWrite(currentName, { resolvedAddress: addr, owner: ownerAddr, resolverAddress: res, reverseName: null });
+          return;
+        }
+      } catch {}
+
+      // Subgraph missed — fall back to RPC
+      if (resolveRef.current !== currentName) return;
+      const rpc = await resolveViaRpc(currentName);
+      if (resolveRef.current !== currentName) return;
+      if (rpc) {
+        setResolvedAddress(rpc.resolvedAddress);
+        setOwner(rpc.owner);
+        setResolverAddress(rpc.resolverAddress);
+        setSourceOfTruth("rpc");
+        cacheWrite(currentName, { resolvedAddress: rpc.resolvedAddress, owner: rpc.owner, resolverAddress: rpc.resolverAddress, reverseName: null });
+      }
+      // If both fail: keep previous state — never show ERROR
+    }
+
+    resolve();
+
+    // Background revalidation every 15s — silent, no UI flicker
+    const interval = setInterval(() => {
+      if (resolveRef.current === currentName) resolve();
+    }, 15_000);
+
+    return () => clearInterval(interval);
+  }, [fullName, label]);
+
+  // ── 3. Price (publicClient, never stale) ──────────────────────────────────
   const { data: priceData, isFetching: priceFetching, isError: priceError } =
     useRentPrice(label, tld, duration);
 
@@ -78,29 +211,33 @@ export function useDomainResolutionPipeline(
   const base      = priceData?.base    ?? 0n;
   const premium   = priceData?.premium ?? 0n;
   const totalCost = base + premium;
-  const maxCost   = totalCost + (totalCost * 500n) / 10000n; // 5% slippage
+  const maxCost   = totalCost + (totalCost * 500n) / 10000n;
   const hasPremium = premium > 0n;
 
   let priceState: PriceState = "LOADING";
   if (!isPriceLoading && totalCost > 0n) priceState = "READY";
   else if (priceError && !priceFetching) priceState = "ERROR";
 
-  // ── 3. Allowance — always fresh, re-fetched after approval ────────────────
+  // ── 4. Allowance ──────────────────────────────────────────────────────────
   const { allowance, refetchAllowance } = useAllowance(controller);
 
-  // needsApproval: only relevant when connected + price is known
   const needsApproval =
     isConnected &&
     priceState === "READY" &&
     totalCost > 0n &&
     allowance < maxCost;
 
-  // ── 4. Balance ────────────────────────────────────────────────────────────
+  // ── 5. Balance ────────────────────────────────────────────────────────────
   const { sufficient, shortfall } = useBalanceSafety(totalCost);
 
   return {
     nameState,
     isRefetching,
+    owner,
+    resolverAddress,
+    resolvedAddress,
+    reverseName,
+    sourceOfTruth,
     priceState,
     base,
     premium,
@@ -115,4 +252,16 @@ export function useDomainResolutionPipeline(
     shortfall,
     controller,
   };
+}
+
+// ─── Optimistic update helper ─────────────────────────────────────────────────
+// Call this immediately after a successful registration to update the cache
+// before the subgraph has indexed the event.
+
+export function optimisticRegister(
+  label: string,
+  tld: "arc" | "circle",
+  owner: string
+) {
+  cacheOptimistic(label, tld, owner, CONTRACTS.resolver);
 }
