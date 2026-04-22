@@ -4,11 +4,11 @@ schema:
 dataSources:
   # ── Arc Controller ──────────────────────────────────────────────────────────
   - kind: ethereum
-    name: ArcNSRegistrarControllerV2
+    name: ArcController
     network: arc-testnet
     source:
       address: "0x1bd377A2762510c00dd0ec2142E42829e7053C80"
-      abi: ArcNSRegistrarControllerV2
+      abi: Controller
       startBlock: 38332349
     mapping:
       kind: ethereum/events
@@ -17,25 +17,23 @@ dataSources:
       entities:
         - Domain
         - Registration
-        - Renewal
-        - Account
       abis:
-        - name: ArcNSRegistrarControllerV2
+        - name: Controller
           file: ./abis/ArcNSRegistrarControllerV2.json
       eventHandlers:
-        - event: NameRegistered(string,bytes32 indexed,address indexed,uint256,uint256)
-          handler: handleNameRegistered
-        - event: NameRenewed(string,bytes32 indexed,uint256,uint256)
-          handler: handleNameRenewed
+        - event: NameRegistered(string,indexed bytes32,indexed address,uint256,uint256)
+          handler: handleArcNameRegistered
+        - event: NameRenewed(string,indexed bytes32,uint256,uint256)
+          handler: handleArcNameRenewed
       file: ./src/controller.ts
 
   # ── Circle Controller ───────────────────────────────────────────────────────
   - kind: ethereum
-    name: ArcNSCircleControllerV2
+    name: CircleController
     network: arc-testnet
     source:
       address: "0xfBFE553633AB91b6B32A0E6296341000Bf03DB95"
-      abi: ArcNSRegistrarControllerV2
+      abi: Controller
       startBlock: 38332349
     mapping:
       kind: ethereum/events
@@ -44,25 +42,23 @@ dataSources:
       entities:
         - Domain
         - Registration
-        - Renewal
-        - Account
       abis:
-        - name: ArcNSRegistrarControllerV2
+        - name: Controller
           file: ./abis/ArcNSRegistrarControllerV2.json
       eventHandlers:
-        - event: NameRegistered(string,bytes32 indexed,address indexed,uint256,uint256)
+        - event: NameRegistered(string,indexed bytes32,indexed address,uint256,uint256)
           handler: handleCircleNameRegistered
-        - event: NameRenewed(string,bytes32 indexed,uint256,uint256)
+        - event: NameRenewed(string,indexed bytes32,uint256,uint256)
           handler: handleCircleNameRenewed
       file: ./src/controller.ts
 
-  # ── Resolver ────────────────────────────────────────────────────────────────
+  # ── Arc Registrar ───────────────────────────────────────────────────────────
   - kind: ethereum
-    name: ArcNSResolverV2
+    name: ArcRegistrar
     network: arc-testnet
     source:
-      address: "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350"
-      abi: ArcNSResolverV2
+      address: "0xb156d9726661E92C541e3a267ee8710Fdcd24969"
+      abi: BaseRegistrar
       startBlock: 38332349
     mapping:
       kind: ethereum/events
@@ -70,27 +66,72 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Domain
-        - AddrRecord
-        - TextRecord
       abis:
-        - name: ArcNSResolverV2
+        - name: BaseRegistrar
+          file: ./abis/ArcNSBaseRegistrar.json
+      eventHandlers:
+        - event: NameRegistered(indexed uint256,indexed address,uint256)
+          handler: handleArcRegistrarNameRegistered
+        - event: NameRenewed(indexed uint256,uint256)
+          handler: handleArcRegistrarNameRenewed
+      file: ./src/registrar.ts
+
+  # ── Circle Registrar ────────────────────────────────────────────────────────
+  - kind: ethereum
+    name: CircleRegistrar
+    network: arc-testnet
+    source:
+      address: "0xBdfF2790Dd72E86C3510Cc8374EaC5E2E0659c5e"
+      abi: BaseRegistrar
+      startBlock: 38332349
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Domain
+      abis:
+        - name: BaseRegistrar
+          file: ./abis/ArcNSBaseRegistrar.json
+      eventHandlers:
+        - event: NameRegistered(indexed uint256,indexed address,uint256)
+          handler: handleCircleRegistrarNameRegistered
+        - event: NameRenewed(indexed uint256,uint256)
+          handler: handleCircleRegistrarNameRenewed
+      file: ./src/registrar.ts
+
+  # ── Resolver ────────────────────────────────────────────────────────────────
+  - kind: ethereum
+    name: Resolver
+    network: arc-testnet
+    source:
+      address: "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350"
+      abi: Resolver
+      startBlock: 38332349
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Domain
+        - ResolverRecord
+      abis:
+        - name: Resolver
           file: ./abis/ArcNSResolverV2.json
       eventHandlers:
-        - event: AddrChanged(bytes32 indexed,address)
+        - event: AddrChanged(indexed bytes32,address)
           handler: handleAddrChanged
-        - event: TextChanged(bytes32 indexed,string indexed,string,string)
-          handler: handleTextChanged
-        - event: NameChanged(bytes32 indexed,string)
+        - event: NameChanged(indexed bytes32,string)
           handler: handleNameChanged
       file: ./src/resolver.ts
 
   # ── Registry ────────────────────────────────────────────────────────────────
   - kind: ethereum
-    name: ArcNSRegistry
+    name: Registry
     network: arc-testnet
     source:
       address: "0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a"
-      abi: ArcNSRegistry
+      abi: Registry
       startBlock: 38332349
     mapping:
       kind: ethereum/events
@@ -99,11 +140,33 @@ dataSources:
       entities:
         - Domain
       abis:
-        - name: ArcNSRegistry
+        - name: Registry
           file: ./abis/ArcNSRegistry.json
       eventHandlers:
-        - event: Transfer(bytes32 indexed,address)
+        - event: Transfer(indexed bytes32,address)
           handler: handleTransfer
-        - event: NewResolver(bytes32 indexed,address)
+        - event: NewResolver(indexed bytes32,address)
           handler: handleNewResolver
       file: ./src/registry.ts
+
+  # ── Reverse Registrar ───────────────────────────────────────────────────────
+  - kind: ethereum
+    name: ReverseRegistrar
+    network: arc-testnet
+    source:
+      address: "0x97DEf95ADE4b67cD877725282d872d1eD2b4D489"
+      abi: ReverseRegistrar
+      startBlock: 38332349
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Domain
+      abis:
+        - name: ReverseRegistrar
+          file: ./abis/ArcNSReverseRegistrar.json
+      eventHandlers:
+        - event: ReverseClaimed(indexed address,indexed bytes32)
+          handler: handleReverseClaimed
+      file: ./src/reverseRegistrar.ts

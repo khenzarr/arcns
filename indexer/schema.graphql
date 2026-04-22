@@ -1,78 +1,32 @@
-"""
-A registered ArcNS domain
-"""
-type Domain @entity {
-  id: ID!                    # namehash (bytes32 as hex)
-  name: String               # human-readable name e.g. "alice.arc"
-  label: Bytes!              # keccak256 of label
-  tld: String!               # "arc" or "circle"
-  owner: Account!
-  resolver: Bytes            # resolver contract address
-  registeredAt: BigInt!
-  expiresAt: BigInt!
-  cost: BigInt!
-  registrations: [Registration!]! @derivedFrom(field: "domain")
-  renewals: [Renewal!]! @derivedFrom(field: "domain")
-  addrRecord: AddrRecord
-  textRecords: [TextRecord!]! @derivedFrom(field: "domain")
-  reverseName: String        # reverse record: address → name
-}
-
-"""
-A registration event
-"""
-type Registration @entity {
-  id: ID!                    # txHash-logIndex
-  domain: Domain!
-  owner: Account!
-  cost: BigInt!
-  expiresAt: BigInt!
-  blockNumber: BigInt!
-  timestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-"""
-A renewal event
-"""
-type Renewal @entity {
+type Domain @entity(immutable: false) {
   id: ID!
-  domain: Domain!
+  name: String!
+  owner: Bytes!
+  resolver: Bytes
+  label: Bytes
+  tld: String
+  registeredAt: BigInt
+  expiresAt: BigInt
+  cost: BigInt
+  reverseName: String
+  addrRecord: ResolverRecord
+}
+
+type Registration @entity(immutable: true) {
+  id: ID!
+  label: String!
+  owner: Bytes!
   cost: BigInt!
-  newExpiresAt: BigInt!
+  expires: BigInt!
   blockNumber: BigInt!
   timestamp: BigInt!
   transactionHash: Bytes!
 }
 
-"""
-An account (wallet address)
-"""
-type Account @entity {
-  id: ID!                    # address as hex
-  domains: [Domain!]! @derivedFrom(field: "owner")
-  registrations: [Registration!]! @derivedFrom(field: "owner")
-}
-
-"""
-EVM address record for a domain (from resolver.AddrChanged)
-"""
-type AddrRecord @entity {
-  id: ID!                    # domain node as hex
-  domain: Domain             # nullable — may arrive before NameRegistered
-  addr: Bytes!               # resolved EVM address
-  blockNumber: BigInt!
-  timestamp: BigInt!
-}
-
-"""
-Text record for a domain
-"""
-type TextRecord @entity {
-  id: ID!                    # domain id + "-" + key
-  domain: Domain!
-  key: String!
-  value: String!
+type ResolverRecord @entity(immutable: false) {
+  id: ID!
+  node: Bytes!
+  address: Bytes!
   blockNumber: BigInt!
   timestamp: BigInt!
 }

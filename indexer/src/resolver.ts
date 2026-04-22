@@ -1,57 +1,36 @@
 import { Bytes } from "@graphprotocol/graph-ts";
 import {
   AddrChanged as AddrChangedEvent,
-  TextChanged as TextChangedEvent,
   NameChanged as NameChangedEvent,
-} from "../generated/ArcNSResolverV2/ArcNSResolverV2";
-import { Domain, AddrRecord, TextRecord } from "../generated/schema";
+} from "../generated/Resolver/Resolver";
+import { Domain, ResolverRecord } from "../generated/schema";
 
 export function handleAddrChanged(event: AddrChangedEvent): void {
-  let domainId = event.params.node.toHexString();
+  let nodeHex = event.params.node.toHexString();
 
-  // Update AddrRecord regardless of whether Domain exists yet
-  // (AddrChanged can fire before NameRegistered in the same block)
-  let record = AddrRecord.load(domainId);
+  // Create or update ResolverRecord — works even if Domain doesn't exist yet
+  let record = ResolverRecord.load(nodeHex);
   if (!record) {
-    record = new AddrRecord(domainId);
-    record.domain = domainId;
+    record = new ResolverRecord(nodeHex);
+    record.node = event.params.node;
   }
-  record.addr = Bytes.fromHexString(event.params.a.toHexString());
+  record.address = Bytes.fromHexString(event.params.a.toHexString());
   record.blockNumber = event.block.number;
   record.timestamp = event.block.timestamp;
   record.save();
 
-  // Link to domain if it exists
-  let domain = Domain.load(domainId);
+  // Link to Domain if it exists
+  let domain = Domain.load(nodeHex);
   if (domain) {
-    domain.addrRecord = domainId;
+    domain.addrRecord = nodeHex;
     domain.save();
   }
 }
 
-export function handleTextChanged(event: TextChangedEvent): void {
-  let domainId = event.params.node.toHexString();
-  let domain = Domain.load(domainId);
-  if (!domain) return;
-
-  let recordId = domainId + "-" + event.params.key;
-  let record = TextRecord.load(recordId);
-  if (!record) {
-    record = new TextRecord(recordId);
-    record.domain = domainId;
-    record.key = event.params.key;
-  }
-  record.value = event.params.value;
-  record.blockNumber = event.block.number;
-  record.timestamp = event.block.timestamp;
-  record.save();
-}
-
 export function handleNameChanged(event: NameChangedEvent): void {
-  let domainId = event.params.node.toHexString();
-  let domain = Domain.load(domainId);
+  let nodeHex = event.params.node.toHexString();
+  let domain = Domain.load(nodeHex);
   if (!domain) return;
-
   domain.reverseName = event.params.name;
   domain.save();
 }
