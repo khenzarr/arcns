@@ -1,6 +1,8 @@
 /// ArcNS V2 — Contract addresses and ABIs
 /// All addresses match deployed contracts on Arc Testnet (Chain ID: 5042002)
 
+import { parseAbi } from "viem";
+
 // ─── Addresses ────────────────────────────────────────────────────────────────
 
 export const CONTRACTS = {
@@ -19,9 +21,9 @@ export const CONTRACTS = {
 // ─── V2 Controller ABI — includes maxCost on register() and renew() ───────────
 // Matches deployed ArcNSRegistrarControllerV2
 
-export const CONTROLLER_ABI = [
+export const CONTROLLER_ABI = parseAbi([
   "function available(string name) view returns (bool)",
-  "function rentPrice(string name, uint256 duration) view returns (tuple(uint256 base, uint256 premium))",
+  "function rentPrice(string name, uint256 duration) view returns (uint256, uint256)",
   "function makeCommitment(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord) pure returns (bytes32)",
   "function commit(bytes32 commitment)",
   "function register(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord, uint256 maxCost)",
@@ -29,32 +31,32 @@ export const CONTROLLER_ABI = [
   "event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 cost, uint256 expires)",
   "event NameRenewed(string name, bytes32 indexed label, uint256 cost, uint256 expires)",
   "event CommitmentMade(bytes32 indexed commitment)",
-] as const;
+]);
 
 // ─── Registry ABI ─────────────────────────────────────────────────────────────
 
-export const REGISTRY_ABI = [
+export const REGISTRY_ABI = parseAbi([
   "function owner(bytes32 node) view returns (address)",
   "function resolver(bytes32 node) view returns (address)",
   "function setResolver(bytes32 node, address resolver)",
   "function setApprovalForAll(address operator, bool approved)",
   "function isApprovedForAll(address owner, address operator) view returns (bool)",
-] as const;
+]);
 
 // ─── Registrar ABI (ERC-721 + nameExpires) ────────────────────────────────────
 
-export const REGISTRAR_ABI = [
+export const REGISTRAR_ABI = parseAbi([
   "function nameExpires(uint256 id) view returns (uint256)",
   "function available(uint256 id) view returns (bool)",
   "function ownerOf(uint256 tokenId) view returns (address)",
   "function tokenURI(uint256 tokenId) view returns (string)",
   "function balanceOf(address owner) view returns (uint256)",
   "function tld() view returns (string)",
-] as const;
+]);
 
 // ─── Resolver ABI ─────────────────────────────────────────────────────────────
 
-export const RESOLVER_ABI = [
+export const RESOLVER_ABI = parseAbi([
   "function addr(bytes32 node) view returns (address)",
   "function text(bytes32 node, string key) view returns (string)",
   "function name(bytes32 node) view returns (string)",
@@ -63,48 +65,47 @@ export const RESOLVER_ABI = [
   "function setText(bytes32 node, string key, string value)",
   "function setName(bytes32 node, string name)",
   "function setNameForAddr(address addr, address owner, address resolver, string name)",
-] as const;
+]);
 
 // ─── Reverse Registrar ABI ────────────────────────────────────────────────────
 
-export const REVERSE_REGISTRAR_ABI = [
+export const REVERSE_REGISTRAR_ABI = parseAbi([
   "function setName(string name) returns (bytes32)",
   "function node(address addr) pure returns (bytes32)",
   "function claim(address owner) returns (bytes32)",
-] as const;
+]);
 
 // ─── Price Oracle ABI ─────────────────────────────────────────────────────────
 
-export const PRICE_ORACLE_ABI = [
-  "function price(string name, uint256 expires, uint256 duration) view returns (tuple(uint256 base, uint256 premium))",
+export const PRICE_ORACLE_ABI = parseAbi([
   "function price1Char() view returns (uint256)",
   "function price2Char() view returns (uint256)",
   "function price3Char() view returns (uint256)",
   "function price4Char() view returns (uint256)",
   "function price5Plus() view returns (uint256)",
   "function setPrices(uint256 p1, uint256 p2, uint256 p3, uint256 p4, uint256 p5)",
-] as const;
+]);
 
 // ─── Treasury ABI ─────────────────────────────────────────────────────────────
 
-export const TREASURY_ABI = [
+export const TREASURY_ABI = parseAbi([
   "function balance() view returns (uint256)",
   "function distribute()",
   "function totalCollected() view returns (uint256)",
   "function totalDistributed() view returns (uint256)",
   "function protocolWallet() view returns (address)",
-] as const;
+]);
 
 // ─── ERC-20 ABI (USDC) ────────────────────────────────────────────────────────
 
-export const ERC20_ABI = [
+export const ERC20_ABI = parseAbi([
   "function balanceOf(address account) view returns (uint256)",
   "function allowance(address owner, address spender) view returns (uint256)",
   "function approve(address spender, uint256 amount) returns (bool)",
   "function decimals() view returns (uint8)",
   "function symbol() view returns (string)",
   "function transfer(address to, uint256 amount) returns (bool)",
-] as const;
+]);
 
 // ─── Pricing tiers (Phase 20 model) — mirrors on-chain values ─────────────────
 

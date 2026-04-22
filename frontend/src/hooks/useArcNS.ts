@@ -7,6 +7,7 @@ import {
 import { namehash, labelToTokenId } from "../lib/namehash";
 import { isValidLabel } from "../lib/domain";
 import { cacheGet, cacheSet, cacheInvalidate } from "../lib/nameCache";
+import { arcTestnet } from "../lib/chains";
 
 // Re-export for components that import from here
 export { CONTROLLER_ABI as CONTROLLER_V2_ABI } from "../lib/contracts";
@@ -58,9 +59,10 @@ export function useAvailability(label: string, tld: "arc" | "circle") {
     abi: CONTROLLER_ABI,
     functionName: "available",
     args: [label],
+    chainId: arcTestnet.id,
     query: {
       enabled: valid,
-      staleTime: 0,          // always revalidate — we serve from our own cache
+      staleTime: 0,
       gcTime: 600_000,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
@@ -96,39 +98,126 @@ export function useAvailability(label: string, tld: "arc" | "circle") {
 }
 
 // ─── Rent price ───────────────────────────────────────────────────────────────
-// Returns { base, premium } in USDC (6 decimals).
-// duration must be in seconds (BigInt). Price scales linearly with duration.
+// Uses viem publicClient directly — bypasses wagmi chain context.
+// wagmi's useReadContract silently does nothing when no wallet is connected
+// because it has no active chain. publicClient always has the chain configured.
 export function useRentPrice(label: string, tld: "arc" | "circle", duration = ONE_YEAR) {
   const controller = tld === "arc" ? CONTRACTS.arcController : CONTRACTS.circleController;
-  return useReadContract({
-    address: controller,
-    abi: CONTROLLER_ABI,
-    functionName: "rentPrice",
-    args: [label, duration],
+  const enabled = Boolean(label && tld && duration > 0n && isValidLabel(label));
+
+  const [data, setData]         = useState<{ base: bigint; premium: bigint } | undefined>(undefined);
+  const [isFetching, setFetching] = useState(false);
+  const [isError, setError]     = useState(false);
+
+  useEffect(() => {
+    if (!enabled) { setData(undefined); return; }
+
+    let cancelled = false;
+    setFetching(true);
+    setError(false);
+
+    // Import publicClient lazily to avoid SSR issues
+    import("../lib/publicClient").then(({ publicClient }) => {
+      // Use JSON ABI for the tuple return — most reliable decode path
+      const abi = [{
+        name: "rentPrice",
+        type: "function" as const,
+        stateMutability: "view" as const,
+        inputs: [
+          { name: "name",     type: "string"  as const },
+          { name: "duration", type: "uint256" as const },
+        ],
+        outputs: [
+          { type: "tuple" as const, components: [
+            { name: "base",    type: "uint256" as const },
+            { name: "premium", type: "uint256" as const },
+          ]},
+        ],
+      }];
+
+      publicClient.readContract({
+        address: controller,
+        abi,
+        functionName: "rentPrice",
+        args: [label, duration],
+      }).then((result: unknown) => {
+        if (cancelled) return;
+        // result is { base: bigint, premium: bigint } from the named tuple
+        const r = result as { base: bigint; premium: bigint };
+        const base    = typeof r?.base    === "bigint" ? r.base    : 0n;
+        const premium = typeof r?.premium === "bigint" ? r.premium : 0n;
+        setData({ base, premium });
+        setFetching(false);
+      }).catch(() => {
+        if (cancelled) return;
+        setError(true);
+        setFetching(false);
+      });
+    });
+
+    return () => { cancelled = true; };
+  }, [label, tld, duration.toString(), controller, enabled]);
+
+  return { data, isFetching, isError };
+}
+
+// ─── USDC Allowance ───────────────────────────────────────────────────────────
+// Checks how much USDC the user has already approved for a spender.
+// Returns 0n if wallet not connected or data not yet loaded.
+export function useAllowance(spender: `0x${string}`) {
+  const { address } = useAccount();
+  const { data, refetch } = useReadContract({
+    address: CONTRACTS.usdc,
+    abi: ERC20_ABI,
+    functionName: "allowance",
+    args: [address!, spender],
     query: {
-      enabled: isValidLabel(label) && duration > 0n,
-      staleTime: 30_000,
-      gcTime: 120_000,
+      enabled: !!address,
+      staleTime: 15_000,
+      gcTime: 60_000,
       refetchOnWindowFocus: false,
       retry: 2,
     },
   });
+  return {
+    allowance: (data as bigint | undefined) ?? 0n,
+    refetchAllowance: refetch,
+  };
 }
-
-// ─── USDC balance ─────────────────────────────────────────────────────────────
 export function useUSDCBalance() {
   const { address } = useAccount();
-  return useReadContract({
-    address: CONTRACTS.usdc,
-    abi: ERC20_ABI,
-    functionName: "balanceOf",
-    args: [address!],
-    query: {
-      enabled: !!address,
-      staleTime: 15_000,
-      refetchOnWindowFocus: false,
-    },
-  });
+  const [data, setData] = useState<bigint | undefined>(undefined);
+
+  useEffect(() => {
+    if (!address) { setData(undefined); return; }
+
+    let cancelled = false;
+
+    import("../lib/publicClient").then(({ publicClient }) => {
+      publicClient.readContract({
+        address: CONTRACTS.usdc,
+        abi: [{
+          name: "balanceOf",
+          type: "function" as const,
+          stateMutability: "view" as const,
+          inputs: [{ name: "account", type: "address" as const }],
+          outputs: [{ name: "", type: "uint256" as const }],
+        }],
+        functionName: "balanceOf",
+        args: [address],
+      }).then((result: unknown) => {
+        if (cancelled) return;
+        setData(typeof result === "bigint" ? result : 0n);
+      }).catch(() => {
+        if (cancelled) return;
+        setData(0n);
+      });
+    });
+
+    return () => { cancelled = true; };
+  }, [address]);
+
+  return { data };
 }
 
 // ─── Name expiry ──────────────────────────────────────────────────────────────
@@ -140,6 +229,7 @@ export function useNameExpiry(label: string, tld: "arc" | "circle") {
     abi: REGISTRAR_ABI,
     functionName: "nameExpires",
     args: [tokenId],
+    chainId: arcTestnet.id,
     query: {
       enabled: isValidLabel(label),
       staleTime: 30_000,
@@ -183,14 +273,14 @@ export function useResolveName(node: `0x${string}`) {
 export function useBalanceSafety(requiredAmount: bigint) {
   const { data: balance } = useUSDCBalance();
   const bal = (balance as bigint | undefined) ?? 0n;
-  // Arc uses USDC as gas — reserve $2.00 for gas costs on top of payment
-  const GAS_BUFFER = 2_000_000n; // $2.00 USDC
-  const sufficient = bal >= requiredAmount + GAS_BUFFER;
-  const shortfall = sufficient ? 0n : (requiredAmount + GAS_BUFFER - bal);
+  const sufficient = bal >= requiredAmount;
+  const shortfall = sufficient ? 0n : (requiredAmount - bal);
   return { balance: bal, sufficient, shortfall };
 }
 
-// ─── Registration flow (V2 with slippage + balance check) ────────────────────
+// ─── Registration flow ────────────────────────────────────────────────────────
+// Two-phase: approve (if needed) → commit → wait → register
+// The caller checks allowance and decides whether to call approveUsdc() first.
 export type RegStep = "idle" | "approving" | "committing" | "waiting" | "registering" | "done" | "error";
 
 export interface RegistrationResult {
@@ -208,6 +298,32 @@ export function useRegistration() {
   const [result, setResult] = useState<RegistrationResult | null>(null);
   const [waitProgress, setWaitProgress] = useState(0);
 
+  // ── Standalone approve — call this when allowance < maxCost ──────────────
+  const approveUsdc = useCallback(async (
+    spender: `0x${string}`,
+    amount: bigint
+  ): Promise<boolean> => {
+    setError(null);
+    try {
+      setStep("approving");
+      await writeContractAsync({
+        address: CONTRACTS.usdc,
+        abi: ERC20_ABI,
+        functionName: "approve",
+        args: [spender, amount],
+      });
+      // Brief pause for RPC to index the approval
+      await new Promise(r => setTimeout(r, 2000));
+      return true;
+    } catch (e: any) {
+      const msg = e.shortMessage || e.message || "Approval failed";
+      setError(msg.includes("user rejected") ? "Transaction cancelled" : msg);
+      setStep("error");
+      return false;
+    }
+  }, [writeContractAsync]);
+
+  // ── Register — assumes allowance is already sufficient ───────────────────
   const register = useCallback(async (
     label: string,
     tld: "arc" | "circle",
@@ -221,18 +337,9 @@ export function useRegistration() {
     setResult(null);
 
     const controller = tld === "arc" ? CONTRACTS.arcController : CONTRACTS.circleController;
-    const maxCost = totalCost + (totalCost * 500n) / 10000n; // 5% slippage buffer
+    const maxCost = totalCost + (totalCost * 500n) / 10000n; // 5% slippage
 
     try {
-      setStep("approving");
-      await writeContractAsync({
-        address: CONTRACTS.usdc,
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [controller, maxCost],
-      });
-      await new Promise(r => setTimeout(r, 3000));
-
       setStep("committing");
       const secretBytes = new Uint8Array(32);
       crypto.getRandomValues(secretBytes);
@@ -252,7 +359,6 @@ export function useRegistration() {
         args: [commitment],
       });
 
-      // Phase 28: animated wait progress
       setStep("waiting");
       setWaitProgress(0);
       await new Promise<void>(resolve => {
@@ -278,7 +384,6 @@ export function useRegistration() {
         expires: BigInt(Math.floor(Date.now() / 1000)) + duration,
         cost: totalCost,
       });
-      // Invalidate cache — name is now TAKEN
       cacheInvalidate(label, tld);
       setStep("done");
     } catch (e: any) {
@@ -290,7 +395,7 @@ export function useRegistration() {
 
   const reset = useCallback(() => { setStep("idle"); setError(null); setResult(null); }, []);
 
-  return { register, step, error, result, waitProgress, reset };
+  return { register, approveUsdc, step, error, result, waitProgress, reset };
 }
 
 // ─── Renewal ──────────────────────────────────────────────────────────────────
@@ -303,20 +408,24 @@ export function useRenewal() {
     label: string,
     tld: "arc" | "circle",
     duration: bigint,
-    cost: bigint
+    cost: bigint,
+    currentAllowance: bigint
   ) => {
     setLoading(true);
     setError(null);
     const controller = tld === "arc" ? CONTRACTS.arcController : CONTRACTS.circleController;
     const maxCost = cost + (cost * 500n) / 10000n; // 5% slippage
     try {
-      await writeContractAsync({
-        address: CONTRACTS.usdc,
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [controller, maxCost],
-      });
-      await new Promise(r => setTimeout(r, 3000));
+      // Only approve if allowance is insufficient
+      if (currentAllowance < maxCost) {
+        await writeContractAsync({
+          address: CONTRACTS.usdc,
+          abi: ERC20_ABI,
+          functionName: "approve",
+          args: [controller, maxCost],
+        });
+        await new Promise(r => setTimeout(r, 2000));
+      }
       await writeContractAsync({
         address: controller,
         abi: CONTROLLER_ABI,

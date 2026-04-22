@@ -32,3 +32,10 @@ typechain-types
 
 # Hardhat files
 cache
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Next.js build output
+frontend/.next/
+frontend/out/

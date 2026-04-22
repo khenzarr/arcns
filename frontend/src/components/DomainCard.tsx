@@ -3,17 +3,15 @@
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import {
-  useAvailability, useRentPrice, useNameExpiry,
-  useRegistration, useRenewal, useBalanceSafety,
+  useNameExpiry, useRegistration, useRenewal,
 } from "../hooks/useArcNS";
+import { useDomainResolutionPipeline } from "../hooks/useDomainResolutionPipeline";
 import { CONTRACTS, getPriceTier } from "../lib/contracts";
 import {
   formatUSDC, DURATION_OPTIONS, getExpiryState, expiryBadge,
   formatExpiry, daysUntilExpiry,
 } from "../lib/namehash";
-import {
-  getNameState, STATE_BADGES, type NameState,
-} from "../lib/domain";
+import { STATE_BADGES, type NameState } from "../lib/domain";
 import SuccessModal from "./SuccessModal";
 
 // ─── PriceBreakdown ───────────────────────────────────────────────────────────
@@ -112,40 +110,23 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [label, tld, isCommitted]);
 
-  // ── Chain reads ──
-  const { data: availData, isLoading: availLoading, isError: availError, isRefetching } = useAvailability(label, tld);
-  const { data: priceData } = useRentPrice(label, tld, duration);
-  const { data: expiry }    = useNameExpiry(label, tld);
+  // ── All domain state from single pipeline hook ──
+  const {
+    nameState, isRefetching,
+    isPriceLoading, base: baseCost, premium: premiumCost, totalCost, maxCost, hasPremium,
+    needsApproval, allowance, refetchAllowance,
+    sufficient, shortfall,
+    controller,
+  } = useDomainResolutionPipeline(label, tld, duration);
 
-  // ── Semantic state — single source of truth ──
-  // optimistic=true: show AVAILABLE before RPC responds (ENS-like instant UX)
-  // The RPC will correct to TAKEN if the name is registered
-  const nameState: NameState = getNameState(
-    label,
-    availData as boolean | undefined,
-    availLoading,
-    availError,
-    true // optimistic default
-  );
+  const priceTier = getPriceTier(label);
 
   // ── Registration / renewal ──
-  const { register, step, error: regError, result, waitProgress, reset } = useRegistration();
+  const { register, approveUsdc, step, error: regError, result, waitProgress, reset } = useRegistration();
   const { renew, loading: renewLoading, error: renewError } = useRenewal();
 
-  // ── Price ──
-  // NEVER default to 0n — undefined means "not loaded yet"
-  const priceRaw    = priceData as { base: bigint; premium: bigint } | undefined;
-  const isPriceLoading = priceRaw === undefined;
-  const baseCost    = priceRaw?.base    ?? 0n;
-  const premiumCost = priceRaw?.premium ?? 0n;
-  const totalCost   = baseCost + premiumCost;
-  const hasPremium  = premiumCost > 0n;
-  const priceTier   = getPriceTier(label);
-  // hasPrice: true only when we have a real non-zero price from RPC
-  const hasPrice    = !isPriceLoading && totalCost > 0n;
-
-  // ── Balance ──
-  const { sufficient, shortfall } = useBalanceSafety(totalCost);
+  // ── Expiry (display only — not in pipeline) ──
+  const { data: expiry } = useNameExpiry(label, tld);
 
   // ── Expiry ──
   const expiryTs    = (expiry as bigint | undefined) ?? 0n;
@@ -153,7 +134,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
   const badge       = expiryBadge(expiryState);
   const daysLeft    = daysUntilExpiry(expiryTs);
 
-  const STEPS = ["approving", "committing", "waiting", "registering"] as const;
+  const STEPS = ["committing", "waiting", "registering"] as const;
 
   return (
     <>
@@ -300,18 +281,35 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             <div className="text-center py-3 text-gray-500 text-sm bg-gray-50 rounded-xl">
               Connect wallet to register
             </div>
+          ) : isPriceLoading ? (
+            <button disabled className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold opacity-50 cursor-not-allowed text-sm">
+              Loading price…
+            </button>
+          ) : needsApproval ? (
+            // ── Step 1: Approve USDC ──────────────────────────────────────────
+            <button
+              onClick={async () => {
+                const ok = await approveUsdc(controller, maxCost);
+                if (ok) await refetchAllowance();
+              }}
+              disabled={step === "approving" || !sufficient}
+              className="w-full py-3.5 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+            >
+              {step === "approving"
+                ? "Approving USDC…"
+                : `Approve ${formatUSDC(totalCost)} USDC to continue`}
+            </button>
           ) : (
+            // ── Step 2: Register ─────────────────────────────────────────────
             <button
               onClick={() => register(label, tld, duration, CONTRACTS.resolver, setReverse, totalCost)}
-              disabled={(step !== "idle" && step !== "error") || !sufficient || isPriceLoading}
+              disabled={(step !== "idle" && step !== "error") || !sufficient}
               className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
             >
-              {step === "approving"    ? "Approving USDC..."
-              : step === "committing"  ? "Submitting commitment..."
-              : step === "waiting"     ? `Waiting... ${waitProgress}%`
-              : step === "registering" ? "Registering on-chain..."
+              {step === "committing"   ? "Submitting commitment…"
+              : step === "waiting"     ? `Waiting… ${waitProgress}%`
+              : step === "registering" ? "Registering on-chain…"
               : step === "done"        ? "✓ Registered!"
-              : isPriceLoading         ? `Register ${label}.${tld} · Loading price…`
               : `Register ${label}.${tld} · ${formatUSDC(totalCost)}`}
             </button>
           )
@@ -324,12 +322,12 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
               </div>
             ) : (
               <button
-                onClick={() => renew(label, tld, duration, totalCost)}
+                onClick={() => renew(label, tld, duration, totalCost, allowance)}
                 disabled={renewLoading || !sufficient || isPriceLoading}
                 className="w-full py-3.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors text-sm"
               >
                 {renewLoading
-                  ? "Renewing..."
+                  ? "Renewing…"
                   : isPriceLoading
                   ? `Renew ${label}.${tld} · Loading price…`
                   : `Renew ${label}.${tld} · ${formatUSDC(totalCost)}`}
