@@ -394,14 +394,15 @@ export function useRegistration() {
       crypto.getRandomValues(secretBytes);
       const secret = `0x${Array.from(secretBytes).map(b => b.toString(16).padStart(2, "0")).join("")}` as `0x${string}`;
       const labelHash = keccak256(stringToBytes(label));
-      // Commitment includes msg.sender (address) to prevent front-running
+      // Commitment binds to: caller, chainId, controller — matches on-chain makeCommitment
+      const chainId = BigInt(5042002);
       const commitment = keccak256(encodeAbiParameters(
         [
           { type: "bytes32" }, { type: "address" }, { type: "uint256" },
           { type: "bytes32" }, { type: "address" }, { type: "bytes[]" }, { type: "bool" },
-          { type: "address" }, // sender binding — anti front-run
+          { type: "address" }, { type: "uint256" }, { type: "address" },
         ],
-        [labelHash, address, duration, secret, resolverAddr, [], setReverse, address]
+        [labelHash, address, duration, secret, resolverAddr, [], setReverse, address, chainId, controller]
       ));
       await writeContractAsync({
         address: controller,
@@ -426,7 +427,7 @@ export function useRegistration() {
         address: controller,
         abi: CONTROLLER_ABI,
         functionName: "register",
-        args: [label, address, duration, secret, resolverAddr, [], setReverse, maxCost],
+        args: [label, address, duration, secret, resolverAddr, [], setReverse],
       });
 
       setResult({
@@ -481,7 +482,7 @@ export function useRenewal() {
         address: controller,
         abi: CONTROLLER_ABI,
         functionName: "renew",
-        args: [label, duration, maxCost],
+        args: [label, duration],
       });
     } catch (e: any) {
       setError(e.shortMessage || e.message);
