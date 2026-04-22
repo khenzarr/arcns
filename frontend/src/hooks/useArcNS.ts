@@ -239,34 +239,83 @@ export function useNameExpiry(label: string, tld: "arc" | "circle") {
 }
 
 // ─── Resolve address ──────────────────────────────────────────────────────────
+// Uses publicClient directly to bypass wagmi chain context.
+// This ensures resolution works even when no wallet is connected.
 export function useResolveAddress(domain: string) {
   const node = namehash(domain);
-  return useReadContract({
-    address: CONTRACTS.resolver,
-    abi: RESOLVER_ABI,
-    functionName: "addr",
-    args: [node],
-    query: {
-      enabled: domain.includes("."),
-      staleTime: 30_000,
-      refetchOnWindowFocus: false,
-    },
-  });
+  const enabled = domain.includes(".");
+  const [data, setData] = useState<string | undefined>(undefined);
+  const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) { setData(undefined); return; }
+    let cancelled = false;
+    setLoading(true);
+
+    import("../lib/publicClient").then(({ publicClient }) => {
+      publicClient.readContract({
+        address: CONTRACTS.resolver,
+        abi: [{
+          name: "addr",
+          type: "function" as const,
+          stateMutability: "view" as const,
+          inputs: [{ name: "node", type: "bytes32" as const }],
+          outputs: [{ name: "", type: "address" as const }],
+        }],
+        functionName: "addr",
+        args: [node as `0x${string}`],
+      }).then((result: unknown) => {
+        if (cancelled) return;
+        setData(result as string);
+        setLoading(false);
+      }).catch(() => {
+        if (cancelled) return;
+        setData(undefined);
+        setLoading(false);
+      });
+    });
+
+    return () => { cancelled = true; };
+  }, [domain, node, enabled]);
+
+  return { data, isLoading };
 }
 
 // ─── Resolve name (reverse) ───────────────────────────────────────────────────
+// Uses publicClient directly to bypass wagmi chain context.
 export function useResolveName(node: `0x${string}`) {
-  return useReadContract({
-    address: CONTRACTS.resolver,
-    abi: RESOLVER_ABI,
-    functionName: "name",
-    args: [node],
-    query: {
-      enabled: !!node && node !== "0x0000000000000000000000000000000000000000000000000000000000000000",
-      staleTime: 30_000,
-      refetchOnWindowFocus: false,
-    },
-  });
+  const enabled = !!node && node !== "0x0000000000000000000000000000000000000000000000000000000000000000";
+  const [data, setData] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (!enabled) { setData(undefined); return; }
+    let cancelled = false;
+
+    import("../lib/publicClient").then(({ publicClient }) => {
+      publicClient.readContract({
+        address: CONTRACTS.resolver,
+        abi: [{
+          name: "name",
+          type: "function" as const,
+          stateMutability: "view" as const,
+          inputs: [{ name: "node", type: "bytes32" as const }],
+          outputs: [{ name: "", type: "string" as const }],
+        }],
+        functionName: "name",
+        args: [node],
+      }).then((result: unknown) => {
+        if (cancelled) return;
+        setData(result as string);
+      }).catch(() => {
+        if (cancelled) return;
+        setData(undefined);
+      });
+    });
+
+    return () => { cancelled = true; };
+  }, [node, enabled]);
+
+  return { data };
 }
 
 // ─── Phase 26: Balance safety check ──────────────────────────────────────────

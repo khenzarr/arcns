@@ -8,9 +8,9 @@ import { Domain, AddrRecord, TextRecord } from "../generated/schema";
 
 export function handleAddrChanged(event: AddrChangedEvent): void {
   let domainId = event.params.node.toHexString();
-  let domain = Domain.load(domainId);
-  if (!domain) return;
 
+  // Update AddrRecord regardless of whether Domain exists yet
+  // (AddrChanged can fire before NameRegistered in the same block)
   let record = AddrRecord.load(domainId);
   if (!record) {
     record = new AddrRecord(domainId);
@@ -21,8 +21,12 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
   record.timestamp = event.block.timestamp;
   record.save();
 
-  domain.addrRecord = domainId;
-  domain.save();
+  // Link to domain if it exists
+  let domain = Domain.load(domainId);
+  if (domain) {
+    domain.addrRecord = domainId;
+    domain.save();
+  }
 }
 
 export function handleTextChanged(event: TextChangedEvent): void {

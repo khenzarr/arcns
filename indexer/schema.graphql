@@ -7,7 +7,7 @@ type Domain @entity {
   label: Bytes!              # keccak256 of label
   tld: String!               # "arc" or "circle"
   owner: Account!
-  resolver: Bytes
+  resolver: Bytes            # resolver contract address
   registeredAt: BigInt!
   expiresAt: BigInt!
   cost: BigInt!
@@ -15,7 +15,7 @@ type Domain @entity {
   renewals: [Renewal!]! @derivedFrom(field: "domain")
   addrRecord: AddrRecord
   textRecords: [TextRecord!]! @derivedFrom(field: "domain")
-  reverseName: String
+  reverseName: String        # reverse record: address → name
 }
 
 """
@@ -55,12 +55,12 @@ type Account @entity {
 }
 
 """
-EVM address record for a domain
+EVM address record for a domain (from resolver.AddrChanged)
 """
 type AddrRecord @entity {
-  id: ID!                    # domain id
-  domain: Domain!
-  addr: Bytes!
+  id: ID!                    # domain node as hex
+  domain: Domain             # nullable — may arrive before NameRegistered
+  addr: Bytes!               # resolved EVM address
   blockNumber: BigInt!
   timestamp: BigInt!
 }
@@ -69,7 +69,7 @@ type AddrRecord @entity {
 Text record for a domain
 """
 type TextRecord @entity {
-  id: ID!                    # domain id + key
+  id: ID!                    # domain id + "-" + key
   domain: Domain!
   key: String!
   value: String!

@@ -1,4 +1,4 @@
-import { BigInt, Bytes, crypto, ByteArray } from "@graphprotocol/graph-ts";
+import { BigInt, Bytes, crypto, ByteArray, dataSource } from "@graphprotocol/graph-ts";
 import {
   NameRegistered as NameRegisteredEvent,
   NameRenewed as NameRenewedEvent,
@@ -17,16 +17,6 @@ function getOrCreateAccount(address: Bytes): Account {
   return account;
 }
 
-function labelToTLD(name: string): string {
-  // The NameRegistered event emits the label (e.g. "alice"), not the full domain.
-  // TLD is determined from the contract source — both arc and circle controllers
-  // emit the same event structure. We derive TLD from the event source address.
-  // For now, default to "arc" — the resolver subgraph handles both.
-  let parts = name.split(".");
-  if (parts.length > 1) return parts[parts.length - 1];
-  return "arc"; // label-only event: TLD must be inferred from data source
-}
-
 function namehash(name: string): Bytes {
   let node = Bytes.fromHexString("0x0000000000000000000000000000000000000000000000000000000000000000");
   if (name == "") return node;
@@ -41,20 +31,14 @@ function namehash(name: string): Bytes {
   return node;
 }
 
-// ─── Handlers ─────────────────────────────────────────────────────────────────
-
-export function handleNameRegistered(event: NameRegisteredEvent): void {
+function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   let label = event.params.name;
-  // The event emits the label only (e.g. "alice"), not the full domain.
-  // Determine TLD from the data source — this handler is for the arc controller.
-  let tld = "arc";
   let fullName = label + "." + tld;
   let nodeHash = namehash(fullName);
   let domainId = nodeHash.toHexString();
 
   let owner = getOrCreateAccount(event.params.owner);
 
-  // Create or update domain
   let domain = Domain.load(domainId);
   if (!domain) {
     domain = new Domain(domainId);
@@ -62,13 +46,13 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
     domain.label = event.params.label;
     domain.tld = tld;
     domain.registeredAt = event.block.timestamp;
+    domain.cost = event.params.cost;
   }
   domain.owner = owner.id;
   domain.expiresAt = event.params.expires;
   domain.cost = event.params.cost;
   domain.save();
 
-  // Create registration record
   let regId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
   let registration = new Registration(regId);
   registration.domain = domainId;
@@ -81,9 +65,8 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
   registration.save();
 }
 
-export function handleNameRenewed(event: NameRenewedEvent): void {
+function handleRenewal(event: NameRenewedEvent, tld: string): void {
   let label = event.params.name;
-  let tld = "arc";
   let fullName = label + "." + tld;
   let nodeHash = namehash(fullName);
   let domainId = nodeHash.toHexString();
@@ -103,4 +86,24 @@ export function handleNameRenewed(event: NameRenewedEvent): void {
   renewal.timestamp = event.block.timestamp;
   renewal.transactionHash = event.transaction.hash;
   renewal.save();
+}
+
+// ─── Arc handlers ─────────────────────────────────────────────────────────────
+
+export function handleNameRegistered(event: NameRegisteredEvent): void {
+  handleRegistration(event, "arc");
+}
+
+export function handleNameRenewed(event: NameRenewedEvent): void {
+  handleRenewal(event, "arc");
+}
+
+// ─── Circle handlers ──────────────────────────────────────────────────────────
+
+export function handleCircleNameRegistered(event: NameRegisteredEvent): void {
+  handleRegistration(event, "circle");
+}
+
+export function handleCircleNameRenewed(event: NameRenewedEvent): void {
+  handleRenewal(event, "circle");
 }

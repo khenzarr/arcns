@@ -2,6 +2,7 @@ specVersion: 0.0.5
 schema:
   file: ./schema.graphql
 dataSources:
+  # ── Arc Controller ──────────────────────────────────────────────────────────
   - kind: ethereum
     name: ArcNSRegistrarControllerV2
     network: arc-testnet
@@ -28,6 +29,34 @@ dataSources:
           handler: handleNameRenewed
       file: ./src/controller.ts
 
+  # ── Circle Controller ───────────────────────────────────────────────────────
+  - kind: ethereum
+    name: ArcNSCircleControllerV2
+    network: arc-testnet
+    source:
+      address: "0xfBFE553633AB91b6B32A0E6296341000Bf03DB95"
+      abi: ArcNSRegistrarControllerV2
+      startBlock: 38332349
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Domain
+        - Registration
+        - Renewal
+        - Account
+      abis:
+        - name: ArcNSRegistrarControllerV2
+          file: ./abis/ArcNSRegistrarControllerV2.json
+      eventHandlers:
+        - event: NameRegistered(string,bytes32 indexed,address indexed,uint256,uint256)
+          handler: handleCircleNameRegistered
+        - event: NameRenewed(string,bytes32 indexed,uint256,uint256)
+          handler: handleCircleNameRenewed
+      file: ./src/controller.ts
+
+  # ── Resolver ────────────────────────────────────────────────────────────────
   - kind: ethereum
     name: ArcNSResolverV2
     network: arc-testnet
@@ -54,3 +83,27 @@ dataSources:
         - event: NameChanged(bytes32 indexed,string)
           handler: handleNameChanged
       file: ./src/resolver.ts
+
+  # ── Registry ────────────────────────────────────────────────────────────────
+  - kind: ethereum
+    name: ArcNSRegistry
+    network: arc-testnet
+    source:
+      address: "0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a"
+      abi: ArcNSRegistry
+      startBlock: 38332349
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Domain
+      abis:
+        - name: ArcNSRegistry
+          file: ./abis/ArcNSRegistry.json
+      eventHandlers:
+        - event: Transfer(bytes32 indexed,address)
+          handler: handleTransfer
+        - event: NewResolver(bytes32 indexed,address)
+          handler: handleNewResolver
+      file: ./src/registry.ts
