@@ -1,0 +1,57 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: ArcNSRegistrarControllerV2
+    network: arc-testnet
+    source:
+      # Replace with deployed proxy address after deployment
+      address: "0x0000000000000000000000000000000000000000"
+      abi: ArcNSRegistrarControllerV2
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Domain
+        - Registration
+        - Renewal
+        - Account
+      abis:
+        - name: ArcNSRegistrarControllerV2
+          file: ./abis/ArcNSRegistrarControllerV2.json
+      eventHandlers:
+        - event: NameRegistered(string,bytes32 indexed,address indexed,uint256,uint256)
+          handler: handleNameRegistered
+        - event: NameRenewed(string,bytes32 indexed,uint256,uint256)
+          handler: handleNameRenewed
+      file: ./src/controller.ts
+
+  - kind: ethereum
+    name: ArcNSResolverV2
+    network: arc-testnet
+    source:
+      address: "0x0000000000000000000000000000000000000000"
+      abi: ArcNSResolverV2
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Domain
+        - AddrRecord
+        - TextRecord
+      abis:
+        - name: ArcNSResolverV2
+          file: ./abis/ArcNSResolverV2.json
+      eventHandlers:
+        - event: AddrChanged(bytes32 indexed,address)
+          handler: handleAddrChanged
+        - event: TextChanged(bytes32 indexed,string indexed,string,string)
+          handler: handleTextChanged
+        - event: NameChanged(bytes32 indexed,string)
+          handler: handleNameChanged
+      file: ./src/resolver.ts

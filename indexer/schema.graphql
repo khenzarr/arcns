@@ -1,0 +1,78 @@
+"""
+A registered ArcNS domain
+"""
+type Domain @entity {
+  id: ID!                    # namehash (bytes32 as hex)
+  name: String               # human-readable name e.g. "alice.arc"
+  label: Bytes!              # keccak256 of label
+  tld: String!               # "arc" or "circle"
+  owner: Account!
+  resolver: Bytes
+  registeredAt: BigInt!
+  expiresAt: BigInt!
+  cost: BigInt!
+  registrations: [Registration!]! @derivedFrom(field: "domain")
+  renewals: [Renewal!]! @derivedFrom(field: "domain")
+  addrRecord: AddrRecord
+  textRecords: [TextRecord!]! @derivedFrom(field: "domain")
+  reverseName: String
+}
+
+"""
+A registration event
+"""
+type Registration @entity {
+  id: ID!                    # txHash-logIndex
+  domain: Domain!
+  owner: Account!
+  cost: BigInt!
+  expiresAt: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+"""
+A renewal event
+"""
+type Renewal @entity {
+  id: ID!
+  domain: Domain!
+  cost: BigInt!
+  newExpiresAt: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+"""
+An account (wallet address)
+"""
+type Account @entity {
+  id: ID!                    # address as hex
+  domains: [Domain!]! @derivedFrom(field: "owner")
+  registrations: [Registration!]! @derivedFrom(field: "owner")
+}
+
+"""
+EVM address record for a domain
+"""
+type AddrRecord @entity {
+  id: ID!                    # domain id
+  domain: Domain!
+  addr: Bytes!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+"""
+Text record for a domain
+"""
+type TextRecord @entity {
+  id: ID!                    # domain id + key
+  domain: Domain!
+  key: String!
+  value: String!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}

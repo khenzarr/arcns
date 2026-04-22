@@ -1,0 +1,24 @@
+{
+  "network": "arc_testnet",
+  "chainId": 5042002,
+  "version": "v2",
+  "deployedAt": "2026-04-21T19:09:14.794Z",
+  "deployer": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D",
+  "contracts": {
+    "usdc": "0x3600000000000000000000000000000000000000",
+    "registry": "0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a",
+    "resolver": "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350",
+    "resolverImpl": "0xA637a1574dC4CF9da40D3B36B21eBaB301e64bC3",
+    "priceOracle": "0x18EE0175504e033D72486235F8A2552038EF4ce6",
+    "arcRegistrar": "0xb156d9726661E92C541e3a267ee8710Fdcd24969",
+    "circleRegistrar": "0xBdfF2790Dd72E86C3510Cc8374EaC5E2E0659c5e",
+    "reverseRegistrar": "0x97DEf95ADE4b67cD877725282d872d1eD2b4D489",
+    "treasury": "0xbbDF5bC7D63B1b7223556d4899905d56589A682d",
+    "arcController": "0x1bd377A2762510c00dd0ec2142E42829e7053C80",
+    "circleController": "0xfBFE553633AB91b6B32A0E6296341000Bf03DB95"
+  },
+  "namehashes": {
+    "arc": "0x9a7ad1c5d8b1c60ef156c6723dbf462681d6462768a9e60c53665d7fc1337bae",
+    "circle": "0xb3f3947bd9b363b1955fa597e342731ea6bde24d057527feb2cdfdeb807c2084"
+  }
+}

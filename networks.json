@@ -1,0 +1,8 @@
+{
+  "arc-testnet": {
+    "ArcNSController": {
+      "address": "0x1bd377A2762510c00dd0ec2142E42829e7053C80",
+      "startBlock": 38332349
+    }
+  }
+}
