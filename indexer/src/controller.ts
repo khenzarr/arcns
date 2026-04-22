@@ -18,8 +18,13 @@ function getOrCreateAccount(address: Bytes): Account {
 }
 
 function labelToTLD(name: string): string {
+  // The NameRegistered event emits the label (e.g. "alice"), not the full domain.
+  // TLD is determined from the contract source — both arc and circle controllers
+  // emit the same event structure. We derive TLD from the event source address.
+  // For now, default to "arc" — the resolver subgraph handles both.
   let parts = name.split(".");
-  return parts[parts.length - 1];
+  if (parts.length > 1) return parts[parts.length - 1];
+  return "arc"; // label-only event: TLD must be inferred from data source
 }
 
 function namehash(name: string): Bytes {
@@ -39,9 +44,11 @@ function namehash(name: string): Bytes {
 // ─── Handlers ─────────────────────────────────────────────────────────────────
 
 export function handleNameRegistered(event: NameRegisteredEvent): void {
-  let name = event.params.name;
-  let tld = labelToTLD(name);
-  let fullName = name + "." + tld;
+  let label = event.params.name;
+  // The event emits the label only (e.g. "alice"), not the full domain.
+  // Determine TLD from the data source — this handler is for the arc controller.
+  let tld = "arc";
+  let fullName = label + "." + tld;
   let nodeHash = namehash(fullName);
   let domainId = nodeHash.toHexString();
 
@@ -75,9 +82,9 @@ export function handleNameRegistered(event: NameRegisteredEvent): void {
 }
 
 export function handleNameRenewed(event: NameRenewedEvent): void {
-  let name = event.params.name;
-  let tld = labelToTLD(name);
-  let fullName = name + "." + tld;
+  let label = event.params.name;
+  let tld = "arc";
+  let fullName = label + "." + tld;
   let nodeHash = namehash(fullName);
   let domainId = nodeHash.toHexString();
 

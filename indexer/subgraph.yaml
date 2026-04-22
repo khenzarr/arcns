@@ -6,10 +6,9 @@ dataSources:
     name: ArcNSRegistrarControllerV2
     network: arc-testnet
     source:
-      # Replace with deployed proxy address after deployment
-      address: "0x0000000000000000000000000000000000000000"
+      address: "0x1bd377A2762510c00dd0ec2142E42829e7053C80"
       abi: ArcNSRegistrarControllerV2
-      startBlock: 0
+      startBlock: 38332349
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -33,9 +32,9 @@ dataSources:
     name: ArcNSResolverV2
     network: arc-testnet
     source:
-      address: "0x0000000000000000000000000000000000000000"
+      address: "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350"
       abi: ArcNSResolverV2
-      startBlock: 0
+      startBlock: 38332349
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

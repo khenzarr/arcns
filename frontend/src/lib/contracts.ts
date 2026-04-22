@@ -107,14 +107,14 @@ export const ERC20_ABI = parseAbi([
   "function transfer(address to, uint256 amount) returns (bool)",
 ]);
 
-// ─── Pricing tiers (Phase 20 model) — mirrors on-chain values ─────────────────
+// ─── Pricing tiers (mirrors deployed ArcNSPriceOracle on Arc Testnet) ─────────
 
 export const PRICE_TIERS = [
-  { chars: 1, label: "1 character",   annualUSDC: 49_990_000n },
-  { chars: 2, label: "2 characters",  annualUSDC: 24_990_000n },
-  { chars: 3, label: "3 characters",  annualUSDC: 14_990_000n },
-  { chars: 4, label: "4 characters",  annualUSDC:  9_990_000n },
-  { chars: 5, label: "5+ characters", annualUSDC:  1_990_000n },
+  { chars: 1, label: "1 character",   annualUSDC: 640_000_000n },  // $640/yr
+  { chars: 2, label: "2 characters",  annualUSDC: 160_000_000n },  // $160/yr
+  { chars: 3, label: "3 characters",  annualUSDC:  40_000_000n },  //  $40/yr
+  { chars: 4, label: "4 characters",  annualUSDC:  10_000_000n },  //  $10/yr
+  { chars: 5, label: "5+ characters", annualUSDC:   2_000_000n },  //   $2/yr
 ];
 
 export interface PriceTier {

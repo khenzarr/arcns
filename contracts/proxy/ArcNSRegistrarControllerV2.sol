@@ -45,7 +45,7 @@ contract ArcNSRegistrarControllerV2 is
     uint256 public constant MIN_REGISTRATION_DURATION = 28 days;
     uint256 public constant MIN_COMMITMENT_AGE        = 60;
     uint256 public constant MAX_COMMITMENT_AGE        = 24 hours;
-    uint256 public constant MIN_NAME_LENGTH           = 3;
+    uint256 public constant MIN_NAME_LENGTH           = 1;
 
     // ─── State ────────────────────────────────────────────────────────────────
     ArcNSBaseRegistrar  public base;
@@ -172,6 +172,8 @@ contract ArcNSRegistrarControllerV2 is
 
         if (resolverAddr != address(0)) {
             expires = base.registerWithResolver(tokenId, owner_, duration, resolverAddr);
+            // Set addr record so resolver.addr(node) returns the owner immediately
+            ArcNSResolverV2(resolverAddr).setAddr(nodehash, owner_);
             if (data.length > 0) {
                 _setRecords(resolverAddr, nodehash, data);
             }
@@ -257,14 +259,13 @@ contract ArcNSRegistrarControllerV2 is
     function _validName(string memory name_) internal pure returns (bool) {
         bytes memory b = bytes(name_);
         if (b.length < MIN_NAME_LENGTH) return false;
-        // FIX I-01: single-pass validation
         for (uint256 i = 0; i < b.length; i++) {
             bytes1 c = b[i];
             bool valid = (c >= 0x61 && c <= 0x7A) ||
                          (c >= 0x30 && c <= 0x39) ||
                          (c == 0x2D);
             if (!valid) return false;
-            // No leading/trailing hyphen
+            // No leading/trailing hyphen (only relevant for multi-char names)
             if (c == 0x2D && (i == 0 || i == b.length - 1)) return false;
         }
         return true;

@@ -95,12 +95,12 @@ export function daysUntilExpiry(expiryTimestamp: bigint): number {
   return Math.floor((Number(expiryTimestamp) - now) / 86400);
 }
 
-// ─── Phase 20: Pricing table ──────────────────────────────────────────────────
+// ─── Phase 20: Pricing table (mirrors deployed ArcNSPriceOracle) ─────────────
 
 export const PRICING_TABLE = [
-  { len: "5+ characters", price: "$1.99 / year",  annual: 1_990_000n },
-  { len: "4 characters",  price: "$9.99 / year",  annual: 9_990_000n },
-  { len: "3 characters",  price: "$14.99 / year", annual: 14_990_000n },
-  { len: "2 characters",  price: "$24.99 / year", annual: 24_990_000n },
-  { len: "1 character",   price: "$49.99 / year", annual: 49_990_000n },
+  { len: "5+ characters", price: "$2.00 / year",   annual: 2_000_000n },
+  { len: "4 characters",  price: "$10.00 / year",  annual: 10_000_000n },
+  { len: "3 characters",  price: "$40.00 / year",  annual: 40_000_000n },
+  { len: "2 characters",  price: "$160.00 / year", annual: 160_000_000n },
+  { len: "1 character",   price: "$640.00 / year", annual: 640_000_000n },
 ];
