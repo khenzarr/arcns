@@ -2,9 +2,19 @@
 
 import { useAccount } from "wagmi";
 import { useState } from "react";
-import { usePortfolio, useExpiryAlerts, useBulkRenew, useRentPriceV2 } from "../hooks/useArcNSV2";
+import { usePortfolio, useExpiryAlerts, useBulkRenew } from "../hooks/useArcNSV2";
 import { formatUSDC, DURATION_OPTIONS } from "../lib/namehash";
 import { GQLDomain } from "../lib/graphql";
+
+// ─── Safe BigInt — never crashes on undefined/null/invalid values ─────────────
+function safeBigInt(value: unknown): bigint {
+  try {
+    if (value === undefined || value === null || value === "") return 0n;
+    return BigInt(value as string);
+  } catch {
+    return 0n;
+  }
+}
 
 export default function Portfolio() {
   const { address, isConnected } = useAccount();
@@ -34,8 +44,8 @@ export default function Portfolio() {
       .filter(d => selected.has(d.id))
       .map(d => ({
         label: d.name.split(".")[0],
-        tld: d.tld as "arc" | "circle",
-        cost: BigInt(d.cost),
+        tld: (d.registrationType === "ARC" ? "arc" : "circle") as "arc" | "circle",
+        cost: safeBigInt(d.lastCost),
       }));
     bulkRenew(toRenew, duration);
   };
@@ -188,7 +198,7 @@ function DomainRow({
       </div>
       <div className="text-right text-sm text-gray-500 shrink-0">
         <p>{isExpired ? "Expired" : new Date(expiresAt * 1000).toLocaleDateString()}</p>
-        <p className="text-xs">{formatUSDC(BigInt(domain.cost))}</p>
+        <p className="text-xs">{formatUSDC(safeBigInt(domain.lastCost))}</p>
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ export default function TransactionHistory() {
           {history.map(tx => (
             <tr key={tx.id} className="hover:bg-gray-50 transition-colors">
               <td className="px-4 py-3 font-medium text-gray-900">{tx.domain.name}</td>
-              <td className="px-4 py-3 text-right text-gray-600">{formatUSDC(BigInt(tx.cost))}</td>
+              <td className="px-4 py-3 text-right text-gray-600">{formatUSDC(tx.cost ? BigInt(tx.cost) : 0n)}</td>
               <td className="px-4 py-3 text-right text-gray-500">
                 {new Date(Number(tx.timestamp) * 1000).toLocaleDateString()}
               </td>

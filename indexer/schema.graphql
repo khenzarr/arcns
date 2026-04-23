@@ -19,6 +19,8 @@ type Domain @entity(immutable: false) {
   resolver: Bytes              # resolver contract address
   createdAt: BigInt!
   expiry: BigInt!
+  lastCost: BigInt             # most recent registration or renewal cost (USDC)
+  resolvedAddress: Bytes       # latest resolved EVM address (mirrors ResolverRecord.addr)
   registrationType: RegistrationType!
   resolverRecord: ResolverRecord
   registrations: [Registration!]! @derivedFrom(field: "domain")

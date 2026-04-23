@@ -41,6 +41,8 @@ export interface GQLDomain {
   resolver: string | null;
   createdAt: string;
   expiry: string;
+  lastCost: string | null;
+  resolvedAddress: string | null;
   registrationType: "ARC" | "CIRCLE";
   resolverRecord: {
     addr: string | null;
@@ -72,6 +74,7 @@ const DOMAIN_FIELDS = `
   owner { id }
   resolver
   createdAt expiry registrationType
+  lastCost resolvedAddress
   resolverRecord { addr contenthash texts }
 `;
 
@@ -145,3 +148,82 @@ export async function getExpiringDomains(
 // Legacy compat exports
 export type { GQLDomain as GQLDomainLegacy };
 export const getDomain = getDomainByName;
+
+// ─── Resolution API helpers ───────────────────────────────────────────────────
+
+/** Resolve name → address (subgraph first, RPC fallback) */
+export async function resolveName(name: string): Promise<{
+  address: string | null;
+  owner: string | null;
+  expiry: string | null;
+  source: "subgraph" | "rpc" | null;
+}> {
+  // Try subgraph
+  const domain = await getDomainByName(name);
+  if (domain) {
+    const address = domain.resolvedAddress ?? domain.resolverRecord?.addr ?? null;
+    return { address, owner: domain.owner?.id ?? null, expiry: domain.expiry, source: "subgraph" };
+  }
+  // Fallback: RPC
+  try {
+    const { publicClient } = await import("./publicClient");
+    const { namehash } = await import("./namehash");
+    const { CONTRACTS } = await import("./contracts");
+    const node = namehash(name) as `0x${string}`;
+    const ZERO = "0x0000000000000000000000000000000000000000";
+    const resolverAddr = await publicClient.readContract({
+      address: CONTRACTS.registry,
+      abi: [{ name: "resolver", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
+      functionName: "resolver", args: [node],
+    }) as string;
+    if (!resolverAddr || resolverAddr === ZERO) return { address: null, owner: null, expiry: null, source: null };
+    const owner = await publicClient.readContract({
+      address: CONTRACTS.registry,
+      abi: [{ name: "owner", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
+      functionName: "owner", args: [node],
+    }) as string;
+    const addr = await publicClient.readContract({
+      address: resolverAddr as `0x${string}`,
+      abi: [{ name: "addr", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
+      functionName: "addr", args: [node],
+    }) as string;
+    return {
+      address: addr && addr !== ZERO ? addr : null,
+      owner: owner && owner !== ZERO ? owner : null,
+      expiry: null,
+      source: "rpc",
+    };
+  } catch { return { address: null, owner: null, expiry: null, source: null }; }
+}
+
+/** Resolve address → primary name (subgraph first, RPC fallback) */
+export async function resolveAddress(address: string): Promise<{
+  name: string | null;
+  source: "subgraph" | "rpc" | null;
+}> {
+  // Try subgraph reverse record
+  const rev = await getReverseRecord(address);
+  if (rev?.name) return { name: rev.name, source: "subgraph" };
+  // Fallback: RPC
+  try {
+    const { publicClient } = await import("./publicClient");
+    const { CONTRACTS } = await import("./contracts");
+    const hexAddr = address.toLowerCase().replace("0x", "");
+    const reverseNode = `${hexAddr}.addr.reverse`;
+    const { namehash } = await import("./namehash");
+    const node = namehash(reverseNode) as `0x${string}`;
+    const ZERO = "0x0000000000000000000000000000000000000000";
+    const resolverAddr = await publicClient.readContract({
+      address: CONTRACTS.registry,
+      abi: [{ name: "resolver", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
+      functionName: "resolver", args: [node],
+    }) as string;
+    if (!resolverAddr || resolverAddr === ZERO) return { name: null, source: null };
+    const name = await publicClient.readContract({
+      address: resolverAddr as `0x${string}`,
+      abi: [{ name: "name", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "string" as const }] }],
+      functionName: "name", args: [node],
+    }) as string;
+    return { name: name && name.length > 0 ? name : null, source: "rpc" };
+  } catch { return { name: null, source: null }; }
+}

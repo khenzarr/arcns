@@ -69,6 +69,7 @@ function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   // Always overwrite mutable fields with latest event values
   domain.owner = getOrCreateAccount(event.params.owner).id;
   domain.expiry = event.params.expires;
+  domain.lastCost = event.params.cost;
   domain.save();
 
   // Ensure Account exists
@@ -115,8 +116,9 @@ function handleRenewal(event: NameRenewedEvent, tld: string): void {
   let domain = Domain.load(domainId);
   if (!domain) return; // domain must exist before we can renew or emit events
 
-  // Idempotent: always update expiry — latest event wins
+  // Idempotent: always update expiry and lastCost — latest event wins
   domain.expiry = event.params.expires;
+  domain.lastCost = event.params.cost;
   domain.save();
 
   // Create DomainEvent record for RENEW

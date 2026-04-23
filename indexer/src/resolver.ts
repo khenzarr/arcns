@@ -27,10 +27,11 @@ export function handleAddrChanged(event: AddrChangedEvent): void {
   record.timestamp = event.block.timestamp;
   record.save();
 
-  // Link to Domain if it exists
+  // Link to Domain if it exists — also mirror resolvedAddress for fast queries
   let domain = Domain.load(nodeHex);
   if (domain) {
     domain.resolverRecord = nodeHex;
+    domain.resolvedAddress = event.params.a;
     domain.save();
   }
 }
