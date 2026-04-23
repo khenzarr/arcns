@@ -393,16 +393,23 @@ export function useRegistration() {
       crypto.getRandomValues(secretBytes);
       const secret = `0x${Array.from(secretBytes).map(b => b.toString(16).padStart(2, "0")).join("")}` as `0x${string}`;
 
-      // Use contract as source of truth — never compute hash on frontend
+      // Use contract as source of truth — 7-param overload, msg.sender = address
       const { publicClient } = await import("../lib/publicClient");
-      const commitment = await publicClient.readContract({
-        address: controller,
-        abi: CONTROLLER_ABI,
-        functionName: "makeCommitment",
-        args: [label, address, duration, secret, resolverAddr, [], setReverse, address],
-      }) as `0x${string}`;
+      let commitment: `0x${string}`;
+      try {
+        commitment = await publicClient.readContract({
+          address: controller,
+          abi: CONTROLLER_ABI,
+          functionName: "makeCommitment",
+          args: [label, address, duration, secret, resolverAddr, [], setReverse],
+          account: address, // simulate as the user so msg.sender is correct
+        }) as `0x${string}`;
+      } catch (e) {
+        console.error("[ArcNS] makeCommitment failed", e);
+        throw e;
+      }
 
-      console.log("[ArcNS] commitment args:", { label, owner: address, duration, secret, resolverAddr, data: [], setReverse, caller: address });
+      console.log("[ArcNS] commitment args:", { label, owner: address, duration, secret, resolverAddr, data: [], setReverse });
       console.log("[ArcNS] commitment hash:", commitment);
 
       await writeContractAsync({

@@ -96,6 +96,9 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
         bool            reverseRecord,
         address         caller
     ) public view returns (bytes32) {
+        require(bytes(name_).length >= 1, "Controller: name too short");
+        require(owner_ != address(0),     "Controller: invalid owner");
+        require(duration > 0,             "Controller: invalid duration");
         bytes32 label = keccak256(bytes(name_));
         return keccak256(abi.encode(
             label, owner_, duration, secret, resolverAddr, data, reverseRecord,

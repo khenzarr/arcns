@@ -1,8 +1,6 @@
 /// ArcNS V2 — Contract addresses and ABIs
 /// All addresses match deployed contracts on Arc Testnet (Chain ID: 5042002)
 
-import { parseAbi } from "viem";
-
 // ─── Addresses ────────────────────────────────────────────────────────────────
 
 export const CONTRACTS = {
@@ -19,26 +17,145 @@ export const CONTRACTS = {
 } as const;
 
 // ─── V2 Controller ABI — matches ArcNSRegistrarController ────────────────────
+// IMPORTANT: Only expose the 7-param makeCommitment overload.
+// The contract uses msg.sender internally — publicClient simulates from the
+// connected wallet address, so the hash matches what register() validates.
 
-export const CONTROLLER_ABI = parseAbi([
-  "function available(string name) view returns (bool)",
-  "function rentPrice(string name, uint256 duration) view returns (uint256, uint256)",
-  // 8-param overload: explicit caller binding (chainId + address(this) included on-chain)
-  "function makeCommitment(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord, address caller) view returns (bytes32)",
-  // 7-param convenience overload: uses msg.sender as caller
-  "function makeCommitment(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord) view returns (bytes32)",
-  "function commit(bytes32 commitment)",
-  "function register(string name, address owner, uint256 duration, bytes32 secret, address resolver, bytes[] data, bool reverseRecord)",
-  "function renew(string name, uint256 duration)",
-  "function commitments(bytes32) view returns (uint256)",
-  "function MIN_COMMITMENT_AGE() view returns (uint256)",
-  "function MAX_COMMITMENT_AGE() view returns (uint256)",
-  "function MIN_REGISTRATION_DURATION() view returns (uint256)",
-  "function MAX_REGISTRATION_DURATION() view returns (uint256)",
-  "event NameRegistered(string name, bytes32 indexed label, address indexed owner, uint256 cost, uint256 expires)",
-  "event NameRenewed(string name, bytes32 indexed label, uint256 cost, uint256 expires)",
-  "event CommitmentMade(bytes32 indexed commitment)",
-]);
+export const CONTROLLER_ABI = [
+  {
+    name: "available",
+    type: "function" as const,
+    stateMutability: "view" as const,
+    inputs: [{ name: "name", type: "string" as const }],
+    outputs: [{ name: "", type: "bool" as const }],
+  },
+  {
+    name: "rentPrice",
+    type: "function" as const,
+    stateMutability: "view" as const,
+    inputs: [
+      { name: "name", type: "string" as const },
+      { name: "duration", type: "uint256" as const },
+    ],
+    outputs: [
+      { type: "tuple" as const, components: [
+        { name: "base",    type: "uint256" as const },
+        { name: "premium", type: "uint256" as const },
+      ]},
+    ],
+  },
+  {
+    // 7-param overload only — contract uses msg.sender internally
+    name: "makeCommitment",
+    type: "function" as const,
+    stateMutability: "view" as const,
+    inputs: [
+      { name: "name",          type: "string"  as const },
+      { name: "owner",         type: "address" as const },
+      { name: "duration",      type: "uint256" as const },
+      { name: "secret",        type: "bytes32" as const },
+      { name: "resolver",      type: "address" as const },
+      { name: "data",          type: "bytes[]" as const },
+      { name: "reverseRecord", type: "bool"    as const },
+    ],
+    outputs: [{ name: "", type: "bytes32" as const }],
+  },
+  {
+    name: "commit",
+    type: "function" as const,
+    stateMutability: "nonpayable" as const,
+    inputs: [{ name: "commitment", type: "bytes32" as const }],
+    outputs: [],
+  },
+  {
+    name: "register",
+    type: "function" as const,
+    stateMutability: "nonpayable" as const,
+    inputs: [
+      { name: "name",          type: "string"  as const },
+      { name: "owner",         type: "address" as const },
+      { name: "duration",      type: "uint256" as const },
+      { name: "secret",        type: "bytes32" as const },
+      { name: "resolver",      type: "address" as const },
+      { name: "data",          type: "bytes[]" as const },
+      { name: "reverseRecord", type: "bool"    as const },
+    ],
+    outputs: [],
+  },
+  {
+    name: "renew",
+    type: "function" as const,
+    stateMutability: "nonpayable" as const,
+    inputs: [
+      { name: "name",     type: "string"  as const },
+      { name: "duration", type: "uint256" as const },
+    ],
+    outputs: [],
+  },
+  {
+    name: "commitments",
+    type: "function" as const,
+    stateMutability: "view" as const,
+    inputs: [{ name: "", type: "bytes32" as const }],
+    outputs: [{ name: "", type: "uint256" as const }],
+  },
+  {
+    name: "MIN_COMMITMENT_AGE",
+    type: "function" as const,
+    stateMutability: "view" as const,
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" as const }],
+  },
+  {
+    name: "MAX_COMMITMENT_AGE",
+    type: "function" as const,
+    stateMutability: "view" as const,
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" as const }],
+  },
+  {
+    name: "MIN_REGISTRATION_DURATION",
+    type: "function" as const,
+    stateMutability: "view" as const,
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" as const }],
+  },
+  {
+    name: "MAX_REGISTRATION_DURATION",
+    type: "function" as const,
+    stateMutability: "view" as const,
+    inputs: [],
+    outputs: [{ name: "", type: "uint256" as const }],
+  },
+  {
+    name: "NameRegistered",
+    type: "event" as const,
+    inputs: [
+      { name: "name",    type: "string"  as const, indexed: false },
+      { name: "label",   type: "bytes32" as const, indexed: true  },
+      { name: "owner",   type: "address" as const, indexed: true  },
+      { name: "cost",    type: "uint256" as const, indexed: false },
+      { name: "expires", type: "uint256" as const, indexed: false },
+    ],
+  },
+  {
+    name: "NameRenewed",
+    type: "event" as const,
+    inputs: [
+      { name: "name",    type: "string"  as const, indexed: false },
+      { name: "label",   type: "bytes32" as const, indexed: true  },
+      { name: "cost",    type: "uint256" as const, indexed: false },
+      { name: "expires", type: "uint256" as const, indexed: false },
+    ],
+  },
+  {
+    name: "CommitmentMade",
+    type: "event" as const,
+    inputs: [
+      { name: "commitment", type: "bytes32" as const, indexed: true },
+    ],
+  },
+] as const;
 
 // ─── Registry ABI ─────────────────────────────────────────────────────────────
 
