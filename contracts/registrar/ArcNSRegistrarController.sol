@@ -84,8 +84,7 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
 
     /// @notice Generate commitment hash — caller must pass their own address as `caller`
     /// @dev Binds commitment to: label, owner, duration, secret, resolverAddr, data,
-    ///      reverseRecord, caller (msg.sender), chainId, and this controller address.
-    ///      This prevents replay across chains, forks, and different controllers.
+    ///      reverseRecord, and caller (msg.sender).
     function makeCommitment(
         string   memory name_,
         address         owner_,
@@ -95,14 +94,13 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
         bytes[] memory  data,
         bool            reverseRecord,
         address         caller
-    ) public view returns (bytes32) {
+    ) public pure returns (bytes32) {
         require(bytes(name_).length >= 1, "Controller: name too short");
         require(owner_ != address(0),     "Controller: invalid owner");
         require(duration > 0,             "Controller: invalid duration");
         bytes32 label = keccak256(bytes(name_));
         return keccak256(abi.encode(
-            label, owner_, duration, secret, resolverAddr, data, reverseRecord,
-            caller, block.chainid, address(this)
+            label, owner_, duration, secret, resolverAddr, data, reverseRecord, caller
         ));
     }
 

@@ -385,15 +385,25 @@ export function useRegistration() {
     setResult(null);
 
     const controller = tld === "arc" ? CONTRACTS.arcController : CONTRACTS.circleController;
-    const maxCost = totalCost + (totalCost * 500n) / 10000n; // 5% slippage
+    const ZERO_ADDR = "0x0000000000000000000000000000000000000000" as `0x${string}`;
 
     try {
       setStep("committing");
+
+      // Generate stable secret — stored in closure, same value used in commit + register
       const secretBytes = new Uint8Array(32);
       crypto.getRandomValues(secretBytes);
       const secret = `0x${Array.from(secretBytes).map(b => b.toString(16).padStart(2, "0")).join("")}` as `0x${string}`;
 
-      // Use contract as source of truth — 7-param overload, msg.sender = address
+      // Use zero address as resolver to avoid _setRecords complexity during testing
+      const resolverForCommit = resolverAddr ?? ZERO_ADDR;
+
+      console.log("[ArcNS] REGISTER ARGS:", {
+        label, owner: address, duration: duration.toString(),
+        secret, resolver: resolverForCommit, data: [], reverseRecord: setReverse,
+      });
+
+      // ── Step 1: Get commitment hash from contract (source of truth) ──────
       const { publicClient } = await import("../lib/publicClient");
       let commitment: `0x${string}`;
       try {
@@ -401,24 +411,37 @@ export function useRegistration() {
           address: controller,
           abi: CONTROLLER_ABI,
           functionName: "makeCommitment",
-          args: [label, address, duration, secret, resolverAddr, [], setReverse],
-          account: address, // simulate as the user so msg.sender is correct
+          args: [label, address, duration, secret, resolverForCommit, [], setReverse],
+          account: address,
         }) as `0x${string}`;
+        console.log("[ArcNS] COMMITMENT HASH:", commitment);
       } catch (e) {
-        console.error("[ArcNS] makeCommitment failed", e);
-        throw e;
+        console.error("[ArcNS] makeCommitment FAILED:", e);
+        throw new Error(`makeCommitment failed: ${(e as any)?.shortMessage || (e as any)?.message}`);
       }
 
-      console.log("[ArcNS] commitment args:", { label, owner: address, duration, secret, resolverAddr, data: [], setReverse });
-      console.log("[ArcNS] commitment hash:", commitment);
+      // ── Step 2: Check allowance before committing ─────────────────────────
+      const allowance = await publicClient.readContract({
+        address: CONTRACTS.usdc,
+        abi: ERC20_ABI,
+        functionName: "allowance",
+        args: [address, controller],
+      }) as bigint;
+      console.log("[ArcNS] ALLOWANCE:", allowance.toString(), "NEEDED:", totalCost.toString());
+      if (allowance < totalCost) {
+        throw new Error(`Insufficient USDC allowance. Have: ${allowance}, Need: ${totalCost}. Please approve first.`);
+      }
 
+      // ── Step 3: Submit commit tx ──────────────────────────────────────────
       await writeContractAsync({
         address: controller,
         abi: CONTROLLER_ABI,
         functionName: "commit",
         args: [commitment],
       });
+      console.log("[ArcNS] commit() sent");
 
+      // ── Step 4: Wait MIN_COMMITMENT_AGE (65s) ─────────────────────────────
       setStep("waiting");
       setWaitProgress(0);
       await new Promise<void>(resolve => {
@@ -430,13 +453,43 @@ export function useRegistration() {
         }, 1000);
       });
 
+      // ── Step 5: Verify commitment is on-chain before registering ──────────
+      const commitTs = await publicClient.readContract({
+        address: controller,
+        abi: CONTROLLER_ABI,
+        functionName: "commitments",
+        args: [commitment],
+      }) as bigint;
+      console.log("[ArcNS] COMMITMENT TIMESTAMP on-chain:", commitTs.toString());
+      if (commitTs === 0n) {
+        throw new Error("Commitment not found on-chain. commit() may have failed or wrong hash.");
+      }
+
+      // ── Step 6: Simulate register before sending ──────────────────────────
       setStep("registering");
+      try {
+        await publicClient.simulateContract({
+          address: controller,
+          abi: CONTROLLER_ABI,
+          functionName: "register",
+          args: [label, address, duration, secret, resolverForCommit, [], setReverse],
+          account: address,
+        });
+        console.log("[ArcNS] simulateContract register: OK");
+      } catch (simErr: any) {
+        const reason = simErr?.cause?.reason || simErr?.shortMessage || simErr?.message || "simulation failed";
+        console.error("[ArcNS] simulateContract register FAILED:", reason, simErr);
+        throw new Error(`Register simulation failed: ${reason}`);
+      }
+
+      // ── Step 7: Send register tx ──────────────────────────────────────────
       const tx = await writeContractAsync({
         address: controller,
         abi: CONTROLLER_ABI,
         functionName: "register",
-        args: [label, address, duration, secret, resolverAddr, [], setReverse],
+        args: [label, address, duration, secret, resolverForCommit, [], setReverse],
       });
+      console.log("[ArcNS] register() tx:", tx);
 
       setResult({
         txHash: tx,
@@ -448,6 +501,7 @@ export function useRegistration() {
       setStep("done");
     } catch (e: any) {
       const msg = e.shortMessage || e.message || "Registration failed";
+      console.error("[ArcNS] register error:", msg, e);
       setError(msg.includes("user rejected") ? "Transaction cancelled" : msg);
       setStep("error");
     }
