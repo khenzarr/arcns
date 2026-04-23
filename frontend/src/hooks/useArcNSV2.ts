@@ -1,7 +1,6 @@
 "use client";
 import { useReadContract, useWriteContract, useAccount } from "wagmi";
 import { useState, useCallback, useEffect } from "react";
-import { keccak256, stringToBytes, encodeAbiParameters } from "viem";
 import {
   CONTRACTS, CONTROLLER_ABI, REGISTRAR_ABI, ERC20_ABI,
 } from "../lib/contracts";
@@ -136,17 +135,18 @@ export function useRegistrationV2() {
       const secretBytes = new Uint8Array(32);
       crypto.getRandomValues(secretBytes);
       const secret = `0x${Array.from(secretBytes).map(b => b.toString(16).padStart(2, "0")).join("")}` as `0x${string}`;
-      const labelHash = keccak256(stringToBytes(label));
-      // Commitment binds to: caller, chainId, controller address — matches on-chain makeCommitment
-      const chainId = BigInt(5042002); // Arc Testnet — must match block.chainid on-chain
-      const commitment = keccak256(encodeAbiParameters(
-        [
-          { type: "bytes32" }, { type: "address" }, { type: "uint256" },
-          { type: "bytes32" }, { type: "address" }, { type: "bytes[]" }, { type: "bool" },
-          { type: "address" }, { type: "uint256" }, { type: "address" },
-        ],
-        [labelHash, address, duration, secret, resolverAddr, [], setReverse, address, chainId, controller]
-      ));
+
+      // Use contract as source of truth — never compute hash on frontend
+      const { publicClient } = await import("../lib/publicClient");
+      const commitment = await publicClient.readContract({
+        address: controller,
+        abi: CONTROLLER_ABI,
+        functionName: "makeCommitment",
+        args: [label, address, duration, secret, resolverAddr, [], setReverse, address],
+      }) as `0x${string}`;
+
+      console.log("[ArcNS] commitment args:", { label, owner: address, duration, secret, resolverAddr, data: [], setReverse, caller: address });
+      console.log("[ArcNS] commitment hash:", commitment);
 
       await writeContractAsync({
         address: controller,
