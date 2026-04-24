@@ -1,18 +1,17 @@
-import { createConfig, http, fallback } from "wagmi";
-import { injected, walletConnect } from "wagmi/connectors";
-import { arcTestnet } from "./chains";
-
 /**
  * Wagmi config — connectors:
- *   1. injected  — MetaMask browser extension (no SDK, no RN deps)
+ *   1. injected     — MetaMask and other browser extension wallets
  *   2. walletConnect — all WC-compatible wallets (Rainbow, Trust, etc.)
  *
- * Deliberately avoids @metamask/sdk to prevent:
- *   - @react-native-async-storage/async-storage build errors
- *   - pino-pretty missing module errors
- *
- * Uses fallback transport so wallet txs never fail due to a single RPC outage.
+ * Transport:
+ *   Wagmi public transport for Arc Testnet is intentionally pinned to the
+ *   primary RPC so read topology is deterministic. Optional secondary RPCs are
+ *   used by detached fallback clients elsewhere for non-critical reads only.
  */
+import { createConfig, http } from "wagmi";
+import { injected, walletConnect } from "wagmi/connectors";
+import { ARC_TESTNET_PRIMARY_RPC_URL, arcTestnet } from "./chains";
+
 export const wagmiConfig = createConfig({
   chains: [arcTestnet],
   connectors: [
@@ -29,11 +28,11 @@ export const wagmiConfig = createConfig({
     }),
   ],
   transports: {
-    [arcTestnet.id]: fallback([
-      http("https://rpc.testnet.arc.network"),
-      http("https://rpc.blockdaemon.testnet.arc.network"),
-      http("https://rpc.quicknode.testnet.arc.network"),
-    ], { rank: false }),
+    [arcTestnet.id]: http(ARC_TESTNET_PRIMARY_RPC_URL, {
+      timeout: 10_000,
+      retryCount: 2,
+      retryDelay: 1_000,
+    }),
   },
   ssr: true,
 });

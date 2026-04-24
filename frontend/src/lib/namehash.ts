@@ -1,4 +1,4 @@
-import { keccak256, stringToBytes, concat } from "viem";
+import { keccak256, stringToBytes, concat, encodeAbiParameters } from "viem";
 
 /// ENS-compatible namehash implementation
 export function namehash(name: string): `0x${string}` {
@@ -16,6 +16,42 @@ export function namehash(name: string): `0x${string}` {
 /// Returns the label hash (keccak256 of the label string)
 export function labelHash(label: string): `0x${string}` {
   return keccak256(stringToBytes(label));
+}
+
+/**
+ * Compute the V2 controller commitment hash client-side.
+ *
+ * Mirrors ArcNSRegistrarControllerV2.makeCommitmentWithSender:
+ *   keccak256(abi.encode(labelHash, owner, duration, secret, resolverAddr, data, reverseRecord, sender))
+ *
+ * Computing this locally avoids an RPC round-trip to a pure function and
+ * eliminates proxy-delegatecall failures that can occur on some RPC nodes.
+ */
+export function makeCommitmentHash(
+  name: string,
+  owner: `0x${string}`,
+  duration: bigint,
+  secret: `0x${string}`,
+  resolverAddr: `0x${string}`,
+  data: `0x${string}`[],
+  reverseRecord: boolean,
+  sender: `0x${string}`,
+): `0x${string}` {
+  const label = keccak256(stringToBytes(name));
+  const encoded = encodeAbiParameters(
+    [
+      { type: "bytes32" },           // label = keccak256(name)
+      { type: "address" },           // owner
+      { type: "uint256" },           // duration
+      { type: "bytes32" },           // secret
+      { type: "address" },           // resolverAddr
+      { type: "bytes[]"  },          // data
+      { type: "bool"    },           // reverseRecord
+      { type: "address" },           // sender (msg.sender binding)
+    ],
+    [label, owner, duration, secret, resolverAddr, data, reverseRecord, sender],
+  );
+  return keccak256(encoded);
 }
 
 /// Returns the token ID (uint256 of label hash) for a given label

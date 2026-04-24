@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import { useAccount } from "wagmi";
 import {
-  useNameExpiry, useRegistration, useRenewal,
+  useNameExpiry, useRenewal,
 } from "../hooks/useArcNS";
+import { useRegistrationPipeline } from "../hooks/useRegistrationPipeline";
 import { useDomainResolutionPipeline } from "../hooks/useDomainResolutionPipeline";
 import { CONTRACTS, getPriceTier } from "../lib/contracts";
 import {
@@ -129,7 +130,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
   const priceTier = getPriceTier(label);
 
   // ── Registration / renewal ──
-  const { register, approveUsdc, step, error: regError, result, waitProgress, reset } = useRegistration();
+  const { register, approveUsdc, step, error: regError, result, waitProgress, reset } = useRegistrationPipeline();
   const { renew, loading: renewLoading, error: renewError } = useRenewal();
 
   // ── Expiry (display only — not in pipeline) ──
@@ -145,7 +146,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
 
   return (
     <>
-      {step === "done" && result ? (
+      {step === "success" && result ? (
         <SuccessModal result={result} onClose={reset} onSetPrimary={reset} />
       ) : null}
 
@@ -311,13 +312,15 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             // ── Step 2: Register ─────────────────────────────────────────────
             <button
               onClick={() => register(label, tld, duration, CONTRACTS.resolver, setReverse, totalCost)}
-              disabled={(step !== "idle" && step !== "error") || !sufficient}
+              disabled={(step !== "idle" && step !== "failed") || !sufficient}
               className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
             >
               {step === "committing"   ? "Submitting commitment…"
+              : step === "committed"   ? "Commitment confirmed…"
               : step === "waiting"     ? `Waiting… ${waitProgress}%`
+              : step === "ready"       ? "Ready to register…"
               : step === "registering" ? "Registering on-chain…"
-              : step === "done"        ? "✓ Registered!"
+              : step === "success"     ? "✓ Registered!"
               : `Register ${label}.${tld} · ${formatUSDC(totalCost)}`}
             </button>
           )
@@ -348,8 +351,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           )
         )}
 
-        {/* ── Wait progress bar ── */}
-        {step === "waiting" ? (
+        {step !== "idle" && step !== "success" && step !== "failed" ? (
           <div className="mt-3">
             <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
               <div
@@ -357,14 +359,16 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
                 style={{ width: `${waitProgress}%` }}
               />
             </div>
-            <p className="text-xs text-gray-400 mt-1.5 text-center">
-              Anti-frontrun protection — {Math.ceil((65 * (100 - waitProgress)) / 100)}s remaining
-            </p>
+            {step === "waiting" ? (
+              <p className="text-xs text-gray-400 mt-1.5 text-center">
+                Anti-frontrun protection — waiting for on-chain maturity
+              </p>
+            ) : null}
           </div>
         ) : null}
 
         {/* ── Step dots ── */}
-        {step !== "idle" && step !== "done" && step !== "error" ? (
+        {step !== "idle" && step !== "success" && step !== "failed" ? (
           <div className="flex justify-center gap-2 mt-4">
             {STEPS.map(s => (
               <div key={s} className={`w-2 h-2 rounded-full transition-colors ${

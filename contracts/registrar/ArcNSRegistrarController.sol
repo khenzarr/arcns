@@ -216,8 +216,9 @@ contract ArcNSRegistrarController is Ownable, ReentrancyGuard {
 
     function _validateCommitment(bytes32 commitment) internal {
         require(commitments[commitment] != 0,                                                    "Controller: commitment not found");
-        require(commitments[commitment] + MIN_COMMITMENT_AGE <= block.timestamp, "Controller: commitment too new");
-        require(commitments[commitment] + MAX_COMMITMENT_AGE > block.timestamp,  "Controller: commitment expired");
+        uint256 commitTs = commitments[commitment];
+        require(block.timestamp >= commitTs + MIN_COMMITMENT_AGE,                               "Controller: commitment too young");
+        require(block.timestamp <= commitTs + MAX_COMMITMENT_AGE,                               "Controller: commitment expired");
         delete commitments[commitment];
     }
 

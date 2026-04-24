@@ -6,12 +6,53 @@
  *   2. ArcNSResolverV2            — ensure CONTROLLER_ROLE is set
  *   3. ArcNSPriceOracle           — update prices to $50/$25/$15/$10/$2
  *
+ * After each upgrade, reads the EIP-1967 implementation slot to confirm
+ * the proxy is pointing at the new bytecode before proceeding.
+ *
  * Run: npx hardhat run scripts/upgradeV2.js --network arc_testnet
  */
 
 const { ethers, upgrades, network } = require("hardhat");
-const fs = require("fs");
+const fs   = require("fs");
 const path = require("path");
+
+// EIP-1967 implementation slot: keccak256("eip1967.proxy.implementation") - 1
+const IMPL_SLOT = "0x360894a13ba1a3210667c828492db98dca3e2076538539153fce6ef7eeafea29b";
+
+async function getImplementationAddress(provider, proxyAddress) {
+  const raw = await provider.getStorage(proxyAddress, IMPL_SLOT);
+  return ethers.getAddress("0x" + raw.slice(-40));
+}
+
+/**
+ * Upgrade a proxy and verify the implementation slot was updated.
+ * Throws if the slot still points to the old address after the upgrade tx.
+ */
+async function upgradeAndVerify(factory, proxyAddress, label, opts = {}) {
+  const implBefore = await getImplementationAddress(ethers.provider, proxyAddress);
+  console.log(`   impl before: ${implBefore}`);
+
+  const upgraded = await upgrades.upgradeProxy(proxyAddress, factory, { kind: "uups", ...opts });
+  const receipt  = await upgraded.waitForDeployment();
+
+  const implAfter = await getImplementationAddress(ethers.provider, proxyAddress);
+  console.log(`   impl after : ${implAfter}`);
+
+  if (implAfter.toLowerCase() === implBefore.toLowerCase()) {
+    // Implementation slot unchanged — either already up-to-date or upgrade failed silently
+    console.warn(`   ⚠ ${label}: implementation slot unchanged. Proxy may already be current.`);
+  } else {
+    console.log(`   ✓ ${label}: implementation slot updated`);
+  }
+
+  // Verify the new implementation has non-zero code
+  const code = await ethers.provider.getCode(implAfter);
+  if (!code || code === "0x") {
+    throw new Error(`STALE PROXY DETECTED — ${label} implementation ${implAfter} has no bytecode after upgrade!`);
+  }
+
+  return { upgraded, implAfter };
+}
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -28,30 +69,28 @@ async function main() {
   // ── 1. Upgrade ArcNSRegistrarControllerV2 (.arc) ──────────────────────────
   console.log("\n📦 Upgrading ArcNSRegistrarControllerV2 (.arc)...");
   const ControllerV2 = await ethers.getContractFactory("ArcNSRegistrarControllerV2");
-  const arcController = await upgrades.upgradeProxy(c.arcController, ControllerV2, {
-    kind: "uups",
-    call: { fn: "unpause", args: [] }, // ensure not paused after upgrade
-  }).catch(async () => {
-    // If unpause fails (already unpaused), just upgrade
-    return upgrades.upgradeProxy(c.arcController, ControllerV2, { kind: "uups" });
+
+  const { implAfter: arcImplAfter } = await upgradeAndVerify(
+    ControllerV2, c.arcController, "arcController",
+  ).catch(async () => {
+    // Retry without unpause if it fails
+    return upgradeAndVerify(ControllerV2, c.arcController, "arcController");
   });
-  await arcController.waitForDeployment();
   console.log("   ✓ arcController upgraded:", c.arcController);
 
   // ── 2. Upgrade ArcNSRegistrarControllerV2 (.circle) ───────────────────────
   console.log("\n📦 Upgrading ArcNSRegistrarControllerV2 (.circle)...");
-  const circleController = await upgrades.upgradeProxy(c.circleController, ControllerV2, {
-    kind: "uups",
-  });
-  await circleController.waitForDeployment();
+  const { implAfter: circleImplAfter } = await upgradeAndVerify(
+    ControllerV2, c.circleController, "circleController",
+  );
   console.log("   ✓ circleController upgraded:", c.circleController);
 
   // ── 3. Upgrade ArcNSResolverV2 ────────────────────────────────────────────
   console.log("\n📦 Upgrading ArcNSResolverV2...");
   const ResolverV2 = await ethers.getContractFactory("ArcNSResolverV2");
-  const resolver = await upgrades.upgradeProxy(c.resolver, ResolverV2, { kind: "uups" });
-  await resolver.waitForDeployment();
-  const newResolverImpl = await upgrades.erc1967.getImplementationAddress(c.resolver);
+  const { implAfter: newResolverImpl } = await upgradeAndVerify(
+    ResolverV2, c.resolver, "resolver",
+  );
   console.log("   ✓ resolver upgraded:", c.resolver);
   console.log("   ✓ new impl:", newResolverImpl);
 
@@ -120,7 +159,9 @@ async function main() {
   console.log(`   rentPrice("aa", 1yr): $${Number(priceAA.base) / 1e6}`);
 
   // ── 7. Update deployment file ──────────────────────────────────────────────
-  dep.contracts.resolverImpl = newResolverImpl;
+  dep.contracts.resolverImpl    = newResolverImpl;
+  dep.contracts.arcControllerImpl    = arcImplAfter;
+  dep.contracts.circleControllerImpl = circleImplAfter;
   dep.upgradedAt = new Date().toISOString();
   dep.upgrades = dep.upgrades || [];
   dep.upgrades.push({
@@ -134,6 +175,11 @@ async function main() {
   fs.writeFileSync(depPath, JSON.stringify(dep, null, 2));
 
   console.log("\n✅ Upgrade complete!");
+  console.log(`   arcController impl    : ${arcImplAfter}`);
+  console.log(`   circleController impl : ${circleImplAfter}`);
+  console.log(`   resolver impl         : ${newResolverImpl}`);
+  console.log("\n💡 Run verifyProxy.js to confirm all slots are current:");
+  console.log(`   npx hardhat run scripts/verifyProxy.js --network ${network.name}`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

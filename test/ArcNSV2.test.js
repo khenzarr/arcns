@@ -95,9 +95,11 @@ describe("ArcNS V2 — Security & Upgrades", function () {
 
   async function registerV2(label, owner, duration = ONE_YEAR) {
     const secret = ethers.randomBytes(32);
-    const commitment = await arcControllerV2.makeCommitment(
+    // MUST use makeCommitmentWithSender — register() reconstructs hash with msg.sender binding.
+    // makeCommitment (7-arg, no sender) produces a different hash and always fails.
+    const commitment = await arcControllerV2.makeCommitmentWithSender(
       label, owner.address, duration, secret,
-      await resolverV2.getAddress(), [], false
+      await resolverV2.getAddress(), [], false, owner.address
     );
     await arcControllerV2.connect(owner).commit(commitment);
     await time.increase(65);
@@ -117,9 +119,9 @@ describe("ArcNS V2 — Security & Upgrades", function () {
   describe("FIX C-01: Commitment Replay Prevention", function () {
     it("cannot reuse a commitment after registration", async function () {
       const secret = ethers.randomBytes(32);
-      const commitment = await arcControllerV2.makeCommitment(
+      const commitment = await arcControllerV2.makeCommitmentWithSender(
         "alice", alice.address, ONE_YEAR, secret,
-        await resolverV2.getAddress(), [], false
+        await resolverV2.getAddress(), [], false, alice.address
       );
 
       await arcControllerV2.connect(alice).commit(commitment);
@@ -143,9 +145,9 @@ describe("ArcNS V2 — Security & Upgrades", function () {
 
     it("expired commitment cannot be replayed", async function () {
       const secret = ethers.randomBytes(32);
-      const commitment = await arcControllerV2.makeCommitment(
+      const commitment = await arcControllerV2.makeCommitmentWithSender(
         "bob", bob.address, ONE_YEAR, secret,
-        await resolverV2.getAddress(), [], false
+        await resolverV2.getAddress(), [], false, bob.address
       );
 
       await arcControllerV2.connect(bob).commit(commitment);
@@ -162,9 +164,9 @@ describe("ArcNS V2 — Security & Upgrades", function () {
   describe("FIX C-03: Slippage Protection", function () {
     it("reverts if price exceeds maxCost", async function () {
       const secret = ethers.randomBytes(32);
-      const commitment = await arcControllerV2.makeCommitment(
+      const commitment = await arcControllerV2.makeCommitmentWithSender(
         "alice", alice.address, ONE_YEAR, secret,
-        await resolverV2.getAddress(), [], false
+        await resolverV2.getAddress(), [], false, alice.address
       );
       await arcControllerV2.connect(alice).commit(commitment);
       await time.increase(65);
@@ -187,8 +189,8 @@ describe("ArcNS V2 — Security & Upgrades", function () {
     it("rejects non-approved resolver", async function () {
       const secret = ethers.randomBytes(32);
       const fakeResolver = attacker.address; // not approved
-      const commitment = await arcControllerV2.makeCommitment(
-        "alice", alice.address, ONE_YEAR, secret, fakeResolver, [], false
+      const commitment = await arcControllerV2.makeCommitmentWithSender(
+        "alice", alice.address, ONE_YEAR, secret, fakeResolver, [], false, alice.address
       );
       await arcControllerV2.connect(alice).commit(commitment);
       await time.increase(65);
@@ -223,9 +225,9 @@ describe("ArcNS V2 — Security & Upgrades", function () {
       await arcControllerV2.pause();
 
       const secret = ethers.randomBytes(32);
-      const commitment = await arcControllerV2.makeCommitment(
+      const commitment = await arcControllerV2.makeCommitmentWithSender(
         "alice", alice.address, ONE_YEAR, secret,
-        await resolverV2.getAddress(), [], false
+        await resolverV2.getAddress(), [], false, alice.address
       );
 
       await expect(
@@ -355,7 +357,94 @@ describe("ArcNS V2 — Security & Upgrades", function () {
     });
   });
 
-  // ─── Full V2 Registration Flow ────────────────────────────────────────────
+  // ─── Commitment Equivalence Proof ────────────────────────────────────────
+  // H15: proves makeCommitmentWithSender hash == hash validated by register()
+
+  describe("Commitment Equivalence — H15 Proof", function () {
+    it("makeCommitment (no sender) produces a DIFFERENT hash than makeCommitmentWithSender", async function () {
+      const secret = ethers.randomBytes(32);
+      const resolverAddr = await resolverV2.getAddress();
+
+      const hashNoSender = await arcControllerV2.makeCommitment(
+        "alice", alice.address, ONE_YEAR, secret, resolverAddr, [], false
+      );
+      const hashWithSender = await arcControllerV2.makeCommitmentWithSender(
+        "alice", alice.address, ONE_YEAR, secret, resolverAddr, [], false, alice.address
+      );
+
+      // These MUST differ — proves the sender binding changes the hash
+      expect(hashNoSender).to.not.equal(hashWithSender);
+    });
+
+    it("committing makeCommitment hash (no sender) causes register() to revert with commitment not found", async function () {
+      const secret = ethers.randomBytes(32);
+      const resolverAddr = await resolverV2.getAddress();
+
+      // Commit the WRONG hash (no sender binding)
+      const wrongHash = await arcControllerV2.makeCommitment(
+        "alice", alice.address, ONE_YEAR, secret, resolverAddr, [], false
+      );
+      await arcControllerV2.connect(alice).commit(wrongHash);
+      await time.increase(65);
+
+      const price = await arcControllerV2.rentPrice("alice", ONE_YEAR);
+      const maxCost = price.base + price.premium + BigInt(1_000_000);
+      await usdc.connect(alice).approve(await arcControllerV2.getAddress(), maxCost);
+
+      // register() reconstructs with sender — different hash — not found
+      await expect(
+        arcControllerV2.connect(alice).register(
+          "alice", alice.address, ONE_YEAR, secret, resolverAddr, [], false, maxCost
+        )
+      ).to.be.revertedWith("Controller: commitment not found");
+    });
+
+    it("committing makeCommitmentWithSender hash allows register() to succeed", async function () {
+      const secret = ethers.randomBytes(32);
+      const resolverAddr = await resolverV2.getAddress();
+
+      // Commit the CORRECT hash (with sender binding)
+      const correctHash = await arcControllerV2.makeCommitmentWithSender(
+        "alice", alice.address, ONE_YEAR, secret, resolverAddr, [], false, alice.address
+      );
+      await arcControllerV2.connect(alice).commit(correctHash);
+      await time.increase(65);
+
+      const price = await arcControllerV2.rentPrice("alice", ONE_YEAR);
+      const maxCost = price.base + price.premium + BigInt(1_000_000);
+      await usdc.connect(alice).approve(await arcControllerV2.getAddress(), maxCost);
+
+      // register() reconstructs with sender — same hash — succeeds
+      await expect(
+        arcControllerV2.connect(alice).register(
+          "alice", alice.address, ONE_YEAR, secret, resolverAddr, [], false, maxCost
+        )
+      ).to.emit(arcControllerV2, "NameRegistered");
+    });
+
+    it("commitment hash is sender-specific: alice hash cannot be used by bob", async function () {
+      const secret = ethers.randomBytes(32);
+      const resolverAddr = await resolverV2.getAddress();
+
+      // Alice commits her sender-bound hash
+      const aliceHash = await arcControllerV2.makeCommitmentWithSender(
+        "alice", alice.address, ONE_YEAR, secret, resolverAddr, [], false, alice.address
+      );
+      await arcControllerV2.connect(alice).commit(aliceHash);
+      await time.increase(65);
+
+      const price = await arcControllerV2.rentPrice("alice", ONE_YEAR);
+      const maxCost = price.base + price.premium + BigInt(1_000_000);
+      await usdc.connect(bob).approve(await arcControllerV2.getAddress(), maxCost);
+
+      // Bob tries to register using alice's commitment — bob's sender produces different hash
+      await expect(
+        arcControllerV2.connect(bob).register(
+          "alice", alice.address, ONE_YEAR, secret, resolverAddr, [], false, maxCost
+        )
+      ).to.be.revertedWith("Controller: commitment not found");
+    });
+  });
 
   describe("V2 Full Registration Flow", function () {
     it("alice can register alice.arc via V2 controller", async function () {

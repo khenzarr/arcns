@@ -69,6 +69,9 @@ contract ArcNSRegistrarControllerV2 is
     event CommitmentMade(bytes32 indexed commitment);
     event TreasuryUpdated(address indexed oldTreasury, address indexed newTreasury);
     event ResolverApproved(address indexed resolver, bool approved);
+    /// @notice Temporary debug event — logs commitment state at register time.
+    /// @dev Remove after root cause is confirmed in production.
+    event DebugRegister(bytes32 indexed commitment, address indexed sender, uint256 blockTs);
 
     // ─── Initializer ──────────────────────────────────────────────────────────
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -164,6 +167,7 @@ contract ArcNSRegistrarControllerV2 is
     ) external nonReentrant whenNotPaused {
         // Commitment binds to msg.sender — prevents front-running
         bytes32 commitment = makeCommitmentWithSender(name_, owner_, duration, secret, resolverAddr, data, reverseRecord, msg.sender);
+        emit DebugRegister(commitment, msg.sender, block.timestamp);
         _validateCommitment(commitment);
 
         require(_validName(name_), "Controller: invalid name");
@@ -237,6 +241,31 @@ contract ArcNSRegistrarControllerV2 is
         return _validName(name_) && base.available(tokenId);
     }
 
+    /// @notice Single canonical commitment status query.
+    /// @dev Frontend uses this as the ONLY source of truth for commit-reveal timing.
+    ///      Eliminates all client-side clock assumptions.
+    function getCommitmentStatus(bytes32 commitment)
+        external view
+        returns (
+            uint256 timestamp,
+            bool    exists,
+            bool    matured,
+            bool    expired
+        )
+    {
+        timestamp = commitments[commitment];
+        exists    = timestamp != 0;
+        matured   = exists && block.timestamp >= timestamp + MIN_COMMITMENT_AGE;
+        expired   = exists && block.timestamp >  timestamp + MAX_COMMITMENT_AGE;
+    }
+
+    /// @notice Legacy debug helper — kept for backwards compatibility.
+    /// @dev Prefer getCommitmentStatus() for new integrations.
+    function debugCommitment(bytes32 commitment) external view returns (uint256 ts, bool exists) {
+        ts     = commitments[commitment];
+        exists = ts != 0;
+    }
+
     // ─── Admin ────────────────────────────────────────────────────────────────
 
     function setPriceOracle(IArcNSPriceOracle _oracle) external onlyRole(ORACLE_ROLE) {
@@ -265,9 +294,11 @@ contract ArcNSRegistrarControllerV2 is
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     function _validateCommitment(bytes32 commitment) internal {
-        require(!usedCommitments[commitment], "Controller: commitment already used");
-        require(commitments[commitment] + MIN_COMMITMENT_AGE <= block.timestamp, "Controller: commitment too new");
-        require(commitments[commitment] + MAX_COMMITMENT_AGE > block.timestamp,  "Controller: commitment expired");
+        require(!usedCommitments[commitment],                                                     "Controller: commitment already used");
+        require(commitments[commitment] != 0,                                                    "Controller: commitment not found");
+        uint256 commitTs = commitments[commitment];
+        require(block.timestamp >= commitTs + MIN_COMMITMENT_AGE,                               "Controller: commitment too young");
+        require(block.timestamp <= commitTs + MAX_COMMITMENT_AGE,                               "Controller: commitment expired");
         // FIX C-01: permanently mark as used
         usedCommitments[commitment] = true;
         delete commitments[commitment];
