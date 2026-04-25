@@ -268,5 +268,128 @@ export async function resolveAddress(address: string): Promise<{
   } catch { return { name: null, source: null }; }
 }
 
+// ─── Adapter-grade resolution (with forward-confirmation) ────────────────────
+
+/**
+ * Resolve address → primary name WITH mandatory forward-confirmation.
+ *
+ * This is the correctness-grade version used by the public adapter API.
+ * It is NOT used by the frontend UI (which uses resolveAddress() + usePrimaryName hook).
+ *
+ * Forward-confirmation rule:
+ *   1. Get reverse record: Resolver.name(reverseNode) → candidateName
+ *   2. If candidateName is empty → no primary name set
+ *   3. Compute forwardNode = namehash(candidateName)
+ *   4. Get forward resolution: Resolver.addr(forwardNode) → resolvedAddr
+ *   5. verified = (resolvedAddr.toLowerCase() === address.toLowerCase())
+ *   6. If verified: return { name: candidateName, verified: true }
+ *      If not verified: return { name: null, verified: false } — stale record
+ *
+ * The subgraph is used as a speed layer for step 1 only.
+ * Step 4 (forward-confirmation) is ALWAYS performed via RPC — never from the subgraph.
+ *
+ * Returns:
+ *   name:     string | null  — verified primary name, or null
+ *   verified: boolean        — true only if forward-confirmation passed
+ *   source:   "subgraph" | "rpc" | null — source of the reverse record
+ */
+export async function resolveAddressWithVerification(address: string): Promise<{
+  name:     string | null;
+  verified: boolean;
+  source:   "subgraph" | "rpc" | null;
+}> {
+  const ZERO = "0x0000000000000000000000000000000000000000";
+
+  // ── Step 1: Get candidate reverse name (subgraph-first, RPC fallback) ────
+  let candidateName: string | null = null;
+  let source: "subgraph" | "rpc" | null = null;
+
+  // Subgraph path
+  const rev = await getReverseRecord(address);
+  if (rev?.name) {
+    candidateName = rev.name;
+    source = "subgraph";
+  }
+
+  // RPC fallback if subgraph returned nothing
+  if (!candidateName) {
+    try {
+      const { publicClient }                                    = await import("./publicClient");
+      const { ADDR_RESOLVER, REGISTRY_ABI, RESOLVER_ABI, ADDR_REGISTRY } = await import("./contracts");
+      const { reverseNodeFor }                                  = await import("./namehash");
+
+      const reverseNode = reverseNodeFor(address as `0x${string}`);
+
+      // Check resolver is set for the reverse node
+      const resolverAddr = await publicClient.readContract({
+        address: ADDR_REGISTRY,
+        abi:     REGISTRY_ABI,
+        functionName: "resolver",
+        args:    [reverseNode],
+      }) as string;
+
+      if (!resolverAddr || resolverAddr === ZERO) {
+        // No resolver set for this address's reverse node → no primary name
+        return { name: null, verified: false, source: null };
+      }
+
+      const nameResult = await publicClient.readContract({
+        address: ADDR_RESOLVER,
+        abi:     RESOLVER_ABI,
+        functionName: "name",
+        args:    [reverseNode],
+      }) as string;
+
+      if (nameResult && nameResult.length > 0) {
+        candidateName = nameResult;
+        source = "rpc";
+      }
+    } catch {
+      // RPC unavailable — cannot verify
+      return { name: null, verified: false, source: null };
+    }
+  }
+
+  // No primary name set at all
+  if (!candidateName) {
+    return { name: null, verified: false, source };
+  }
+
+  // ── Step 2: Forward-confirmation via RPC (mandatory — never from subgraph) ─
+  // Rule: Resolver.addr(namehash(candidateName)) must equal the queried address.
+  // If it does not, the reverse record is stale (name transferred or expired).
+  try {
+    const { publicClient }                       = await import("./publicClient");
+    const { ADDR_RESOLVER, RESOLVER_ABI }        = await import("./contracts");
+    const { namehash }                           = await import("./namehash");
+
+    const forwardNode = namehash(candidateName) as `0x${string}`;
+
+    const resolvedAddr = await publicClient.readContract({
+      address: ADDR_RESOLVER,
+      abi:     RESOLVER_ABI,
+      functionName: "addr",
+      args:    [forwardNode],
+    }) as string;
+
+    const verified =
+      !!resolvedAddr &&
+      resolvedAddr !== ZERO &&
+      resolvedAddr.toLowerCase() === address.toLowerCase();
+
+    if (verified) {
+      return { name: candidateName, verified: true, source };
+    } else {
+      // Reverse record exists but forward-confirmation failed — stale record.
+      // Do NOT return the candidate name as verified.
+      return { name: null, verified: false, source };
+    }
+  } catch {
+    // Forward-confirmation RPC call failed — cannot verify.
+    // Safe default: treat as unverified.
+    return { name: null, verified: false, source };
+  }
+}
+
 // Legacy compat
 export const getDomain = getDomainByName;

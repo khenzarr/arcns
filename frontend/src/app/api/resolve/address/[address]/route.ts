@@ -1,3 +1,18 @@
+/**
+ * COMPATIBILITY PATH — NOT THE CANONICAL INTEGRATION SURFACE.
+ *
+ * This route exists for local frontend use only.
+ * The canonical public adapter is at: /api/v1/resolve/address/[address]
+ *
+ * Gaps vs the v1 surface:
+ *   - No forward-confirmation on reverse lookup
+ *   - No `verified` field in response
+ *   - No structured error codes
+ *   - No CORS headers
+ *   - No versioning
+ *
+ * Do not use this route for external integrations.
+ */
 import { NextRequest, NextResponse } from "next/server";
 import { resolveAddress } from "../../../../../lib/graphql";
 

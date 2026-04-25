@@ -78,7 +78,7 @@ export default function PrimaryName() {
           <span className="text-lg">⭐</span>
           <div>
             <h3 className="font-semibold text-gray-900 text-sm">Primary Name</h3>
-            <p className="text-xs text-gray-400">Your wallet's human-readable identity</p>
+            <p className="text-xs text-gray-400">Your wallet&apos;s human-readable identity</p>
           </div>
         </div>
         {primaryName ? (

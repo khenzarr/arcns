@@ -1,7 +1,7 @@
 # ArcNS — Ecosystem Integration Status
 
 **Phase:** 8F (Phase 8 Closeout)  
-**Date:** 2026-04-25  
+**Date:** 2026-04-26  
 **Network:** Arc Testnet (Chain ID: 5042002)  
 **Status:** Authoritative integration readiness summary
 
@@ -50,9 +50,11 @@ Role: speed layer for display data. Not a trust layer for reverse resolution.
 
 | Surface | Status | Notes |
 |---------|--------|-------|
-| `GET /api/resolve/name/[name]` | ✅ Exists (local only) | Subgraph-first, RPC fallback. 30s cache. No CORS, no versioning. |
-| `GET /api/resolve/address/[address]` | ✅ Exists (local only) | Subgraph-first, RPC fallback. **Missing forward-confirmation.** |
-| Public hosted API | ❌ Not yet deployed | Design complete (Phase 8B). Needs forward-confirmation fix + hosting. |
+| `GET /api/v1/resolve/name/{name}` | ✅ Live — `https://arcns-app.vercel.app` | Versioned, CORS, subgraph-first, RPC fallback, 30s cache. |
+| `GET /api/v1/resolve/address/{address}` | ✅ Live — `https://arcns-app.vercel.app` | Forward-confirmation enforced. `verified` field on all responses. |
+| `GET /api/v1/health` | ✅ Live — `https://arcns-app.vercel.app` | Returns chain context. |
+| `GET /api/resolve/name/[name]` (unversioned) | ✅ Exists (legacy) | Subgraph-first, RPC fallback. No CORS, no versioning. Prefer v1 routes. |
+| `GET /api/resolve/address/[address]` (unversioned) | ✅ Exists (legacy) | Missing forward-confirmation. Prefer v1 routes. |
 
 ### Existing in-app fallback UX
 
@@ -171,11 +173,7 @@ A canonical public ArcNS resolution API removes the need for every third-party i
 
 ### Current adapter status
 
-The adapter design is complete (Phase 8B). The existing local API routes need two fixes before public deployment:
-1. Add forward-confirmation to `/api/resolve/address/[address]` — return `verified: boolean`
-2. Add name normalization and TLD validation to `/api/resolve/name/[name]`
-
-After those fixes: add versioning (`/v1/`), CORS headers, rate limiting, and deploy to a stable public host.
+The v1 adapter is live at `https://arcns-app.vercel.app`. The `/api/v1/resolve/name/{name}`, `/api/v1/resolve/address/{address}`, and `/api/v1/health` endpoints are publicly accessible. Forward-confirmation, name normalization, TLD validation, CORS, versioning, and stable error schema are all implemented and deployed. Rate limiting and request logging are not yet implemented.
 
 ---
 
@@ -233,11 +231,12 @@ The following is the practical execution order after Phase 8, prioritized by imp
 
 ### Tier 1 — ArcNS team can execute unilaterally
 
-1. **Fix the address resolution API route** — add forward-confirmation, return `verified: boolean`. This is the single most important correctness fix before any public exposure.
-2. **Add name normalization and TLD validation to the name resolution route** — prevents invalid inputs from reaching the RPC layer.
-3. **Deploy the adapter as a public hosted service** — add versioning, CORS, rate limiting, health endpoint. This unblocks all third-party integrators who prefer HTTP over direct RPC.
+1. ✅ **Fixed the address resolution API route** — forward-confirmation added, `verified: boolean` returned.
+2. ✅ **Added name normalization and TLD validation** to the name resolution route.
+3. ✅ **Deployed the adapter as a public hosted service** — live at `https://arcns-app.vercel.app`. Versioning, CORS, health endpoint all in place.
 4. **Add the unified address-or-name input to the Resolve page** — low effort, high user value, no third-party dependency.
 5. **Add prominent copy-address CTA and "use in wallet" helper** — makes the fallback UX discoverable and sets correct expectations.
+6. **Add rate limiting** — required before high-traffic public exposure.
 
 ### Tier 2 — Requires ArcScan coordination
 

@@ -9,12 +9,12 @@
  * deployment issue, not a frontend issue.
  */
 
-import ControllerArtifact      from "../../../artifacts/contracts/v3/controller/ArcNSController.sol/ArcNSController.json";
-import RegistrarArtifact        from "../../../artifacts/contracts/v3/registrar/ArcNSBaseRegistrar.sol/ArcNSBaseRegistrar.json";
-import PriceOracleArtifact      from "../../../artifacts/contracts/v3/registrar/ArcNSPriceOracle.sol/ArcNSPriceOracle.json";
-import ResolverArtifact         from "../../../artifacts/contracts/v3/resolver/ArcNSResolver.sol/ArcNSResolver.json";
-import ReverseRegistrarArtifact from "../../../artifacts/contracts/v3/registrar/ArcNSReverseRegistrar.sol/ArcNSReverseRegistrar.json";
-import RegistryArtifact         from "../../../artifacts/contracts/v3/registry/ArcNSRegistry.sol/ArcNSRegistry.json";
+import ControllerArtifact      from "./abis/ArcNSController.json";
+import RegistrarArtifact        from "./abis/ArcNSBaseRegistrar.json";
+import PriceOracleArtifact      from "./abis/ArcNSPriceOracle.json";
+import ResolverArtifact         from "./abis/ArcNSResolver.json";
+import ReverseRegistrarArtifact from "./abis/ArcNSReverseRegistrar.json";
+import RegistryArtifact         from "./abis/ArcNSRegistry.json";
 
 export const CONTROLLER_ABI       = ControllerArtifact.abi       as readonly unknown[];
 export const REGISTRAR_ABI        = RegistrarArtifact.abi        as readonly unknown[];

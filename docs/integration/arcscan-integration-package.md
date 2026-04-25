@@ -85,7 +85,7 @@ GET /api/v1/resolve/name/{name}    → { name, address, owner, expiry, source }
 GET /api/v1/resolve/address/{addr} → { address, name, verified, source }
 ```
 
-This API is not yet publicly hosted. ArcScan should implement direct RPC or subgraph integration now and optionally switch to the hosted API when it is available and stable.
+This API is publicly hosted at `https://arcns-app.vercel.app`. ArcScan may use the v1 endpoints directly. Rate limiting is not yet implemented — coordinate with the ArcNS team before high-volume production use.
 
 ---
 
