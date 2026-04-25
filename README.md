@@ -352,6 +352,6 @@ ArcNS is in active pre-mainnet development. If you are an ecosystem partner, gra
 | `docs/` | [Creative Commons Attribution 4.0](docs/LICENSE-DOCS) |
 | All other files | [MIT](LICENSE) |
 
-See [NOTICE](NOTICE) for copyright, branding, and reserved-name terms.
+See [NOTICE](NOTICE) for licences, branding, and reserved-name terms.
 The ArcNS name and branding are reserved identifiers of the ArcNS project.
 Use in forks, derivative deployments, or confusingly similar products requires separate permission.
