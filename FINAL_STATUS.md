@@ -33,6 +33,7 @@ Deployed: 2026-04-24T21:58:41Z · Deployer: `0x0b943Fe9f1f8135e0751BA8B43dc0cD68
 - Next.js 14 App Router · wagmi v2 · viem
 - Pages: home/search, my-domains, resolve
 - Wired exclusively to v3 contracts via `generated-contracts.ts`
+- **Hosting status:** Not publicly deployed. Currently runs as a local dev server (`npm run dev`). No production domain or public URL exists yet. This is a pre-mainnet gap — see Section 6.
 
 ### Working User Flows (confirmed in live manual testing)
 - `.arc` registration (full commit-reveal: approve → commit → wait → register)
@@ -70,6 +71,9 @@ Deployed: 2026-04-24T21:58:41Z · Deployer: `0x0b943Fe9f1f8135e0751BA8B43dc0cD68
 ## 3. WHAT IS TESTED
 
 ### Contract Tests (`test/v3/`)
+
+**~180 passing tests across 7 test files.** Zero failures on the v3 suite.
+
 - **ArcNSRegistry** — node ownership, authorization, operator approval, all read/write functions
 - **ArcNSBaseRegistrar** — availability, register, registerWithResolver, renew, ownerOf, reclaim, tokenURI, controller management, NotLive guard
 - **ArcNSPriceOracle** — all 5 pricing tiers, pro-rated duration, premium decay (new/recent/decayed), setPrices
@@ -79,13 +83,17 @@ Deployed: 2026-04-24T21:58:41Z · Deployer: `0x0b943Fe9f1f8135e0751BA8B43dc0cD68
 - **Integration** — deployment wiring, `.arc` and `.circle` full lifecycle, independent TLDs, resolver addr chain, reverse/primary name, renewal/expiry/grace, replay rejection, premium decay, maxCost protection, deploy script smoke test
 
 ### Frontend Tests (`frontend/src/__tests__/`)
+
+**~30 passing unit/smoke tests.** 2 pre-existing failures (see below).
+
 - Error taxonomy, user-facing messages (no ENS wording), retryable classification
 - `makeCommitment` 7-param shape, `buildRegisterArgs` 7-element tuple, `reverseNodeFor`, `maxCostWithSlippage`
 - Commitment hash consistency, arg shape consistency
 - **2 pre-existing failing tests** (`preservationTests.test.ts`, `bugConditionExploration.test.tsx`) — reference archived hooks, no production impact, must be fixed before mainnet
 
 ### Live / Manual Smoke Tests
-All 10 flows in `docs/final/SMOKE_TEST_RESULTS.md` passed on Arc Testnet. Proved: the full commit-reveal registration flow works end-to-end with real USDC on a live chain, NFTs mint correctly, resolution works, subgraph indexes correctly, and the frontend handles all error states.
+
+**10 flows tested, all passed.** See `docs/final/SMOKE_TEST_RESULTS.md` for step-level results.
 
 ---
 
@@ -161,6 +169,12 @@ The five most important blockers (full list in `docs/final/MAINNET_GAP_REPORT.md
 5. **Public RPC dependency.** The frontend relies on public Arc Testnet RPCs. Dedicated infrastructure is required for mainnet.
 
 Additionally: 2 failing frontend tests must be fixed, reentrancy adversarial tests must be added, and automated UUPS storage layout verification must be in CI.
+
+### Ecosystem Integration (not yet integrated, not a protocol blocker)
+- **Explorer-native name search** — ArcScan does not yet support searching by name (e.g. `test1.arc`). Users must search by address or transaction hash.
+- **Wallet-native recipient resolution** — typing `.arc` or `.circle` names directly into a wallet's recipient input field is not yet supported. Wallets must integrate the ArcNS resolver to enable this.
+
+These are ecosystem integration items that require third-party adoption (ArcScan, wallet providers). The protocol and resolver are fully functional — the integration surface is not yet built out.
 
 ---
 
