@@ -1,3 +1,4 @@
+import { Bytes } from "@graphprotocol/graph-ts";
 import {
   Transfer as TransferEvent,
   NewResolver as NewResolverEvent,
@@ -5,18 +6,18 @@ import {
 import { Domain, Account, DomainEvent } from "../generated/schema";
 
 // ─── Transfer ─────────────────────────────────────────────────────────────────
-// Registry.Transfer(node, newOwner) — update domain ownership + emit DomainEvent
+// Registry.Transfer(node, newOwner) — update domain ownership.
+// This fires alongside the ERC-721 Transfer from the Registrar.
+// Both are idempotent; this one has the node (namehash) directly.
 
 export function handleTransfer(event: TransferEvent): void {
   let nodeHex = event.params.node.toHexString();
   let domain = Domain.load(nodeHex);
-  if (!domain) return; // only update existing domains
+  if (!domain) return;
 
-  // Capture previous owner before overwriting
   let previousOwnerId = domain.owner;
   let newOwner = event.params.owner.toHexString().toLowerCase();
 
-  // Idempotent: overwrite owner with latest value
   domain.owner = newOwner;
   domain.save();
 
@@ -27,9 +28,9 @@ export function handleTransfer(event: TransferEvent): void {
     account.save();
   }
 
-  // Create DomainEvent for TRANSFER — from = previous owner, to = new owner
-  let eventId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString() + "-transfer";
-  let domainEvent = new DomainEvent(eventId);
+  // DomainEvent: TRANSFER
+  let evId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString() + "-registry-transfer";
+  let domainEvent = new DomainEvent(evId);
   domainEvent.domain = nodeHex;
   domainEvent.eventType = "TRANSFER";
   domainEvent.from = Bytes.fromHexString(previousOwnerId);
@@ -41,14 +42,13 @@ export function handleTransfer(event: TransferEvent): void {
 }
 
 // ─── NewResolver ──────────────────────────────────────────────────────────────
-// Registry.NewResolver(node, resolver) — update resolver address on domain
+// Registry.NewResolver(node, resolver) — update resolver address on domain.
 
 export function handleNewResolver(event: NewResolverEvent): void {
   let nodeHex = event.params.node.toHexString();
   let domain = Domain.load(nodeHex);
   if (!domain) return;
 
-  // Idempotent: overwrite resolver with latest value
   domain.resolver = event.params.resolver;
   domain.save();
 }

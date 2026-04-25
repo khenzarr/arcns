@@ -1,28 +1,31 @@
 "use client";
+/**
+ * Portfolio.tsx — v3 portfolio UI.
+ *
+ * Subgraph-first via useMyDomains (RPC fallback built into the hook).
+ * Shows human-readable domain names when subgraph is available.
+ * No v1/v2 imports. No ENS-branded strings.
+ */
 
 import { useAccount } from "wagmi";
 import { useState } from "react";
-import { usePortfolio, useExpiryAlerts, useBulkRenew } from "../hooks/useArcNSV2";
-import { formatUSDC, DURATION_OPTIONS } from "../lib/namehash";
-import { GQLDomain } from "../lib/graphql";
-
-// ─── Safe BigInt — never crashes on undefined/null/invalid values ─────────────
-function safeBigInt(value: unknown): bigint {
-  try {
-    if (value === undefined || value === null || value === "") return 0n;
-    return BigInt(value as string);
-  } catch {
-    return 0n;
-  }
-}
+import { useMyDomains }  from "../hooks/useMyDomains";
+import { useRenew }      from "../hooks/useRenew";
+import {
+  formatUSDC,
+  formatExpiry,
+  daysUntilExpiry,
+  expiryBadge,
+  DURATION_OPTIONS,
+  type SupportedTLD,
+} from "../lib/normalization";
 
 export default function Portfolio() {
-  const { address, isConnected } = useAccount();
-  const { domains, loading, error } = usePortfolio();
-  const expiring = useExpiryAlerts(30);
-  const { bulkRenew, loading: renewLoading, results } = useBulkRenew();
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [duration, setDuration] = useState(BigInt(365 * 24 * 60 * 60));
+  const { isConnected } = useAccount();
+  const { domains, isLoading, error, refetch } = useMyDomains();
+  const renew = useRenew();
+  const [renewTarget, setRenewTarget] = useState<{ label: string; tld: SupportedTLD } | null>(null);
+  const [renewDuration, setRenewDuration] = useState(BigInt(DURATION_OPTIONS[0].seconds));
 
   if (!isConnected) {
     return (
@@ -32,174 +35,144 @@ export default function Portfolio() {
     );
   }
 
-  const toggleSelect = (id: string) => {
-    const next = new Set(selected);
-    if (next.has(id)) next.delete(id);
-    else next.add(id);
-    setSelected(next);
-  };
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse">
+            <div className="h-5 bg-gray-100 rounded w-1/3 mb-2" />
+            <div className="h-4 bg-gray-100 rounded w-1/4" />
+          </div>
+        ))}
+      </div>
+    );
+  }
 
-  const handleBulkRenew = () => {
-    const toRenew = domains
-      .filter(d => selected.has(d.id))
-      .map(d => ({
-        label: d.name.split(".")[0],
-        tld: (d.registrationType === "ARC" ? "arc" : "circle") as "arc" | "circle",
-        cost: safeBigInt(d.lastCost),
-      }));
-    bulkRenew(toRenew, duration);
-  };
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-sm text-red-600">
+        {error}
+        <button onClick={refetch} className="ml-3 underline text-red-500 hover:text-red-700">Retry</button>
+      </div>
+    );
+  }
 
-  const now = Math.floor(Date.now() / 1000);
+  if (domains.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        No domains registered yet
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      {/* Expiry Alerts */}
-      {expiring.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-amber-600 font-semibold">⚠️ Expiring Soon</span>
-          </div>
-          <div className="space-y-1">
-            {expiring.map(d => {
-              const daysLeft = Math.floor((Number(d.expiresAt) - now) / 86400);
-              return (
-                <div key={d.id} className="flex justify-between text-sm">
-                  <span className="font-medium text-amber-800">{d.name}</span>
-                  <span className="text-amber-600">
-                    {daysLeft > 0 ? `${daysLeft} days left` : "Expired"}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
+    <div className="space-y-3">
+      {domains.map((d, i) => {
+        const badge    = expiryBadge(d.expiryState);
+        const daysLeft = daysUntilExpiry(d.expiry);
+        const canRenew = d.expiryState === "expiring-soon" || d.expiryState === "grace";
 
-      {/* Bulk actions */}
-      {selected.size > 0 && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-center justify-between">
-          <span className="text-sm text-blue-700">{selected.size} domain(s) selected</span>
-          <div className="flex gap-2 items-center">
-            <select
-              value={duration.toString()}
-              onChange={e => setDuration(BigInt(e.target.value))}
-              className="text-sm px-3 py-1.5 rounded-lg border border-blue-200 bg-white"
-            >
-              {DURATION_OPTIONS.map(o => (
-                <option key={o.seconds} value={o.seconds}>{o.label}</option>
-              ))}
-            </select>
-            <button
-              onClick={handleBulkRenew}
-              disabled={renewLoading}
-              className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              {renewLoading ? "Renewing..." : "Bulk Renew"}
-            </button>
-          </div>
-        </div>
-      )}
+        // Display name: use labelName from subgraph if available, else token ID hash
+        const displayName = d.labelName
+          ? `${d.labelName}.${d.tld}`
+          : d.tokenId
+            ? `${("0x" + d.tokenId.toString(16).padStart(64, "0")).slice(0, 10)}….${d.tld}`
+            : `unknown.${d.tld}`;
 
-      {/* Bulk renew results */}
-      {results.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-1">
-          {results.map(r => (
-            <div key={r.name} className="flex justify-between text-sm">
-              <span>{r.name}</span>
-              <span className={r.success ? "text-green-600" : "text-red-500"}>
-                {r.success ? "✓ Renewed" : "✗ Failed"}
+        const key = d.labelName
+          ? `${d.labelName}-${d.tld}`
+          : d.tokenId
+            ? `${d.tokenId.toString()}-${d.tld}`
+            : `${i}-${d.tld}`;
+
+        return (
+          <div
+            key={key}
+            className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-4"
+          >
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+              .{d.tld}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-sm text-gray-900 truncate">{displayName}</span>
+                {d.source === "rpc" ? (
+                  <span className="text-xs text-gray-300 shrink-0">RPC</span>
+                ) : null}
+              </div>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {d.expiryState === "expired"
+                  ? `Expired ${formatExpiry(d.expiry)}`
+                  : `Expires ${formatExpiry(d.expiry)}`}
+                {d.expiryState === "expiring-soon" ? ` · ${daysLeft}d left` : ""}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${badge.className}`}>
+                {badge.label}
               </span>
+              {canRenew && d.labelName ? (
+                <button
+                  onClick={() => setRenewTarget({ label: d.labelName!, tld: d.tld })}
+                  className="text-xs font-medium text-orange-600 hover:text-orange-700 px-3 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
+                >
+                  Renew
+                </button>
+              ) : null}
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        );
+      })}
 
-      {/* Domain list */}
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 animate-pulse">
-              <div className="h-5 bg-gray-100 rounded w-1/3 mb-2" />
-              <div className="h-4 bg-gray-100 rounded w-1/4" />
+      {/* Renew modal */}
+      {renewTarget ? (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
+            <h3 className="font-bold text-gray-900 mb-1">Renew Domain</h3>
+            <p className="text-sm text-blue-600 font-medium mb-4">{renewTarget.label}.{renewTarget.tld}</p>
+            <p className="text-sm text-gray-500 mb-4">
+              Select a renewal duration. Payment will be in USDC.
+            </p>
+            <div className="flex gap-2 flex-wrap mb-4">
+              {DURATION_OPTIONS.map(opt => (
+                <button
+                  key={opt.seconds}
+                  onClick={() => setRenewDuration(BigInt(opt.seconds))}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    renewDuration === BigInt(opt.seconds)
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
-          ))}
+            {renew.error ? <p className="text-xs text-red-500 mb-3">{renew.error}</p> : null}
+            <p className="text-xs text-gray-400 mb-4">
+              Price will be calculated at renewal time. Approve USDC when prompted.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setRenewTarget(null); renew.reset(); }}
+                className="flex-1 py-2.5 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  // Renew requires a price — redirect to search for full renew flow
+                  // Full renew-by-name is available on the home search page
+                  setRenewTarget(null);
+                }}
+                className="flex-1 py-2.5 text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 rounded-xl transition-colors"
+              >
+                Search to Renew
+              </button>
+            </div>
+          </div>
         </div>
-      ) : error ? (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-sm text-red-600">
-          Failed to load domains from indexer. {error}
-        </div>
-      ) : domains.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          No domains registered yet
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {domains.map(domain => (
-            <DomainRow
-              key={domain.id}
-              domain={domain}
-              selected={selected.has(domain.id)}
-              onToggle={() => toggleSelect(domain.id)}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function DomainRow({
-  domain,
-  selected,
-  onToggle,
-}: {
-  domain: GQLDomain;
-  selected: boolean;
-  onToggle: () => void;
-}) {
-  const now = Math.floor(Date.now() / 1000);
-  const expiresAt = Number(domain.expiresAt);
-  const daysLeft = Math.floor((expiresAt - now) / 86400);
-  const isExpired = expiresAt < now;
-  const isExpiringSoon = daysLeft <= 30 && !isExpired;
-
-  return (
-    <div
-      className={`bg-white rounded-xl border p-4 flex items-center gap-4 cursor-pointer transition-colors ${
-        selected ? "border-blue-400 bg-blue-50" : "border-gray-100 hover:border-gray-200"
-      }`}
-      onClick={onToggle}
-    >
-      <input
-        type="checkbox"
-        checked={selected}
-        onChange={onToggle}
-        onClick={e => e.stopPropagation()}
-        className="w-4 h-4 rounded border-gray-300 text-blue-600"
-      />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-gray-900 truncate">{domain.name}</span>
-          {isExpired && (
-            <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Expired</span>
-          )}
-          {isExpiringSoon && (
-            <span className="text-xs bg-amber-100 text-amber-600 px-2 py-0.5 rounded-full">
-              {daysLeft}d left
-            </span>
-          )}
-        </div>
-        {domain.addrRecord && (
-          <p className="text-xs text-gray-400 font-mono truncate mt-0.5">
-            → {domain.addrRecord.addr}
-          </p>
-        )}
-      </div>
-      <div className="text-right text-sm text-gray-500 shrink-0">
-        <p>{isExpired ? "Expired" : new Date(expiresAt * 1000).toLocaleDateString()}</p>
-        <p className="text-xs">{formatUSDC(safeBigInt(domain.lastCost))}</p>
-      </div>
+      ) : null}
     </div>
   );
 }

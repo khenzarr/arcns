@@ -1,24 +1,71 @@
 "use client";
+/**
+ * resolve/page.tsx — ArcNS name resolution page.
+ *
+ * Wired exclusively to v3 hooks and lib.
+ * No v1/v2 imports. No ENS-branded strings.
+ */
 
-import { useState } from "react";
-import { useResolveAddress, useNameExpiry } from "../../hooks/useArcNS";
-import { namehash, getTLD, getExpiryState, expiryBadge, formatExpiry } from "../../lib/namehash";
-import { labelToTokenId } from "../../lib/namehash";
-import { CONTRACTS, REGISTRAR_ABI } from "../../lib/contracts";
-import { isValidLabel } from "../../lib/domain";
+import { useState, useEffect } from "react";
 import { useReadContract } from "wagmi";
+import { namehash, labelToTokenId } from "../../lib/namehash";
+import {
+  getExpiryState,
+  expiryBadge,
+  formatExpiry,
+  type SupportedTLD,
+} from "../../lib/normalization";
+import {
+  REGISTRAR_ABI,
+  RESOLVER_ABI,
+  ADDR_RESOLVER,
+  ADDR_ARC_REGISTRAR,
+  ADDR_CIRCLE_REGISTRAR,
+} from "../../lib/contracts";
+import { isValidLabel } from "../../lib/domain";
+
+// ─── Forward resolution via publicClient ──────────────────────────────────────
+
+function useResolveAddress(domain: string) {
+  const node    = namehash(domain);
+  const enabled = domain.includes(".");
+  const [data, setData]         = useState<string | undefined>(undefined);
+  const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!enabled) { setData(undefined); return; }
+    let cancelled = false;
+    setLoading(true);
+    import("../../lib/publicClient").then(({ publicClient }) => {
+      publicClient.readContract({
+        address: ADDR_RESOLVER,
+        abi: RESOLVER_ABI,
+        functionName: "addr",
+        args: [node as `0x${string}`],
+      })
+        .then((r: unknown) => { if (!cancelled) { setData(r as string); setLoading(false); } })
+        .catch(() => { if (!cancelled) { setData(undefined); setLoading(false); } });
+    });
+    return () => { cancelled = true; };
+  }, [domain, node, enabled]);
+
+  return { data, isLoading };
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ResolvePage() {
-  const [domain, setDomain] = useState("");
+  const [domain,  setDomain]  = useState("");
   const [queried, setQueried] = useState("");
 
   const { data: resolvedAddr, isLoading } = useResolveAddress(queried);
 
-  // Phase 29: also show expiry + NFT owner
-  const tld = getTLD(queried);
-  const label = queried.split(".")[0];
-  const registrar = tld === "arc" ? CONTRACTS.arcRegistrar : CONTRACTS.circleRegistrar;
-  const tokenId = label ? labelToTokenId(label) : 0n;
+  const parts     = queried.split(".");
+  const label     = parts[0] ?? "";
+  const rawTld    = parts[1] ?? "";
+  const tld       = (rawTld === "arc" || rawTld === "circle") ? rawTld as SupportedTLD : null;
+  const registrar = tld === "circle" ? ADDR_CIRCLE_REGISTRAR : ADDR_ARC_REGISTRAR;
+  const tokenId  = label ? labelToTokenId(label) : 0n;
 
   const { data: expiry } = useReadContract({
     address: registrar as `0x${string}`,
@@ -28,15 +75,15 @@ export default function ResolvePage() {
     query: { enabled: !!tld && isValidLabel(label), staleTime: 30_000, refetchOnWindowFocus: false },
   });
 
-  const expiryTs = (expiry as bigint | undefined) ?? 0n;
+  const expiryTs    = (expiry as bigint | undefined) ?? 0n;
   const expiryState = getExpiryState(expiryTs);
-  const badge = expiryBadge(expiryState);
+  const badge       = expiryBadge(expiryState);
 
   const handleResolve = () => setQueried(domain.trim().toLowerCase());
-  const node = namehash(queried);
-  const hasResult = !!queried && queried.includes(".");
-  const addr = resolvedAddr as string | undefined;
-  const hasAddr = addr && addr !== "0x0000000000000000000000000000000000000000";
+  const node          = namehash(queried);
+  const hasResult     = !!queried && queried.includes(".");
+  const addr          = resolvedAddr as string | undefined;
+  const hasAddr       = addr && addr !== "0x0000000000000000000000000000000000000000";
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">

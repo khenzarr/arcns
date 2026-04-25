@@ -1,10 +1,16 @@
 "use client";
+/**
+ * SuccessModal.tsx — post-registration success modal.
+ *
+ * Wired exclusively to v3 usePrimaryName hook.
+ * No v1/v2 imports. No ENS-branded strings.
+ */
 
 import { useState } from "react";
 import { keccak256, stringToBytes } from "viem";
-import { useSetPrimaryName } from "../hooks/useArcNS";
-import { formatUSDC, formatExpiry } from "../lib/namehash";
-import type { RegistrationResult } from "../hooks/useArcNS";
+import { usePrimaryName } from "../hooks/usePrimaryName";
+import { formatUSDC, formatExpiry } from "../lib/normalization";
+import type { RegistrationResult } from "../hooks/useRegistration";
 
 interface SuccessModalProps {
   result: RegistrationResult;
@@ -13,15 +19,14 @@ interface SuccessModalProps {
 }
 
 export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessModalProps) {
-  const { setPrimary, loading, done } = useSetPrimaryName();
+  const { setStep, setPrimaryName } = usePrimaryName();
   const [copied, setCopied] = useState(false);
 
-  // Derive tokenId from label (keccak256 of the label part)
   const label = result.name.split(".")[0];
   const tokenId = BigInt(keccak256(stringToBytes(label))).toString();
   const tokenIdShort = `${tokenId.slice(0, 8)}...${tokenId.slice(-6)}`;
 
-  const tld = result.name.split(".").pop() ?? "arc";
+  const tld = result.tld ?? result.name.split(".").pop() ?? "arc";
   const registrarAddr = tld === "arc"
     ? "0xb156d9726661E92C541e3a267ee8710Fdcd24969"
     : "0xBdfF2790Dd72E86C3510Cc8374EaC5E2E0659c5e";
@@ -30,15 +35,17 @@ export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessM
   const arcScanNFTUrl = `https://testnet.arcscan.app/token/${registrarAddr}?a=${tokenId}`;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(result.name);
+    navigator.clipboard.writeText(`${result.name}.${tld}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const handleSetPrimary = async () => {
-    await setPrimary(result.name);
+    await setPrimaryName(`${result.name}.${tld}`);
     onSetPrimary?.();
   };
+
+  const primaryDone = setStep === "success";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -55,13 +62,13 @@ export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessM
         <div className="p-6 space-y-4">
           {/* Domain name */}
           <div className="bg-gray-50 rounded-xl p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">{result.name}</p>
-            <p className="text-sm text-gray-500 mt-1">
-              Expires {formatExpiry(result.expires)}
-            </p>
+            <p className="text-2xl font-bold text-gray-900">{result.name}.{tld}</p>
+            {result.expires > 0n ? (
+              <p className="text-sm text-gray-500 mt-1">Expires {formatExpiry(result.expires)}</p>
+            ) : null}
           </div>
 
-          {/* Details grid */}
+          {/* Details */}
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-gray-500">Total paid</span>
@@ -81,17 +88,17 @@ export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessM
           </div>
 
           {/* Set primary name */}
-          {!done ? (
+          {!primaryDone ? (
             <button
               onClick={handleSetPrimary}
-              disabled={loading}
+              disabled={setStep === "setting"}
               className="w-full py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors text-sm"
             >
-              {loading ? "Setting primary name..." : "⭐ Set as Primary Name"}
+              {setStep === "setting" ? "Setting primary name…" : "⭐ Set as Primary Name"}
             </button>
           ) : (
             <div className="w-full py-3 bg-green-50 text-green-700 rounded-xl font-semibold text-center text-sm border border-green-100">
-              ✓ Primary name set to {result.name}
+              ✓ Primary name set to {result.name}.{tld}
             </div>
           )}
 

@@ -15,7 +15,7 @@ import {
   ARC_TESTNET_RUNTIME_MODE,
   arcTestnet,
 } from "./chains";
-import { CONTRACTS } from "./contracts";
+import { ADDR_ARC_CONTROLLER, ADDR_CIRCLE_CONTROLLER } from "./contracts";
 
 export const SUPPORTED_CHAIN_IDS = {
   ARC_TESTNET: ARC_TESTNET_CHAIN_ID,
@@ -146,7 +146,7 @@ export function resolveExecutionContext(
     writeAuthorityType,
     readClientType,
   } = buildArcReadContext();
-  const controller = tld === "arc" ? CONTRACTS.arcController : CONTRACTS.circleController;
+  const controller = tld === "arc" ? ADDR_ARC_CONTROLLER : ADDR_CIRCLE_CONTROLLER;
 
   console.log("[ExecutionContext]", {
     runtimeMode: ARC_TESTNET_RUNTIME_MODE,

@@ -1,8 +1,8 @@
 /**
  * explorerAdapter.ts — Blockscout / explorer compatibility layer
  *
- * Provides ENS-compatible resolution for block explorers that support
- * the ENS metadata service API format.
+ * Provides ArcNS resolution for block explorers that support
+ * the name service metadata API format.
  *
  * Endpoints consumed by Blockscout:
  *   GET /api/resolve/name/:name     → { address }

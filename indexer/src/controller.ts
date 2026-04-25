@@ -3,9 +3,9 @@ import {
   NameRegistered as NameRegisteredEvent,
   NameRenewed as NameRenewedEvent,
 } from "../generated/ArcController/Controller";
-import { Domain, Registration, Account, DomainEvent } from "../generated/schema";
+import { Domain, Registration, Renewal, Account, DomainEvent, LabelhashIndex } from "../generated/schema";
 
-// ─── ENS-compatible namehash ──────────────────────────────────────────────────
+// ─── Namehash ─────────────────────────────────────────────────────────────────
 
 export function namehash(name: string): Bytes {
   let node = Bytes.fromHexString(
@@ -26,7 +26,7 @@ export function namehash(name: string): Bytes {
 
 // ─── Account helper ───────────────────────────────────────────────────────────
 
-function getOrCreateAccount(addr: Bytes): Account {
+export function getOrCreateAccount(addr: Bytes): Account {
   let id = addr.toHexString().toLowerCase();
   let account = Account.load(id);
   if (!account) {
@@ -36,27 +36,22 @@ function getOrCreateAccount(addr: Bytes): Account {
   return account;
 }
 
-// ─── Shared registration handler ─────────────────────────────────────────────
+// ─── Registration handler ─────────────────────────────────────────────────────
 
 function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   let labelName = event.params.name;
-
-  // Guard: skip empty-name events — never index them
   if (labelName.length == 0) return;
 
   let fullName = labelName + "." + tld;
   let nodeBytes = namehash(fullName);
   let domainId = nodeBytes.toHexString();
 
-  // Deterministic labelhash = keccak256(label)
   let labelhash = Bytes.fromByteArray(
     crypto.keccak256(ByteArray.fromUTF8(labelName))
   );
 
-  // Duration = expiresAt - block.timestamp (approximate)
   let duration = event.params.expires.minus(event.block.timestamp);
 
-  // Idempotent: load existing domain or create new — only overwrite changed fields
   let domain = Domain.load(domainId);
   if (!domain) {
     domain = new Domain(domainId);
@@ -66,18 +61,22 @@ function handleRegistration(event: NameRegisteredEvent, tld: string): void {
     domain.createdAt = event.block.timestamp;
     domain.registrationType = tld == "arc" ? "ARC" : "CIRCLE";
   }
-  // Always overwrite mutable fields with latest event values
   domain.owner = getOrCreateAccount(event.params.owner).id;
   domain.expiry = event.params.expires;
   domain.lastCost = event.params.cost;
   domain.save();
 
-  // Ensure Account exists
-  getOrCreateAccount(event.params.owner);
+  // Write LabelhashIndex so Registrar Transfer handler can resolve domain id
+  let indexId = tld + "-" + labelhash.toHexString();
+  let index = LabelhashIndex.load(indexId);
+  if (!index) {
+    index = new LabelhashIndex(indexId);
+    index.domainId = domainId;
+    index.save();
+  }
 
-  // Create immutable Registration record (txHash-logIndex is unique per event)
-  let regId =
-    event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
+  // Immutable Registration record
+  let regId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
   let reg = new Registration(regId);
   reg.domain = domainId;
   reg.registrant = event.params.owner;
@@ -89,9 +88,9 @@ function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   reg.transactionHash = event.transaction.hash;
   reg.save();
 
-  // Create DomainEvent record for REGISTER
-  let eventId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString() + "-reg";
-  let domainEvent = new DomainEvent(eventId);
+  // DomainEvent: REGISTER
+  let evId = regId + "-reg";
+  let domainEvent = new DomainEvent(evId);
   domainEvent.domain = domainId;
   domainEvent.eventType = "REGISTER";
   domainEvent.from = Bytes.fromHexString("0x0000000000000000000000000000000000000000");
@@ -103,10 +102,10 @@ function handleRegistration(event: NameRegisteredEvent, tld: string): void {
   domainEvent.save();
 }
 
+// ─── Renewal handler ──────────────────────────────────────────────────────────
+
 function handleRenewal(event: NameRenewedEvent, tld: string): void {
   let labelName = event.params.name;
-
-  // Guard: skip empty-name events
   if (labelName.length == 0) return;
 
   let fullName = labelName + "." + tld;
@@ -114,16 +113,26 @@ function handleRenewal(event: NameRenewedEvent, tld: string): void {
   let domainId = nodeBytes.toHexString();
 
   let domain = Domain.load(domainId);
-  if (!domain) return; // domain must exist before we can renew or emit events
+  if (!domain) return;
 
-  // Idempotent: always update expiry and lastCost — latest event wins
   domain.expiry = event.params.expires;
   domain.lastCost = event.params.cost;
   domain.save();
 
-  // Create DomainEvent record for RENEW
-  let eventId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString() + "-renew";
-  let domainEvent = new DomainEvent(eventId);
+  // Immutable Renewal record
+  let renewId = event.transaction.hash.toHexString() + "-" + event.logIndex.toString();
+  let renewal = new Renewal(renewId);
+  renewal.domain = domainId;
+  renewal.cost = event.params.cost;
+  renewal.expiresAt = event.params.expires;
+  renewal.blockNumber = event.block.number;
+  renewal.timestamp = event.block.timestamp;
+  renewal.transactionHash = event.transaction.hash;
+  renewal.save();
+
+  // DomainEvent: RENEW
+  let evId = renewId + "-renew";
+  let domainEvent = new DomainEvent(evId);
   domainEvent.domain = domainId;
   domainEvent.eventType = "RENEW";
   domainEvent.cost = event.params.cost;

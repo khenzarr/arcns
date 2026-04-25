@@ -66,7 +66,7 @@ export function getNameState(
   // Definitive on-chain answer
   if (available !== undefined) return available ? "AVAILABLE" : "TAKEN";
 
-  // No data yet: optimistic default = AVAILABLE (ENS-like behavior)
+  // No data yet: optimistic default = AVAILABLE (name service behavior)
   // The RPC will correct this if the name is actually taken
   if (optimistic && !isLoading) return "AVAILABLE";
 

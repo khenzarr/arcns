@@ -22,8 +22,17 @@ import {
   ERR,
   EIP1967_IMPL_SLOT,
 } from "../lib/controllerIdentity";
-import { makeCommitmentHash } from "../lib/namehash";
-import { CONTRACTS } from "../lib/contracts";
+import { makeCommitment } from "../lib/commitment";
+import {
+  ADDR_ARC_CONTROLLER,
+  ADDR_CIRCLE_CONTROLLER,
+} from "../lib/contracts";
+
+// Compatibility shim for tests that use CONTRACTS.arcController / CONTRACTS.circleController
+const CONTRACTS = {
+  arcController:    ADDR_ARC_CONTROLLER,
+  circleController: ADDR_CIRCLE_CONTROLLER,
+};
 
 // ─── Mock publicClient ────────────────────────────────────────────────────────
 
@@ -205,40 +214,42 @@ describe("E — Proxy implementation mismatch (IMPL_SLOT_MISMATCH)", () => {
 
 // ─── F: Hash consistency ──────────────────────────────────────────────────────
 
-describe("F — Hash consistency (makeCommitmentHash)", () => {
+describe("F — Hash consistency (makeCommitment)", () => {
   const owner    = "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D" as `0x${string}`;
   const duration = BigInt(365 * 24 * 60 * 60);
   const secret   = "0x" + "ab".repeat(32) as `0x${string}`;
   const resolver = "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350" as `0x${string}`;
 
-  it("makeCommitmentHash is deterministic for same inputs", () => {
-    const h1 = makeCommitmentHash("alice", owner, duration, secret, resolver, [], false, owner);
-    const h2 = makeCommitmentHash("alice", owner, duration, secret, resolver, [], false, owner);
+  const baseParams = { owner, duration, secret, resolverAddr: resolver, reverseRecord: false, sender: owner };
+
+  it("makeCommitment is deterministic for same inputs", () => {
+    const h1 = makeCommitment({ name: "alice", ...baseParams });
+    const h2 = makeCommitment({ name: "alice", ...baseParams });
     expect(h1).toBe(h2);
   });
 
-  it("makeCommitmentHash differs when label changes", () => {
-    const h1 = makeCommitmentHash("alice", owner, duration, secret, resolver, [], false, owner);
-    const h2 = makeCommitmentHash("bob",   owner, duration, secret, resolver, [], false, owner);
+  it("makeCommitment differs when label changes", () => {
+    const h1 = makeCommitment({ name: "alice", ...baseParams });
+    const h2 = makeCommitment({ name: "bob",   ...baseParams });
     expect(h1).not.toBe(h2);
   });
 
-  it("makeCommitmentHash differs when owner changes", () => {
+  it("makeCommitment differs when owner changes", () => {
     const other = "0x1111111111111111111111111111111111111111" as `0x${string}`;
-    const h1 = makeCommitmentHash("alice", owner, duration, secret, resolver, [], false, owner);
-    const h2 = makeCommitmentHash("alice", other, duration, secret, resolver, [], false, other);
+    const h1 = makeCommitment({ name: "alice", ...baseParams });
+    const h2 = makeCommitment({ name: "alice", ...baseParams, owner: other, sender: other });
     expect(h1).not.toBe(h2);
   });
 
-  it("makeCommitmentHash differs when secret changes", () => {
+  it("makeCommitment differs when secret changes", () => {
     const secret2 = "0x" + "cd".repeat(32) as `0x${string}`;
-    const h1 = makeCommitmentHash("alice", owner, duration, secret,  resolver, [], false, owner);
-    const h2 = makeCommitmentHash("alice", owner, duration, secret2, resolver, [], false, owner);
+    const h1 = makeCommitment({ name: "alice", ...baseParams });
+    const h2 = makeCommitment({ name: "alice", ...baseParams, secret: secret2 });
     expect(h1).not.toBe(h2);
   });
 
-  it("makeCommitmentHash output is 32-byte hex", () => {
-    const h = makeCommitmentHash("alice", owner, duration, secret, resolver, [], false, owner);
+  it("makeCommitment output is 32-byte hex", () => {
+    const h = makeCommitment({ name: "alice", ...baseParams });
     expect(h).toMatch(/^0x[0-9a-f]{64}$/);
   });
 });
@@ -343,18 +354,21 @@ describe("H — .arc vs .circle controller isolation", () => {
   });
 });
 
-// ─── I: 3-confirmation finality ───────────────────────────────────────────────
+// ─── I: Commitment maturity wait ─────────────────────────────────────────────
 
-describe("I — 3-confirmation finality rule", () => {
-  it("COMMIT_CONFIRMATIONS constant matches current source behavior", async () => {
+describe("I — Commitment maturity wait rule", () => {
+  it("MIN_COMMITMENT_AGE_MS is at least 60000ms in useRegistration.ts", async () => {
     const { readFileSync } = await import("fs");
     const { resolve } = await import("path");
     const src = readFileSync(
-      resolve(__dirname, "../hooks/useRegistrationPipeline.ts"),
+      resolve(__dirname, "../hooks/useRegistration.ts"),
       "utf-8"
     );
-    expect(src).toContain("COMMIT_CONFIRMATIONS = 1");
-    expect(src).toContain("confirmations: COMMIT_CONFIRMATIONS");
+    // v3 uses MIN_COMMITMENT_AGE_MS (62s) — must be >= 60000
+    const match = src.match(/MIN_COMMITMENT_AGE_MS\s*=\s*(\d+)/);
+    expect(match).not.toBeNull();
+    const value = parseInt(match![1], 10);
+    expect(value).toBeGreaterThanOrEqual(60_000);
   });
 });
 

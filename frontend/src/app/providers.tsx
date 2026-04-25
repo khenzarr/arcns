@@ -1,84 +1,69 @@
 "use client";
+/**
+ * providers.tsx — v3 runtime provider setup.
+ *
+ * Responsibilities:
+ *   - WagmiProvider + QueryClientProvider (WalletConnect + MetaMask-first)
+ *   - Arc Testnet chain enforcement (reactive, not boot-time blocking)
+ *   - Clean v3 runtime wiring — no v2 proxy checks, no hidden v2 assumptions
+ *   - QueryClient configured for Arc Testnet read patterns
+ *
+ * Chain enforcement strategy:
+ *   - Enforced reactively when wallet connects (via useAccount().chainId in ChainGuard)
+ *   - Does NOT block page render — only blocks write actions
+ *   - Shows a persistent banner when wrong network is detected
+ */
 
-import { useState, useEffect } from "react";
-import { WagmiProvider } from "wagmi";
+import { useState } from "react";
+import { WagmiProvider, useAccount } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { wagmiConfig } from "../lib/wagmiConfig";
-import { CONTRACTS } from "../lib/contracts";
+import { DEPLOYED_CHAIN_ID, DEPLOYED_NETWORK } from "../lib/generated-contracts";
 
-// EIP-1967 implementation slot: keccak256("eip1967.proxy.implementation") - 1
-// CORRECT value — the previous value had wrong trailing bytes and read the wrong slot.
-const IMPL_SLOT = "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc" as `0x${string}`;
+// ─── Chain guard banner ───────────────────────────────────────────────────────
 
-/**
- * Boot-time proxy check — runs ONCE on app startup.
- * Reads the EIP-1967 implementation slot from both controllers.
- * If either slot is zero or has no bytecode → shows PROXY_OUTDATED banner.
- * Does NOT block reads or availability checks — only blocks write actions.
- */
-async function checkProxies(): Promise<string | null> {
-  try {
-    const { publicClient } = await import("../lib/publicClient");
-    const proxies = [
-      { name: "arcController",    address: CONTRACTS.arcController    },
-      { name: "circleController", address: CONTRACTS.circleController },
-    ];
+function ChainGuardBanner() {
+  const { chainId, isConnected } = useAccount();
 
-    for (const { name, address } of proxies) {
-      const raw  = await publicClient.getStorageAt({ address, slot: IMPL_SLOT });
-      if (!raw) {
-        return `PROXY_CHECK_FAILED: ${name} implementation slot could not be read from Arc Testnet RPC.`;
-      }
-      const impl = ("0x" + raw.slice(-40)) as `0x${string}`;
-      console.log(`[Boot] ${name} impl: ${impl}`);
+  if (!isConnected || !chainId || chainId === DEPLOYED_CHAIN_ID) return null;
 
-      if (impl === "0x0000000000000000000000000000000000000000") {
-        return `PROXY_OUTDATED: ${name} implementation slot is zero. Run upgradeV2.js.`;
-      }
-      const code = await publicClient.getCode({ address: impl });
-      if (!code || code === "0x") {
-        return `PROXY_OUTDATED: ${name} implementation ${impl} has no bytecode.`;
-      }
-    }
-    return null;
-  } catch (e: any) {
-    // Non-fatal — proxy check failure should not block the app
-    console.warn("[Boot] proxy check failed:", e.message);
-    return null;
-  }
+  return (
+    <div
+      style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
+        background: "#dc2626", color: "#fff",
+        padding: "10px 16px", fontSize: "13px",
+        fontFamily: "monospace", textAlign: "center",
+      }}
+    >
+      ⚠ Wrong network (Chain ID {chainId}). Please switch your wallet to Arc Testnet
+      (Chain ID {DEPLOYED_CHAIN_ID}). Write transactions are blocked until you switch.
+    </div>
+  );
 }
+
+// ─── Providers ────────────────────────────────────────────────────────────────
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        retry: 1,
+        // Arc Testnet has fast finality — 15s stale time is reasonable
+        staleTime:            15_000,
+        // Retry once on failure — Arc RPC can have transient issues
+        retry:                1,
+        retryDelay:           1_000,
+        // Don't refetch on window focus — reduces RPC load during demos
         refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
-        staleTime: 30_000,
+        refetchOnReconnect:   false,
       },
     },
   }));
 
-  const [proxyError, setProxyError] = useState<string | null>(null);
-
-  // Boot-time proxy check — runs once, non-blocking
-  useEffect(() => {
-    checkProxies().then(err => { if (err) setProxyError(err); });
-  }, []);
-
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        {proxyError ? (
-          <div style={{
-            position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
-            background: "#dc2626", color: "#fff", padding: "10px 16px",
-            fontSize: "13px", fontFamily: "monospace", textAlign: "center",
-          }}>
-            ⚠ {proxyError} — Transactions are blocked until the proxy is upgraded.
-          </div>
-        ) : null}
+        <ChainGuardBanner />
         {children}
       </QueryClientProvider>
     </WagmiProvider>

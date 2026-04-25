@@ -1,12 +1,11 @@
 {
   "name": "arcns-subgraph",
-  "version": "1.0.0",
-  "description": "The Graph subgraph for Arc Name Service",
+  "version": "2.0.0",
+  "description": "ArcNS v3 canonical subgraph — target: arcnslatest",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",
-    "deploy:studio": "graph deploy --studio arcns",
-    "deploy:hosted": "graph deploy --product hosted-service arcns/arcns"
+    "deploy": "graph deploy arcnslatest"
   },
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.71.0",

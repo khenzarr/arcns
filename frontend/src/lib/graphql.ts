@@ -1,8 +1,13 @@
 /**
- * ArcNS Subgraph Client — v0.2.0 schema
+ * graphql.ts — ArcNS subgraph client.
+ *
+ * Target subgraph: arcnslatest (Arc testnet, v3 canonical)
  *
  * Failsafe: every function catches all errors and returns null/[] so the
  * frontend always falls back to RPC silently. Never throws to the caller.
+ *
+ * Write paths (useRegistration, useRenew, usePrimaryName, useAvailability)
+ * are NOT touched here — this file is read-only indexed data only.
  */
 
 const SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL || "";
@@ -20,7 +25,7 @@ async function gqlQuery<T>(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables }),
-      signal: AbortSignal.timeout(8000), // 8s hard timeout
+      signal: AbortSignal.timeout(8000),
     });
     if (!res.ok) return null;
     const json = await res.json();
@@ -46,8 +51,6 @@ export interface GQLDomain {
   registrationType: "ARC" | "CIRCLE";
   resolverRecord: {
     addr: string | null;
-    contenthash: string | null;
-    texts: string[];
   } | null;
 }
 
@@ -67,7 +70,16 @@ export interface GQLRegistration {
   transactionHash: string;
 }
 
-// ─── Queries ──────────────────────────────────────────────────────────────────
+export interface GQLRenewal {
+  id: string;
+  domain: { name: string };
+  cost: string;
+  expiresAt: string;
+  timestamp: string;
+  transactionHash: string;
+}
+
+// ─── Field fragments ──────────────────────────────────────────────────────────
 
 const DOMAIN_FIELDS = `
   id name labelName
@@ -75,10 +87,12 @@ const DOMAIN_FIELDS = `
   resolver
   createdAt expiry registrationType
   lastCost resolvedAddress
-  resolverRecord { addr contenthash texts }
+  resolverRecord { addr }
 `;
 
-/** Resolve a domain name → full domain data (subgraph primary) */
+// ─── Queries ──────────────────────────────────────────────────────────────────
+
+/** Resolve a domain name → full domain data */
 export async function getDomainByName(name: string): Promise<GQLDomain | null> {
   const data = await gqlQuery<{ domains: GQLDomain[] }>(
     `query($name: String!) {
@@ -89,13 +103,16 @@ export async function getDomainByName(name: string): Promise<GQLDomain | null> {
   return data?.domains?.[0] ?? null;
 }
 
-/** Get all domains owned by an address */
+/** Get all domains owned by an address — for portfolio view */
 export async function getDomainsByOwner(address: string): Promise<GQLDomain[]> {
   const data = await gqlQuery<{ domains: GQLDomain[] }>(
     `query($owner: String!) {
-      domains(where: { owner: $owner }, orderBy: expiry, orderDirection: asc) {
-        ${DOMAIN_FIELDS}
-      }
+      domains(
+        where: { owner: $owner }
+        orderBy: expiry
+        orderDirection: asc
+        first: 200
+      ) { ${DOMAIN_FIELDS} }
     }`,
     { owner: address.toLowerCase() }
   );
@@ -117,7 +134,9 @@ export async function getRegistrationHistory(address: string): Promise<GQLRegist
     `query($registrant: Bytes!) {
       registrations(
         where: { registrant: $registrant }
-        orderBy: timestamp orderDirection: desc first: 50
+        orderBy: timestamp
+        orderDirection: desc
+        first: 50
       ) {
         id domain { name } registrant cost expiresAt timestamp transactionHash
       }
@@ -125,6 +144,25 @@ export async function getRegistrationHistory(address: string): Promise<GQLRegist
     { registrant: address.toLowerCase() }
   );
   return data?.registrations ?? [];
+}
+
+/** Get renewal history for an address (via domains owned) */
+export async function getRenewalHistory(address: string): Promise<GQLRenewal[]> {
+  // Renewals are indexed per domain — fetch via domains owned by address
+  const data = await gqlQuery<{ renewals: GQLRenewal[] }>(
+    `query($owner: String!) {
+      renewals(
+        where: { domain_: { owner: $owner } }
+        orderBy: timestamp
+        orderDirection: desc
+        first: 50
+      ) {
+        id domain { name } cost expiresAt timestamp transactionHash
+      }
+    }`,
+    { owner: address.toLowerCase() }
+  );
+  return data?.renewals ?? [];
 }
 
 /** Get domains expiring within N days */
@@ -137,17 +175,14 @@ export async function getExpiringDomains(
     `query($owner: String!, $cutoff: BigInt!) {
       domains(
         where: { owner: $owner, expiry_lte: $cutoff }
-        orderBy: expiry orderDirection: asc
+        orderBy: expiry
+        orderDirection: asc
       ) { ${DOMAIN_FIELDS} }
     }`,
     { owner: owner.toLowerCase(), cutoff }
   );
   return data?.domains ?? [];
 }
-
-// Legacy compat exports
-export type { GQLDomain as GQLDomainLegacy };
-export const getDomain = getDomainByName;
 
 // ─── Resolution API helpers ───────────────────────────────────────────────────
 
@@ -158,34 +193,39 @@ export async function resolveName(name: string): Promise<{
   expiry: string | null;
   source: "subgraph" | "rpc" | null;
 }> {
-  // Try subgraph
   const domain = await getDomainByName(name);
   if (domain) {
     const address = domain.resolvedAddress ?? domain.resolverRecord?.addr ?? null;
     return { address, owner: domain.owner?.id ?? null, expiry: domain.expiry, source: "subgraph" };
   }
-  // Fallback: RPC
+  // RPC fallback
   try {
     const { publicClient } = await import("./publicClient");
     const { namehash } = await import("./namehash");
-    const { CONTRACTS } = await import("./contracts");
+    const {
+      ADDR_REGISTRY, ADDR_RESOLVER,
+      REGISTRY_ABI, RESOLVER_ABI,
+    } = await import("./contracts");
     const node = namehash(name) as `0x${string}`;
     const ZERO = "0x0000000000000000000000000000000000000000";
     const resolverAddr = await publicClient.readContract({
-      address: CONTRACTS.registry,
-      abi: [{ name: "resolver", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
-      functionName: "resolver", args: [node],
+      address: ADDR_REGISTRY,
+      abi: REGISTRY_ABI,
+      functionName: "resolver",
+      args: [node],
     }) as string;
     if (!resolverAddr || resolverAddr === ZERO) return { address: null, owner: null, expiry: null, source: null };
     const owner = await publicClient.readContract({
-      address: CONTRACTS.registry,
-      abi: [{ name: "owner", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
-      functionName: "owner", args: [node],
+      address: ADDR_REGISTRY,
+      abi: REGISTRY_ABI,
+      functionName: "owner",
+      args: [node],
     }) as string;
     const addr = await publicClient.readContract({
-      address: resolverAddr as `0x${string}`,
-      abi: [{ name: "addr", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
-      functionName: "addr", args: [node],
+      address: ADDR_RESOLVER,
+      abi: RESOLVER_ABI,
+      functionName: "addr",
+      args: [node],
     }) as string;
     return {
       address: addr && addr !== ZERO ? addr : null,
@@ -201,29 +241,32 @@ export async function resolveAddress(address: string): Promise<{
   name: string | null;
   source: "subgraph" | "rpc" | null;
 }> {
-  // Try subgraph reverse record
   const rev = await getReverseRecord(address);
   if (rev?.name) return { name: rev.name, source: "subgraph" };
-  // Fallback: RPC
+  // RPC fallback
   try {
     const { publicClient } = await import("./publicClient");
-    const { CONTRACTS } = await import("./contracts");
-    const hexAddr = address.toLowerCase().replace("0x", "");
-    const reverseNode = `${hexAddr}.addr.reverse`;
+    const { ADDR_REGISTRY, ADDR_RESOLVER, REGISTRY_ABI, RESOLVER_ABI } = await import("./contracts");
     const { namehash } = await import("./namehash");
-    const node = namehash(reverseNode) as `0x${string}`;
+    const hexAddr = address.toLowerCase().replace("0x", "");
+    const reverseNode = namehash(`${hexAddr}.addr.reverse`) as `0x${string}`;
     const ZERO = "0x0000000000000000000000000000000000000000";
     const resolverAddr = await publicClient.readContract({
-      address: CONTRACTS.registry,
-      abi: [{ name: "resolver", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "address" as const }] }],
-      functionName: "resolver", args: [node],
+      address: ADDR_REGISTRY,
+      abi: REGISTRY_ABI,
+      functionName: "resolver",
+      args: [reverseNode],
     }) as string;
     if (!resolverAddr || resolverAddr === ZERO) return { name: null, source: null };
     const name = await publicClient.readContract({
-      address: resolverAddr as `0x${string}`,
-      abi: [{ name: "name", type: "function" as const, stateMutability: "view" as const, inputs: [{ name: "node", type: "bytes32" as const }], outputs: [{ name: "", type: "string" as const }] }],
-      functionName: "name", args: [node],
+      address: ADDR_RESOLVER,
+      abi: RESOLVER_ABI,
+      functionName: "name",
+      args: [reverseNode],
     }) as string;
     return { name: name && name.length > 0 ? name : null, source: "rpc" };
   } catch { return { name: null, source: null }; }
 }
+
+// Legacy compat
+export const getDomain = getDomainByName;

@@ -33,7 +33,7 @@ vi.mock("../lib/nameCache", () => ({
 }));
 
 import { useReadContract } from "wagmi";
-import { useBalanceSafety } from "../hooks/useArcNS";
+import { useBalanceSafety } from "../hooks/useAvailability";
 import { readFileSync } from "fs";
 import path from "path";
 

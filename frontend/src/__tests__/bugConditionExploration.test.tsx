@@ -45,8 +45,8 @@ vi.mock("../lib/nameCache", () => ({
 
 import { useReadContract } from "wagmi";
 import { renderHook } from "@testing-library/react";
-import { useBalanceSafety } from "../hooks/useArcNS";
-import { formatUSDC } from "../lib/namehash";
+import { useBalanceSafety } from "../hooks/useAvailability";
+import { formatUSDC } from "../lib/normalization";
 import { arcTestnet } from "../lib/chains";
 
 // ─── Test 1: Approval Label Bug ───────────────────────────────────────────────

@@ -13,8 +13,14 @@
  *  - infra errors misclassified as contract logic failures
  */
 
-import { CONTRACTS } from "./contracts";
+import { ADDR_ARC_CONTROLLER, ADDR_CIRCLE_CONTROLLER } from "./contracts";
 import { arcTestnet } from "./chains";
+
+// Internal shim — single source of truth for controller addresses
+const CONTRACTS = {
+  arcController:    ADDR_ARC_CONTROLLER,
+  circleController: ADDR_CIRCLE_CONTROLLER,
+} as const;
 
 // ─── EIP-1967 implementation slot ────────────────────────────────────────────
 // keccak256("eip1967.proxy.implementation") - 1
@@ -43,9 +49,9 @@ export type ErrorCode = typeof ERR[keyof typeof ERR];
 export interface ControllerIdentity {
   controllerAddress:    `0x${string}`;
   chainId:              number;
-  implSlotValue:        `0x${string}`;  // EIP-1967 slot value, or "NO_PROXY"
+  implSlotValue:        string;   // EIP-1967 slot value (hex), or "NO_PROXY"
   tld:                  "arc" | "circle";
-  sourceOfTruth:        string;         // exact env var / file used
+  sourceOfTruth:        string;
 }
 
 // ─── Module-level identity cache ─────────────────────────────────────────────
@@ -90,17 +96,15 @@ export function classifyTransportError(e: unknown): { code: ErrorCode; message: 
 async function readImplSlot(
   publicClient: any,
   proxyAddress: `0x${string}`,
-): Promise<`0x${string}`> {
+): Promise<string> {
   try {
     const raw = await publicClient.getStorageAt({
       address: proxyAddress,
       slot: EIP1967_IMPL_SLOT,
     });
-    // getStorageAt returns 0x-prefixed 32-byte hex
-    return (raw ?? "0x0000000000000000000000000000000000000000000000000000000000000000") as `0x${string}`;
+    return (raw ?? "0x0000000000000000000000000000000000000000000000000000000000000000") as string;
   } catch {
-    // If storage read fails (non-proxy or RPC error), treat as NO_PROXY
-    return "NO_PROXY" as `0x${string}`;
+    return "NO_PROXY";
   }
 }
 

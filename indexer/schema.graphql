@@ -7,71 +7,110 @@ enum DomainEventType {
   REGISTER
   RENEW
   TRANSFER
-  EXPIRE
 }
 
+# ─── Account ──────────────────────────────────────────────────────────────────
+
+type Account @entity(immutable: false) {
+  id: ID!                        # lowercase EVM address
+  domains: [Domain!]! @derivedFrom(field: "owner")
+  reverseName: String            # primary name for this address (from ReverseRecord)
+}
+
+# ─── Domain ───────────────────────────────────────────────────────────────────
+
 type Domain @entity(immutable: false) {
-  id: ID!                      # namehash as hex
-  name: String!                # full name e.g. "alice.arc"
-  labelName: String!           # label only e.g. "alice"
-  labelhash: Bytes!            # keccak256(label)
-  owner: Account!              # current owner
-  resolver: Bytes              # resolver contract address
-  createdAt: BigInt!
-  expiry: BigInt!
-  lastCost: BigInt             # most recent registration or renewal cost (USDC)
-  resolvedAddress: Bytes       # latest resolved EVM address (mirrors ResolverRecord.addr)
+  id: ID!                        # namehash as hex string
+  name: String!                  # full name e.g. "alice.arc"
+  labelName: String!             # label only e.g. "alice"
+  labelhash: Bytes!              # keccak256(label)
   registrationType: RegistrationType!
-  resolverRecord: ResolverRecord
+  owner: Account!                # current ERC-721 owner
+  resolver: Bytes                # resolver contract address (from Registry.NewResolver)
+  createdAt: BigInt!             # block timestamp of first registration
+  expiry: BigInt!                # current expiry timestamp (Unix seconds)
+  lastCost: BigInt               # most recent registration or renewal cost (USDC, 6 decimals)
+  resolvedAddress: Bytes         # mirror of ResolverRecord.addr for fast queries
+  resolverRecord: ResolverRecord # linked resolver state (optional — only if AddrChanged fired)
   registrations: [Registration!]! @derivedFrom(field: "domain")
+  renewals: [Renewal!]! @derivedFrom(field: "domain")
   events: [DomainEvent!]! @derivedFrom(field: "domain")
 }
 
-type Account @entity(immutable: false) {
-  id: ID!                      # lowercase address
-  domains: [Domain!]! @derivedFrom(field: "owner")
-  reverseName: String          # primary name for this address
-}
+# ─── Registration ─────────────────────────────────────────────────────────────
+# Immutable — one record per NameRegistered event from the Controller.
 
 type Registration @entity(immutable: true) {
-  id: ID!                      # txHash-logIndex
+  id: ID!                        # txHash-logIndex
   domain: Domain!
-  registrant: Bytes!
-  cost: BigInt!
-  duration: BigInt!
-  expiresAt: BigInt!
+  registrant: Bytes!             # owner address at registration time
+  cost: BigInt!                  # USDC paid (6 decimals)
+  duration: BigInt!              # registration duration in seconds
+  expiresAt: BigInt!             # expiry timestamp
   blockNumber: BigInt!
   timestamp: BigInt!
   transactionHash: Bytes!
 }
+
+# ─── Renewal ──────────────────────────────────────────────────────────────────
+# Immutable — one record per NameRenewed event from the Controller.
+
+type Renewal @entity(immutable: true) {
+  id: ID!                        # txHash-logIndex
+  domain: Domain!
+  cost: BigInt!                  # USDC paid (6 decimals)
+  expiresAt: BigInt!             # new expiry timestamp after renewal
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+# ─── DomainEvent ──────────────────────────────────────────────────────────────
+# Immutable unified event log — REGISTER, RENEW, TRANSFER.
 
 type DomainEvent @entity(immutable: true) {
-  id: ID!                      # txHash-logIndex
+  id: ID!                        # txHash-logIndex-type
   domain: Domain!
   eventType: DomainEventType!
-  from: Bytes                  # previous owner (TRANSFER) or zero
-  to: Bytes                    # new owner (REGISTER/TRANSFER)
-  cost: BigInt                 # USDC cost (REGISTER/RENEW)
+  from: Bytes                    # previous owner (TRANSFER) or zero address (REGISTER)
+  to: Bytes                      # new owner (REGISTER/TRANSFER); null for RENEW
+  cost: BigInt                   # USDC cost (REGISTER/RENEW); null for TRANSFER
   blockNumber: BigInt!
   timestamp: BigInt!
   transactionHash: Bytes!
 }
 
+# ─── ResolverRecord ───────────────────────────────────────────────────────────
+# Mutable — updated by AddrChanged events on the Resolver.
+# v1 scope: addr only.
+
 type ResolverRecord @entity(immutable: false) {
-  id: ID!                      # domain namehash
+  id: ID!                        # domain namehash hex
   domain: Domain!
-  addr: Bytes                  # resolved EVM address
-  contenthash: Bytes           # content hash
-  texts: [String!]!            # text record keys
+  addr: Bytes                    # resolved EVM address (addr(node))
   blockNumber: BigInt!
   timestamp: BigInt!
 }
 
+# ─── ReverseRecord ────────────────────────────────────────────────────────────
+# Mutable — updated by ReverseClaimed + NameChanged.
+# Two entries per address: one keyed by address, one keyed by reverse node.
+
 type ReverseRecord @entity(immutable: false) {
-  id: ID!                      # lowercase address
-  name: String!                # primary name e.g. "alice.arc"
-  node: Bytes!                 # reverse node hash
+  id: ID!                        # lowercase address OR reverse node hex
+  name: String!                  # primary name e.g. "alice.arc" (or address id temporarily)
+  node: Bytes!                   # reverse node hash
   blockNumber: BigInt!
   logIndex: BigInt!
   timestamp: BigInt!
+}
+
+# ─── LabelhashIndex ───────────────────────────────────────────────────────────
+# Internal lookup index: tld-labelhash → domain id (namehash).
+# Written at registration time so the Registrar Transfer handler can resolve
+# the domain id from the ERC-721 tokenId (which equals the labelhash).
+
+type LabelhashIndex @entity(immutable: true) {
+  id: ID!          # "{tld}-{labelhashHex}" e.g. "arc-0x1234..."
+  domainId: String! # namehash hex — the Domain entity id
 }
