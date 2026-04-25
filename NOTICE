@@ -1,0 +1,43 @@
+ArcNS — Arc Name Service
+Copyright (c) 2026 ArcNS contributors
+
+-----------------------------------------------------------------------------
+
+Branding and Reserved Names
+
+"ArcNS", "Arc Name Service", and associated logos and visual identifiers are
+reserved names and branding of the ArcNS project.
+
+Use of the ArcNS name, branding, or visual identifiers in:
+  - forks or derivative deployments of this software
+  - competing or confusingly similar naming services
+  - products or services that imply official affiliation with the ArcNS project
+
+requires separate written permission from the ArcNS contributors.
+
+This restriction applies regardless of the code license under which a fork
+or derivative work is distributed. The code license grants rights to the
+source code; it does not grant rights to the ArcNS name or branding.
+
+Note: The ArcNS name is not currently registered as a formal trademark.
+This notice asserts the project's rights and intent to protect its identity.
+Formal trademark registration may be pursued in the future.
+
+-----------------------------------------------------------------------------
+
+Code Licenses
+
+  contracts/v3/   MIT License (see LICENSE)
+  frontend/       Business Source License 1.1 (see frontend/LICENSE-FRONTEND)
+  docs/           Creative Commons Attribution 4.0 International (see docs/LICENSE-DOCS)
+
+The root LICENSE (MIT) applies to all other repository contents not covered
+by a subdirectory-specific license file.
+
+-----------------------------------------------------------------------------
+
+Third-Party Components
+
+This repository includes dependencies governed by their own licenses.
+See the respective package.json and node_modules directories for details.
+OpenZeppelin contracts used in contracts/v3/ are licensed under MIT.

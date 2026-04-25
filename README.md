@@ -345,4 +345,13 @@ ArcNS is in active pre-mainnet development. If you are an ecosystem partner, gra
 
 ## License
 
-MIT
+| Directory | License |
+|-----------|---------|
+| `contracts/v3/` | [MIT](LICENSE) |
+| `frontend/` | [Business Source License 1.1](frontend/LICENSE-FRONTEND) — converts to MIT on 2030-04-26 |
+| `docs/` | [Creative Commons Attribution 4.0](docs/LICENSE-DOCS) |
+| All other files | [MIT](LICENSE) |
+
+See [NOTICE](NOTICE) for copyright, branding, and reserved-name terms.
+The ArcNS name and branding are reserved identifiers of the ArcNS project.
+Use in forks, derivative deployments, or confusingly similar products requires separate permission.
