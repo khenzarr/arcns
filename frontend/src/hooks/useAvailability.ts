@@ -146,7 +146,7 @@ export function useAvailability(
 }
 
 // ─── Balance safety check ─────────────────────────────────────────────────────
-// Extracted from v1 useArcNS for use by v3 components and tests.
+// USDC balance hook — used by v3 components and tests.
 
 import { useAccount } from "wagmi";
 import { useState, useEffect } from "react";

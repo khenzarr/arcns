@@ -1,6 +1,6 @@
 # ArcNS — Arc Name Service
 
-ENS-parity decentralized naming protocol for **Arc Testnet** (Chain ID: 5042002).
+Decentralized naming protocol for **Arc Testnet** (Chain ID: 5042002).
 
 Register `.arc` and `.circle` domains. Pay with USDC. Own your on-chain identity.
 
@@ -79,54 +79,44 @@ Payment Flow:
 ```
 arcns/
 ├── contracts/
-│   ├── interfaces/
-│   │   ├── IArcNSRegistry.sol       # Registry interface (EIP-137)
-│   │   ├── IArcNSResolver.sol       # Resolver interface
-│   │   └── IArcNSPriceOracle.sol    # Price oracle interface
-│   ├── registry/
-│   │   └── ArcNSRegistry.sol        # Central registry
-│   ├── registrar/
-│   │   ├── ArcNSBaseRegistrar.sol   # ERC-721 TLD registrar
-│   │   ├── ArcNSRegistrarController.sol  # Commit/reveal + USDC payment
-│   │   ├── ArcNSPriceOracle.sol     # USDC pricing tiers
-│   │   └── ArcNSReverseRegistrar.sol # Reverse resolution
-│   ├── resolver/
-│   │   └── ArcNSResolver.sol        # Modular public resolver
-│   └── mocks/
-│       └── MockUSDC.sol             # Test USDC token
+│   ├── v3/                          # ← ACTIVE-CANONICAL v3 contracts
+│   │   ├── controller/ArcNSController.sol
+│   │   ├── registrar/ArcNSBaseRegistrar.sol
+│   │   ├── registrar/ArcNSPriceOracle.sol
+│   │   ├── registrar/ArcNSReverseRegistrar.sol
+│   │   ├── registry/ArcNSRegistry.sol
+│   │   ├── resolver/ArcNSResolver.sol
+│   │   ├── interfaces/
+│   │   └── mocks/
+│   ├── registrar/                   # v1/v2 reference — not active
+│   ├── registry/                    # v1/v2 reference — not active
+│   ├── resolver/                    # v1/v2 reference — not active
+│   └── proxy/                       # v2 proxy reference — not active
 ├── scripts/
-│   ├── deploy.js                    # Full deployment pipeline
-│   └── verify.js                    # ArcScan verification
+│   ├── v3/deployV3.js               # ← ACTIVE v3 deployment script
+│   └── generate-frontend-config.js  # ← ACTIVE config generator
 ├── test/
-│   └── ArcNS.test.js               # Comprehensive test suite
-├── deployments/                     # Generated after deploy
+│   └── v3/                          # ← ACTIVE v3 test suite
+├── deployments/
+│   ├── arc_testnet-v3.json          # ← ACTIVE deployment truth
+│   └── arc_testnet-v2.json          # v2 reference only
+├── indexer/                         # ← ACTIVE subgraph (arcnslatest)
+├── docs/
+│   ├── final/                       # ← ACTIVE finalization docs
+│   ├── design/                      # Architecture design docs
+│   └── release/                     # Release checklists
 ├── hardhat.config.js
 ├── package.json
-└── frontend/
-    ├── src/
-    │   ├── app/                     # Next.js App Router
-    │   │   ├── page.tsx             # Home / search
-    │   │   ├── my-domains/page.tsx  # Domain management
-    │   │   ├── resolve/page.tsx     # Name resolution
-    │   │   ├── layout.tsx
-    │   │   ├── providers.tsx        # wagmi + RainbowKit
-    │   │   └── globals.css
-    │   ├── components/
-    │   │   ├── Header.tsx           # Nav + wallet connect
-    │   │   ├── SearchBar.tsx        # Domain search
-    │   │   ├── DomainCard.tsx       # Register/renew UI
-    │   │   └── MyDomains.tsx        # Domain management
-    │   ├── hooks/
-    │   │   └── useArcNS.ts          # wagmi hooks for all contract interactions
-    │   └── lib/
-    │       ├── chains.ts            # Arc Testnet chain definition
-    │       ├── contracts.ts         # ABIs + addresses
-    │       ├── namehash.ts          # ENS namehash + utilities
-    │       └── wagmiConfig.ts       # WalletConnect config
-    ├── package.json
-    ├── next.config.js
-    ├── tailwind.config.js
-    └── tsconfig.json
+└── frontend/                        # ← ACTIVE Next.js frontend
+    └── src/
+        ├── app/                     # Next.js App Router pages
+        ├── components/              # UI components
+        ├── hooks/                   # v3 wagmi hooks
+        │   └── _archive/            # Superseded v1/v2 hooks
+        └── lib/
+            ├── generated-contracts.ts  # ← ACTIVE address source of truth
+            ├── abis.ts                 # ← ACTIVE v3 ABI exports
+            └── contracts.ts            # ← ACTIVE contract descriptors
 ```
 
 ---
@@ -136,70 +126,49 @@ arcns/
 ### 1. Install dependencies
 
 ```bash
-# Contracts
-cd arcns
 npm install
-
-# Frontend
-cd frontend
-npm install
+cd frontend && npm install
 ```
 
 ### 2. Configure environment
 
 ```bash
 cp .env.example .env
-# Fill in PRIVATE_KEY, TREASURY_ADDRESS, WALLETCONNECT_PROJECT_ID
+# Fill in PRIVATE_KEY, TREASURY_ADDRESS
 ```
 
-### 3. Compile contracts
+### 3. Compile v3 contracts
 
 ```bash
-cd arcns
-npm run compile
+npx hardhat compile
 ```
 
-### 4. Run tests
+### 4. Run v3 tests
 
 ```bash
-npm test
+npx hardhat test test/v3/
 ```
 
 ### 5. Deploy to Arc Testnet
 
 ```bash
-npm run deploy:arc
+node scripts/v3/deployV3.js --network arc_testnet
 ```
 
-This outputs `deployments/arc_testnet.json` with all contract addresses.
+This writes `deployments/arc_testnet-v3.json` with all contract addresses.
 
-### 6. Verify on ArcScan
+### 6. Generate frontend config
 
 ```bash
-npm run verify
+node scripts/generate-frontend-config.js --network arc_testnet
 ```
 
-### 7. Update frontend env
+This writes `frontend/src/lib/generated-contracts.ts`.
 
-Copy addresses from `deployments/arc_testnet.json` into `frontend/.env.local`:
-
-```env
-NEXT_PUBLIC_REGISTRY_ADDRESS=0x...
-NEXT_PUBLIC_ARC_REGISTRAR_ADDRESS=0x...
-NEXT_PUBLIC_CIRCLE_REGISTRAR_ADDRESS=0x...
-NEXT_PUBLIC_ARC_CONTROLLER_ADDRESS=0x...
-NEXT_PUBLIC_CIRCLE_CONTROLLER_ADDRESS=0x...
-NEXT_PUBLIC_RESOLVER_ADDRESS=0x...
-NEXT_PUBLIC_REVERSE_REGISTRAR_ADDRESS=0x...
-NEXT_PUBLIC_USDC_ADDRESS=0x...
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_id
-```
-
-### 8. Run frontend
+### 7. Run frontend
 
 ```bash
-cd frontend
-npm run dev
+cd frontend && npm run dev
 ```
 
 Open http://localhost:3000
@@ -232,18 +201,6 @@ Open http://localhost:3000
 
 ---
 
-## Key Differences from ENS
-
-| Feature         | ENS                    | ArcNS                        |
-|-----------------|------------------------|------------------------------|
-| Payment         | ETH (native)           | USDC (ERC-20, 6 decimals)    |
-| TLDs            | .eth                   | .arc, .circle                |
-| Network         | Ethereum               | Arc Testnet (5042002)        |
-| Gas token       | ETH                    | USDC (native on Arc)         |
-| Payment flow    | msg.value              | approve + transferFrom       |
-
----
-
 ## Security
 
 - Commit/reveal scheme prevents front-running
@@ -252,19 +209,6 @@ Open http://localhost:3000
 - Access control: only controllers can register/renew
 - Only node owners can update resolver records
 - Grace period (90 days) before expired names can be re-registered
-
----
-
-## WalletConnect
-
-ArcNS uses RainbowKit + WalletConnect v2, supporting:
-- MetaMask
-- Rainbow
-- Trust Wallet
-- Coinbase Wallet
-- WalletConnect-compatible wallets
-
-Get a free WalletConnect Project ID at https://cloud.walletconnect.com
 
 ---
 
