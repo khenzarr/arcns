@@ -21,47 +21,77 @@ import {
   DURATION_OPTIONS,
   type SupportedTLD,
 } from "../lib/normalization";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 // ─── Domain row ───────────────────────────────────────────────────────────────
 
 function DomainRow({
   tokenId,
+  labelName,
   tld,
   expiry,
   expiryState,
   isPrimary,
-  onSetPrimary,
+  isSelected,
+  onSelect,
   onRenew,
 }: {
   tokenId:     bigint | null;
+  labelName:   string | null;
   tld:         SupportedTLD;
   expiry:      bigint;
   expiryState: string;
   isPrimary:   boolean;
-  onSetPrimary: (tokenId: bigint | null, tld: SupportedTLD) => void;
+  isSelected:  boolean;
+  onSelect:    () => void;
   onRenew:     (tokenId: bigint | null, tld: SupportedTLD) => void;
 }) {
   const badge    = expiryBadge(expiryState as any);
   const daysLeft = daysUntilExpiry(expiry);
-  const tokenHex = tokenId != null ? "0x" + tokenId.toString(16).padStart(64, "0") : null;
-  const shortId  = tokenHex ? tokenHex.slice(0, 10) + "…" : "unknown";
+  const displayName = labelName
+    ? `${labelName}.${tld}`
+    : tokenId != null
+      ? `${"0x" + tokenId.toString(16).padStart(64, "0").slice(0, 8)}….${tld}`
+      : `unknown.${tld}`;
+
+  const isExpired    = expiryState === "expired";
+  const isSelectable = !isExpired;
 
   return (
-    <div className="flex items-center justify-between py-4 border-b border-gray-50 last:border-0">
-      <div className="flex items-center gap-3 min-w-0">
+    <div
+      className={`flex items-center justify-between py-4 border-b border-gray-50 last:border-0 rounded-xl transition-colors ${
+        isSelected ? "bg-blue-50" : isSelectable ? "hover:bg-gray-50 cursor-pointer" : ""
+      }`}
+      onClick={isSelectable ? onSelect : undefined}
+    >
+      <div className="flex items-center gap-3 min-w-0 px-1">
+        {/* Selection indicator */}
+        <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-colors ${
+          isSelected
+            ? "border-blue-600 bg-blue-600"
+            : isSelectable
+              ? "border-gray-300"
+              : "border-gray-200"
+        }`}>
+          {isSelected && (
+            <svg className="w-full h-full text-white" viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="8" cy="8" r="3" />
+            </svg>
+          )}
+        </div>
+
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
           .{tld}
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-gray-700 truncate">{shortId}.{tld}</span>
+            <span className="font-mono text-sm text-gray-700 truncate">{displayName}</span>
             {isPrimary ? (
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Primary</span>
             ) : null}
           </div>
           <p className="text-xs text-gray-400 mt-0.5">
-            {expiryState === "expired" ? "Expired" : `Expires ${formatExpiry(expiry)}`}
+            {isExpired ? "Expired" : `Expires ${formatExpiry(expiry)}`}
             {expiryState === "expiring-soon" ? ` · ${daysLeft}d left` : ""}
           </p>
         </div>
@@ -72,18 +102,9 @@ function DomainRow({
           {badge.label}
         </span>
 
-        {expiryState !== "expired" && !isPrimary ? (
-          <button
-            onClick={() => onSetPrimary(tokenId, tld)}
-            className="text-xs text-gray-500 hover:text-blue-600 transition-colors px-2 py-1 rounded-lg hover:bg-blue-50"
-          >
-            Set primary
-          </button>
-        ) : null}
-
         {(expiryState === "expiring-soon" || expiryState === "grace") ? (
           <button
-            onClick={() => onRenew(tokenId, tld)}
+            onClick={e => { e.stopPropagation(); onRenew(tokenId, tld); }}
             className="text-xs font-medium text-orange-600 hover:text-orange-700 px-3 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
           >
             Renew
@@ -102,7 +123,55 @@ export default function MyDomains() {
   const { primaryName, status: primaryStatus, setStep, setError: setPrimaryError, setPrimaryName, resetSet } = usePrimaryName();
   const renew = useRenew();
 
-  const [renewTarget, setRenewTarget] = useState<{ tokenId: bigint | null; tld: SupportedTLD } | null>(null);
+  const [renewTarget,    setRenewTarget]    = useState<{ tokenId: bigint | null; tld: SupportedTLD } | null>(null);
+  const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
+
+  // Only non-expired domains with a resolved label are selectable.
+  // RPC-only domains (labelName === null) are intentionally excluded —
+  // we cannot verify ownership by name without the label.
+  const selectableDomains = useMemo(
+    () => domains.filter(d => d.labelName !== null && d.expiryState !== "expired"),
+    [domains],
+  );
+
+  // Build a Set of valid owned full-names for O(1) membership check.
+  const ownedNameSet = useMemo(
+    () => new Set(selectableDomains.map(d => `${d.labelName}.${d.tld}`)),
+    [selectableDomains],
+  );
+
+  // A selection is only valid when it comes from the owned set.
+  const isOwnedSelection  = selectedDomain !== null && ownedNameSet.has(selectedDomain);
+  const isAlreadyPrimary  = isOwnedSelection && selectedDomain === primaryName;
+  const canSubmit         = isOwnedSelection && !isAlreadyPrimary && setStep !== "setting" && !isLoading;
+
+  const buttonLabel = setStep === "setting"
+    ? "Updating…"
+    : primaryName
+      ? "Update Primary Name"
+      : "Set as Primary";
+
+  const handleSetPrimary = async () => {
+    // Hard guard: only proceed if the selection is a verified owned domain.
+    if (!isOwnedSelection || !selectedDomain) return;
+
+    console.log("[ArcNS:primaryName] pre-submit diagnostic", {
+      selectedDomain,
+      isOwnedSelection,
+      isCurrentPrimary: isAlreadyPrimary,
+      buttonEnabled:    canSubmit,
+    });
+
+    await setPrimaryName(selectedDomain);
+  };
+
+  // When the domain list reloads, clear any stale selection that is no longer owned.
+  useMemo(() => {
+    if (selectedDomain && !ownedNameSet.has(selectedDomain)) {
+      setSelectedDomain(null);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ownedNameSet]);
 
   if (!isConnected || !address) {
     return (
@@ -145,7 +214,7 @@ export default function MyDomains() {
     <div className="space-y-6">
       {/* Primary name status */}
       <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-3">
           <div>
             <p className="text-sm font-semibold text-gray-700">Primary Name</p>
             {primaryName ? (
@@ -161,14 +230,58 @@ export default function MyDomains() {
               <p className="text-sm text-gray-400 mt-0.5">No primary name set</p>
             )}
           </div>
-          {setStep === "setting" ? (
-            <span className="text-xs text-blue-500 animate-pulse">Updating…</span>
-          ) : setStep === "success" ? (
-            <span className="text-xs text-green-600">✓ Updated</span>
+          {setStep === "success" ? (
+            <button onClick={resetSet} className="text-xs text-green-600 underline">✓ Updated · Dismiss</button>
           ) : null}
         </div>
+
+        {/* Selection + action — only shown when there are selectable domains */}
+        {selectableDomains.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            <p className="text-xs text-gray-500">
+              {primaryName ? "Select a domain to change your primary name:" : "Select a domain to set as your primary name:"}
+            </p>
+            <div className="flex gap-2">
+              <select
+                value={selectedDomain ?? ""}
+                onChange={e => {
+                  const val = e.target.value;
+                  // Only accept values that are in the owned set — reject empty string and anything else.
+                  setSelectedDomain(val && ownedNameSet.has(val) ? val : null);
+                }}
+                className="flex-1 px-3 py-2.5 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+              >
+                <option value="">— choose a domain —</option>
+                {selectableDomains.map(d => {
+                  const fullName = `${d.labelName}.${d.tld}`;
+                  return (
+                    <option key={fullName} value={fullName}>
+                      {fullName}{fullName === primaryName ? " (current)" : ""}
+                    </option>
+                  );
+                })}
+              </select>
+              <button
+                onClick={handleSetPrimary}
+                disabled={!canSubmit}
+                className="px-4 py-2.5 bg-blue-600 text-white text-sm rounded-xl font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+              >
+                {buttonLabel}
+              </button>
+            </div>
+            {isAlreadyPrimary && selectedDomain ? (
+              <p className="text-xs text-gray-400">{selectedDomain} is already your primary name.</p>
+            ) : null}
+          </div>
+        ) : domains.length > 0 ? (
+          /* Domains exist but none have a resolved label (RPC-only fallback) */
+          <p className="text-xs text-gray-400 mt-2">
+            Domain names are not yet resolved. Primary name selection will be available once the subgraph is indexed.
+          </p>
+        ) : null}
+
         {setPrimaryError ? (
-          <p className="text-xs text-red-500 mt-2">{setPrimaryError}</p>
+          <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2 mt-2">{setPrimaryError}</p>
         ) : null}
       </div>
 
@@ -179,22 +292,27 @@ export default function MyDomains() {
           <span className="text-xs text-gray-400">{domains.length} name{domains.length !== 1 ? "s" : ""}</span>
         </div>
         <div className="px-5">
-          {domains.map((d, i) => (
-            <DomainRow
-              key={d.tokenId != null ? `${d.tokenId}-${d.tld}` : `${i}-${d.tld}`}
-              tokenId={d.tokenId}
-              tld={d.tld}
-              expiry={d.expiry}
-              expiryState={d.expiryState}
-              isPrimary={false /* TODO: compare with primaryName once label is resolved */}
-              onSetPrimary={(tokenId, tld) => {
-                // Dashboard-driven primary name update
-                // tokenId is the labelhash — we can't recover the label from it here
-                // User must use the full domain name flow for now
-              }}
-              onRenew={(tokenId, tld) => setRenewTarget({ tokenId, tld })}
-            />
-          ))}
+          {domains.map((d, i) => {
+            const fullName = d.labelName ? `${d.labelName}.${d.tld}` : null;
+            return (
+              <DomainRow
+                key={d.tokenId != null ? `${d.tokenId}-${d.tld}` : `${i}-${d.tld}`}
+                tokenId={d.tokenId}
+                labelName={d.labelName}
+                tld={d.tld}
+                expiry={d.expiry}
+                expiryState={d.expiryState}
+                isPrimary={!!fullName && fullName === primaryName}
+                isSelected={!!fullName && fullName === selectedDomain}
+                onSelect={() => {
+                  // Only allow selection of domains that are in the owned set.
+                  if (!fullName || !ownedNameSet.has(fullName)) return;
+                  setSelectedDomain(prev => prev === fullName ? null : fullName);
+                }}
+                onRenew={(tokenId, tld) => setRenewTarget({ tokenId, tld })}
+              />
+            );
+          })}
         </div>
       </div>
 
@@ -211,8 +329,6 @@ export default function MyDomains() {
                 <button
                   key={opt.seconds}
                   onClick={async () => {
-                    // Renew by token ID is not directly supported — user must go to search
-                    // This is a v1 limitation; full renew-by-name requires the label
                     setRenewTarget(null);
                   }}
                   className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
