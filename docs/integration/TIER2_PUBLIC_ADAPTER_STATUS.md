@@ -130,7 +130,7 @@ The adapter is co-located with the frontend on Vercel. This is acceptable for te
 
 ### Third-party adoption
 
-The adapter being live does not automatically produce ecosystem integrations. ArcScan, wallet teams, and dApp developers must each independently build against it. The integration packages are ready; the outreach has not yet begun.
+The adapter being live does not automatically produce ecosystem integrations. ArcScan, wallet teams, and dApp developers must each independently build against it. The integration packages are ready and partner outreach is in progress. Partner outreach tracking is maintained internally.
 
 ---
 
