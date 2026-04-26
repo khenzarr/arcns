@@ -118,7 +118,7 @@ async function main() {
   // ── Phase 6: Namehash consistency ──────────────────────────────────────────
   console.log("\n📋 Phase 6 — Namehash Consistency");
 
-  // Verify the namehash used in the contract matches ENS standard
+  // Verify the namehash used in the contract matches EIP-137
   const arcNode = namehash("arc");
   const expectedArcNode = "0x9a7ad1c5d8b1c60ef156c6723dbf462681d6462768a9e60c53665d7fc1337bae";
   allPass &= await check("namehash('arc')", expectedArcNode, arcNode);
@@ -139,7 +139,7 @@ async function main() {
   // ── Summary ────────────────────────────────────────────────────────────────
   console.log("\n" + "─".repeat(50));
   if (allPass) {
-    console.log("✅ ALL CHECKS PASSED — ArcNS is ENS-grade correct");
+    console.log("✅ ALL CHECKS PASSED — ArcNS resolution is correct");
   } else {
     console.log("❌ SOME CHECKS FAILED — see above");
     process.exit(1);

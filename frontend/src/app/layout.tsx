@@ -15,13 +15,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-gray-50 min-h-screen`}>
+      <body className={`${inter.className} min-h-screen`} style={{ background: 'var(--color-surface-base)' }}>
         <Providers>
           <Header />
           <main className="max-w-5xl mx-auto px-4 py-8">
             {children}
           </main>
-          <footer className="border-t border-gray-100 mt-16 py-8 text-center text-sm text-gray-400">
+          <footer className="border-t mt-16 py-8 text-center text-sm" style={{ borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-tertiary)' }}>
             ArcNS — Arc Name Service on Arc Testnet (Chain ID: 5042002) · Powered by USDC
           </footer>
         </Providers>

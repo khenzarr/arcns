@@ -38,11 +38,25 @@ import { registrarFor } from "../lib/contracts";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+const DARK_BADGE_STYLES: Record<NameState, { bg: string; color: string; border?: string }> = {
+  AVAILABLE: { bg: 'rgba(16,185,129,0.15)', color: '#10b981', border: 'rgba(16,185,129,0.3)' },
+  TAKEN:     { bg: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' },
+  CHECKING:  { bg: 'rgba(37,99,235,0.15)',  color: '#58a6ff' },
+  INVALID:   { bg: 'var(--color-error-surface)', color: 'var(--color-error)' },
+};
+
 function StateBadge({ state }: { state: NameState }) {
-  const cfg = STATE_BADGES[state];
+  const s = DARK_BADGE_STYLES[state];
   return (
-    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${cfg.className} ${cfg.pulse ? "animate-pulse" : ""}`}>
-      {cfg.label}
+    <span
+      className={`px-3 py-1 rounded-full text-xs font-semibold ${state === 'CHECKING' ? 'animate-pulse' : ''}`}
+      style={{
+        background: s.bg,
+        color: s.color,
+        border: s.border ? `1px solid ${s.border}` : undefined,
+      }}
+    >
+      {STATE_BADGES[state].label}
     </span>
   );
 }
@@ -59,33 +73,39 @@ function PriceBreakdown({
 }) {
   if (isPriceLoading) {
     return (
-      <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 animate-pulse">
-        <div className="flex justify-between"><div className="h-4 bg-gray-200 rounded w-24" /><div className="h-4 bg-gray-200 rounded w-16" /></div>
-        <div className="border-t border-gray-200 pt-2 flex justify-between"><div className="h-5 bg-gray-200 rounded w-12" /><div className="h-5 bg-gray-200 rounded w-20" /></div>
+      <div className="rounded-xl p-4 mb-4 space-y-2 animate-pulse" style={{ background: 'var(--color-surface-elevated)' }}>
+        <div className="flex justify-between">
+          <div className="h-4 rounded w-24" style={{ background: 'var(--color-surface-overlay)' }} />
+          <div className="h-4 rounded w-16" style={{ background: 'var(--color-surface-overlay)' }} />
+        </div>
+        <div className="border-t pt-2 flex justify-between" style={{ borderColor: 'var(--color-border-subtle)' }}>
+          <div className="h-5 rounded w-12" style={{ background: 'var(--color-surface-overlay)' }} />
+          <div className="h-5 rounded w-20" style={{ background: 'var(--color-surface-overlay)' }} />
+        </div>
       </div>
     );
   }
   if (totalCost === 0n) return null;
   return (
-    <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2">
+    <div className="rounded-xl p-4 mb-4 space-y-2" style={{ background: 'var(--color-surface-elevated)' }}>
       <div className="flex justify-between items-center text-sm">
         <div className="flex items-center gap-2">
-          <span className="text-gray-500">Base price</span>
-          <span className="text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">{tierLabel}</span>
+          <span style={{ color: 'var(--color-text-secondary)' }}>Base price</span>
+          <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }}>{tierLabel}</span>
         </div>
-        <span className="font-medium text-gray-900">{formatUSDC(baseCost)}</span>
+        <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{formatUSDC(baseCost)}</span>
       </div>
       {hasPremium ? (
         <div className="flex justify-between text-sm">
-          <span className="text-purple-600">Premium (recently expired) <span className="text-xs text-gray-400">decays over 28 days</span></span>
-          <span className="font-medium text-purple-600">+{formatUSDC(premiumCost)}</span>
+          <span style={{ color: 'var(--color-accent-secondary)' }}>Premium (recently expired) <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>decays over 28 days</span></span>
+          <span className="font-medium" style={{ color: 'var(--color-accent-secondary)' }}>+{formatUSDC(premiumCost)}</span>
         </div>
       ) : null}
-      <div className="border-t border-gray-200 pt-2 flex justify-between">
-        <span className="font-semibold text-gray-700">Total</span>
-        <span className="font-bold text-gray-900 text-lg">{formatUSDC(totalCost)}</span>
+      <div className="border-t pt-2 flex justify-between" style={{ borderColor: 'var(--color-border-subtle)' }}>
+        <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Total</span>
+        <span className="font-bold text-lg" style={{ color: 'var(--color-text-primary)' }}>{formatUSDC(totalCost)}</span>
       </div>
-      <p className="text-xs text-gray-400">Paid in USDC · Arc Testnet</p>
+      <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Paid in USDC · Arc Testnet</p>
     </div>
   );
 }
@@ -175,16 +195,22 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
   const activeError = reg.error ?? renew.error ?? null;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+    <div
+      className="rounded-2xl border p-6 transition-colors"
+      style={{
+        background: 'var(--color-surface-card)',
+        borderColor: nameState === 'AVAILABLE' ? 'var(--color-border-accent)' : 'var(--color-border-subtle)',
+      }}
+    >
 
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {label}<span className="text-blue-500">.{tld}</span>
+          <h2 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>
+            {label}<span style={{ color: 'var(--color-text-accent)' }}>.{tld}</span>
           </h2>
           {nameState === "TAKEN" && expiryTs > 0n ? (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm mt-1" style={{ color: 'var(--color-text-secondary)' }}>
               {expiryState === "active" || expiryState === "expiring-soon"
                 ? `Expires ${formatExpiry(expiryTs)}`
                 : expiryState === "grace"
@@ -197,12 +223,29 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
         <div className="flex flex-col items-end gap-1.5">
           {nameState === "CHECKING" && checkPhase === 0 ? null : <StateBadge state={nameState} />}
           {nameState === "TAKEN" && expiryTs > 0n ? (
-            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badge.className}`}>
+            <span
+              className="px-3 py-1 rounded-full text-xs font-semibold"
+              style={{
+                background: expiryState === 'expiring-soon' || expiryState === 'grace'
+                  ? 'var(--color-warning-surface)'
+                  : expiryState === 'expired'
+                    ? 'var(--color-error-surface)'
+                    : 'var(--color-surface-overlay)',
+                color: expiryState === 'expiring-soon' || expiryState === 'grace'
+                  ? 'var(--color-warning)'
+                  : expiryState === 'expired'
+                    ? 'var(--color-error)'
+                    : 'var(--color-text-secondary)',
+              }}
+            >
               {badge.label}{expiryState === "expiring-soon" ? ` · ${daysUntilExpiry(expiryTs)}d` : ""}
             </span>
           ) : null}
           {hasPremium ? (
-            <span className="px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
+            <span
+              className="px-3 py-1 rounded-full text-xs font-semibold border"
+              style={{ background: 'rgba(99,102,241,0.15)', color: 'var(--color-accent-secondary)', borderColor: 'rgba(99,102,241,0.3)' }}
+            >
               Premium Name
             </span>
           ) : null}
@@ -212,17 +255,17 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
       {/* Duration selector */}
       {nameState !== "INVALID" ? (
         <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Registration period</p>
+          <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: 'var(--color-text-secondary)' }}>Registration period</p>
           <div className="flex gap-2 flex-wrap">
             {DURATION_OPTIONS.map(opt => (
               <button
                 key={opt.seconds}
                 onClick={() => setDuration(BigInt(opt.seconds))}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  duration === BigInt(opt.seconds)
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
+                className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={duration === BigInt(opt.seconds)
+                  ? { background: 'var(--color-accent-primary)', color: '#fff' }
+                  : { background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }
+                }
               >
                 {opt.label}
               </button>
@@ -245,13 +288,16 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
 
       {/* Balance warning */}
       {isConnected && nameState === "AVAILABLE" && !isPriceLoading && !sufficient && totalCost > 0n ? (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-3 mb-4 flex items-start gap-2">
-          <span className="text-red-500 text-lg leading-none">⚠</span>
+        <div
+          className="rounded-xl p-3 mb-4 flex items-start gap-2 border"
+          style={{ background: 'var(--color-error-surface)', borderColor: 'var(--color-error-border)' }}
+        >
+          <span className="text-lg leading-none" style={{ color: 'var(--color-error)' }}>⚠</span>
           <div>
-            <p className="text-sm font-medium text-red-700">Insufficient USDC balance</p>
-            <p className="text-xs text-red-500 mt-0.5">
+            <p className="text-sm font-medium" style={{ color: 'var(--color-error)' }}>Insufficient USDC balance</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--color-error)' }}>
               You need {formatUSDC(shortfall)} more.{" "}
-              <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-red-700">
+              <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--color-error)' }}>
                 Get testnet USDC →
               </a>
             </p>
@@ -269,44 +315,45 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             className="w-4 h-4 rounded border-gray-300 text-blue-600 cursor-pointer"
           />
           <div>
-            <span className="text-sm font-medium text-gray-700">Set as primary name</span>
-            <p className="text-xs text-gray-400">Maps your wallet address to this name (optional — can be set later)</p>
+            <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>Set as primary name</span>
+            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Maps your wallet address to this name (optional — can be set later)</p>
           </div>
         </label>
       ) : null}
 
       {/* Action area */}
       {nameState === "INVALID" ? (
-        <div className="text-center py-3 text-gray-400 text-sm bg-gray-50 rounded-xl">
+        <div className="text-center py-3 text-sm rounded-xl" style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-tertiary)' }}>
           Enter a valid name (letters, numbers, hyphens, underscores)
         </div>
 
       ) : nameState === "CHECKING" ? (
         checkPhase === 0 ? <div className="py-3" /> :
         checkPhase === 1 ? (
-          <div className="text-center py-3 text-gray-400 text-sm bg-gray-50 rounded-xl">Validating…</div>
+          <div className="text-center py-3 text-sm rounded-xl" style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-tertiary)' }}>Validating…</div>
         ) : (
-          <div className="text-center py-3 text-blue-500 text-sm bg-blue-50 rounded-xl animate-pulse">
+          <div className="text-center py-3 text-sm rounded-xl animate-pulse" style={{ background: 'rgba(37,99,235,0.1)', color: '#58a6ff' }}>
             Checking availability on Arc Testnet…
           </div>
         )
 
       ) : nameState === "AVAILABLE" ? (
         !isConnected ? (
-          <div className="text-center py-3 text-gray-500 text-sm bg-gray-50 rounded-xl">Connect wallet to register</div>
+          <div className="text-center py-3 text-sm rounded-xl" style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)' }}>Connect wallet to register</div>
         ) : isWrongNetwork ? (
-          <div className="text-center py-3 text-red-600 text-sm bg-red-50 rounded-xl font-medium">
+          <div className="text-center py-3 text-sm rounded-xl font-medium" style={{ background: 'var(--color-error-surface)', color: 'var(--color-error)' }}>
             ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to register
           </div>
         ) : isPriceLoading ? (
-          <button disabled className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold opacity-50 cursor-not-allowed text-sm">
+          <button disabled className="w-full py-3.5 text-white rounded-xl font-semibold opacity-50 cursor-not-allowed text-sm" style={{ background: 'var(--color-accent-primary)' }}>
             Loading price…
           </button>
         ) : (
           <button
             onClick={() => reg.register({ label, tld, duration, totalCost, resolverAddr: ADDR_RESOLVER, reverseRecord })}
             disabled={(reg.step !== "idle" && reg.step !== "failed") || !sufficient || isPriceLoading}
-            className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+            className="w-full py-3.5 text-white rounded-xl font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90 text-sm"
+            style={{ background: 'var(--color-accent-primary)' }}
           >
             {reg.step === "approving"   ? "Approving USDC…"
             : reg.step === "committing" ? "Submitting commitment…"
@@ -321,16 +368,17 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
       ) : /* TAKEN */ (
         expiryState === "active" || expiryState === "expiring-soon" || expiryState === "grace" ? (
           !isConnected ? (
-            <div className="text-center py-3 text-gray-500 text-sm bg-gray-50 rounded-xl">Connect wallet to renew</div>
+            <div className="text-center py-3 text-sm rounded-xl" style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)' }}>Connect wallet to renew</div>
           ) : isWrongNetwork ? (
-            <div className="text-center py-3 text-red-600 text-sm bg-red-50 rounded-xl font-medium">
+            <div className="text-center py-3 text-sm rounded-xl font-medium" style={{ background: 'var(--color-error-surface)', color: 'var(--color-error)' }}>
               ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to renew
             </div>
           ) : (
             <button
               onClick={() => renew.renew({ label, tld, duration, totalCost })}
               disabled={renew.step === "approving" || renew.step === "renewing" || !sufficient || isPriceLoading}
-              className="w-full py-3.5 bg-orange-500 text-white rounded-xl font-semibold hover:bg-orange-600 disabled:opacity-50 transition-colors text-sm"
+              className="w-full py-3.5 text-white rounded-xl font-semibold disabled:opacity-50 transition-opacity hover:opacity-90 text-sm"
+              style={{ background: 'var(--color-warning)' }}
             >
               {renew.step === "approving" ? "Approving USDC…"
               : renew.step === "renewing" ? "Renewing…"
@@ -340,23 +388,26 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             </button>
           )
         ) : (
-          <div className="text-center py-3 text-gray-500 text-sm bg-gray-50 rounded-xl">This name is taken</div>
+          <div className="text-center py-3 text-sm rounded-xl" style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)' }}>This name is taken</div>
         )
       )}
 
       {/* Progress bar (waiting phase) */}
       {reg.step === "waiting" ? (
         <div className="mt-3">
-          <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
-            <div className="bg-blue-500 h-1.5 rounded-full transition-all duration-1000" style={{ width: `${reg.waitProgress}%` }} />
+          <div className="w-full rounded-full h-1.5 overflow-hidden" style={{ background: 'var(--color-surface-overlay)' }}>
+            <div
+              className="h-1.5 rounded-full transition-all duration-1000"
+              style={{ background: 'var(--color-accent-primary)', width: `${reg.waitProgress}%` }}
+            />
           </div>
-          <p className="text-xs text-gray-400 mt-1.5 text-center">Anti-frontrun protection — waiting for on-chain maturity</p>
+          <p className="text-xs mt-1.5 text-center" style={{ color: 'var(--color-text-tertiary)' }}>Anti-frontrun protection — waiting for on-chain maturity</p>
         </div>
       ) : null}
 
       {/* Error display */}
       {activeError ? (
-        <div className="mt-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl p-3 flex items-start gap-2">
+        <div className="mt-3 text-sm rounded-xl p-3 flex items-start gap-2 border" style={{ background: 'var(--color-error-surface)', borderColor: 'var(--color-error-border)', color: 'var(--color-error)' }}>
           <span>⚠</span>
           <span>{activeError}</span>
         </div>
@@ -364,11 +415,11 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
 
       {/* Success state */}
       {reg.step === "success" && reg.result ? (
-        <div className="mt-3 text-sm text-green-700 bg-green-50 border border-green-100 rounded-xl p-3 flex items-start gap-2">
+        <div className="mt-3 text-sm rounded-xl p-3 flex items-start gap-2 border" style={{ background: 'var(--color-success-surface)', borderColor: 'var(--color-success-border)', color: 'var(--color-success)' }}>
           <span>✓</span>
           <div>
             <p className="font-medium">{reg.result.name}.{reg.result.tld} registered!</p>
-            <button onClick={reg.reset} className="text-xs text-green-600 underline mt-1">Register another</button>
+            <button onClick={reg.reset} className="text-xs underline mt-1" style={{ color: 'var(--color-success)' }}>Register another</button>
           </div>
         </div>
       ) : null}

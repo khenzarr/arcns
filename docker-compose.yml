@@ -16,6 +16,7 @@ services:
     environment:
       postgres_host: postgres
       postgres_user: graph-node
+      # Local development only — not a production credential
       postgres_pass: let-me-in
       postgres_db: graph-node
       ipfs: "ipfs:5001"
@@ -39,6 +40,7 @@ services:
       ]
     environment:
       POSTGRES_USER: graph-node
+      # Local development only — not a production credential
       POSTGRES_PASSWORD: let-me-in
       POSTGRES_DB: graph-node
       # FIXME: remove this env. var. which we shouldn't need. Introduced by

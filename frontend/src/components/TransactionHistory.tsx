@@ -64,61 +64,66 @@ export default function TransactionHistory() {
     return (
       <div className="space-y-2">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-12 rounded-xl animate-pulse" style={{ background: 'var(--color-surface-overlay)' }} />
         ))}
       </div>
     );
   }
 
   if (rows.length === 0) {
-    return <p className="text-center text-gray-400 py-8">No transactions yet</p>;
+    return <p className="text-center py-8" style={{ color: 'var(--color-text-secondary)' }}>No transactions yet</p>;
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-gray-50 border-b border-gray-100">
-          <tr>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Domain</th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">Type</th>
-            <th className="text-right px-4 py-3 font-medium text-gray-600">Cost</th>
-            <th className="text-right px-4 py-3 font-medium text-gray-600">Date</th>
-            <th className="text-right px-4 py-3 font-medium text-gray-600">Tx</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {rows.map(row => (
-            <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-4 py-3 font-medium text-gray-900">{row.domainName}</td>
-              <td className="px-4 py-3">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  row.type === "Registration"
-                    ? "bg-blue-50 text-blue-700"
-                    : "bg-orange-50 text-orange-700"
-                }`}>
-                  {row.type}
-                </span>
-              </td>
-              <td className="px-4 py-3 text-right text-gray-600">
-                {row.cost ? formatUSDC(BigInt(row.cost)) : "—"}
-              </td>
-              <td className="px-4 py-3 text-right text-gray-500">
-                {new Date(Number(row.timestamp) * 1000).toLocaleDateString()}
-              </td>
-              <td className="px-4 py-3 text-right">
-                <a
-                  href={`https://testnet.arcscan.app/tx/${row.transactionHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-700 font-mono text-xs"
-                >
-                  {row.transactionHash.slice(0, 8)}...
-                </a>
-              </td>
+    <div className="rounded-2xl border overflow-hidden" style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="border-b" style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)' }}>
+            <tr>
+              <th className="text-left px-4 py-3 font-medium" style={{ color: 'var(--color-text-secondary)' }}>Domain</th>
+              <th className="text-left px-4 py-3 font-medium" style={{ color: 'var(--color-text-secondary)' }}>Type</th>
+              <th className="text-right px-4 py-3 font-medium" style={{ color: 'var(--color-text-secondary)' }}>Cost</th>
+              <th className="text-right px-4 py-3 font-medium" style={{ color: 'var(--color-text-secondary)' }}>Date</th>
+              <th className="text-right px-4 py-3 font-medium" style={{ color: 'var(--color-text-secondary)' }}>Tx</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-[rgba(48,54,61,1)]">
+            {rows.map(row => (
+              <tr key={row.id} className="hover:bg-[#1c2128] transition-colors">
+                <td className="px-4 py-3 font-medium" style={{ color: 'var(--color-text-primary)' }}>{row.domainName}</td>
+                <td className="px-4 py-3">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={row.type === "Registration"
+                      ? { background: 'rgba(37,99,235,0.15)', color: 'var(--color-text-accent)' }
+                      : { background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }
+                    }
+                  >
+                    {row.type}
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-right" style={{ color: 'var(--color-text-secondary)' }}>
+                  {row.cost ? formatUSDC(BigInt(row.cost)) : "—"}
+                </td>
+                <td className="px-4 py-3 text-right" style={{ color: 'var(--color-text-tertiary)' }}>
+                  {new Date(Number(row.timestamp) * 1000).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <a
+                    href={`https://testnet.arcscan.app/tx/${row.transactionHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-xs hover:opacity-80 transition-opacity"
+                    style={{ color: 'var(--color-text-accent)' }}
+                  >
+                    {row.transactionHash.slice(0, 8)}...
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

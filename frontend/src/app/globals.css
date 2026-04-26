@@ -3,8 +3,41 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 17, 24, 39;
-  --background-rgb: 249, 250, 251;
+  /* Surface layers */
+  --color-surface-base:     #0d1117;
+  --color-surface-card:     #161b22;
+  --color-surface-elevated: #1c2128;
+  --color-surface-overlay:  #21262d;
+
+  /* Borders */
+  --color-border-subtle:    rgba(48, 54, 61, 1);
+  --color-border-accent:    rgba(37, 99, 235, 0.4);
+
+  /* Accent palette */
+  --color-accent-primary:       #2563eb;
+  --color-accent-primary-hover: #1d4ed8;
+  --color-accent-secondary:     #6366f1;
+  --color-accent-cyan:          #06b6d4;
+
+  /* Semantic states */
+  --color-success:         #10b981;
+  --color-success-surface: rgba(16, 185, 129, 0.1);
+  --color-success-border:  rgba(16, 185, 129, 0.2);
+  --color-warning:         #f59e0b;
+  --color-warning-surface: rgba(245, 158, 11, 0.1);
+  --color-error:           #ef4444;
+  --color-error-surface:   rgba(239, 68, 68, 0.1);
+  --color-error-border:    rgba(239, 68, 68, 0.2);
+
+  /* Text */
+  --color-text-primary:   #e6edf3;
+  --color-text-secondary: #8b949e;
+  --color-text-tertiary:  #484f58;
+  --color-text-accent:    #58a6ff;
+
+  /* Legacy tokens (updated) */
+  --foreground-rgb: 230, 237, 243;
+  --background-rgb: 13, 17, 23;
 }
 
 body {

@@ -83,7 +83,7 @@ async function testNamehashConsistency() {
   console.log("\n📋 Test 1 — Namehash Consistency");
   const node = namehash(TEST_NAME);
   const expectedArcNode = "0x9a7ad1c5d8b1c60ef156c6723dbf462681d6462768a9e60c53665d7fc1337bae";
-  check("namehash('arc') matches ENS standard", namehash("arc") === expectedArcNode, namehash("arc"));
+  check("namehash('arc') matches EIP-137", namehash("arc") === expectedArcNode, namehash("arc"));
   check("namehash('flowpay.arc') is deterministic", node === namehash(TEST_NAME), node);
   console.log(`     node: ${node}`);
 }
@@ -274,7 +274,7 @@ async function main() {
   console.log("\n" + "─".repeat(52));
   console.log(`Results: ${passed} passed, ${failed} failed`);
   if (failed === 0) {
-    console.log("✅ ALL TESTS PASSED — ENS-grade correctness confirmed");
+    console.log("✅ ALL TESTS PASSED — ArcNS resolution correctness confirmed");
   } else {
     console.log("❌ SOME TESTS FAILED — see above");
     process.exit(1);

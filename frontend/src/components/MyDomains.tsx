@@ -59,9 +59,11 @@ function DomainRow({
 
   return (
     <div
-      className={`flex items-center justify-between py-4 border-b border-gray-50 last:border-0 rounded-xl transition-colors ${
-        isSelected ? "bg-blue-50" : isSelectable ? "hover:bg-gray-50 cursor-pointer" : ""
-      }`}
+      className={`flex items-center justify-between py-4 border-b last:border-0 rounded-xl transition-colors ${isSelectable && !isSelected ? 'hover:bg-[#1c2128] cursor-pointer' : ''}`}
+      style={{
+        borderColor: 'var(--color-border-subtle)',
+        background: isSelected ? 'rgba(37,99,235,0.08)' : 'transparent',
+      }}
       onClick={isSelectable ? onSelect : undefined}
     >
       <div className="flex items-center gap-3 min-w-0 px-1">
@@ -80,17 +82,20 @@ function DomainRow({
           )}
         </div>
 
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 border"
+          style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-accent)' }}
+        >
           .{tld}
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-gray-700 truncate">{displayName}</span>
+            <span className="font-mono text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>{displayName}</span>
             {isPrimary ? (
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Primary</span>
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-text-accent)' }}>Primary</span>
             ) : null}
           </div>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
             {isExpired ? "Expired" : `Expires ${formatExpiry(expiry)}`}
             {expiryState === "expiring-soon" ? ` · ${daysLeft}d left` : ""}
           </p>
@@ -98,14 +103,29 @@ function DomainRow({
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${badge.className}`}>
+        <span
+          className="px-2.5 py-1 rounded-full text-xs font-semibold"
+          style={{
+            background: expiryState === 'expiring-soon' || expiryState === 'grace'
+              ? 'var(--color-warning-surface)'
+              : expiryState === 'expired'
+                ? 'var(--color-error-surface)'
+                : 'rgba(16,185,129,0.15)',
+            color: expiryState === 'expiring-soon' || expiryState === 'grace'
+              ? 'var(--color-warning)'
+              : expiryState === 'expired'
+                ? 'var(--color-error)'
+                : '#10b981',
+          }}
+        >
           {badge.label}
         </span>
 
         {(expiryState === "expiring-soon" || expiryState === "grace") ? (
           <button
             onClick={e => { e.stopPropagation(); onRenew(tokenId, tld); }}
-            className="text-xs font-medium text-orange-600 hover:text-orange-700 px-3 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
+            className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+            style={{ background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }}
           >
             Renew
           </button>
@@ -175,7 +195,7 @@ export default function MyDomains() {
 
   if (!isConnected || !address) {
     return (
-      <div className="text-center py-16 text-gray-400">
+      <div className="text-center py-16" style={{ color: 'var(--color-text-secondary)' }}>
         <p className="text-lg font-medium">Connect your wallet to view your domains</p>
         <p className="text-sm mt-2">Your .arc and .circle names will appear here</p>
       </div>
@@ -186,7 +206,7 @@ export default function MyDomains() {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map(i => (
-          <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
+          <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: 'var(--color-surface-overlay)' }} />
         ))}
       </div>
     );
@@ -195,15 +215,15 @@ export default function MyDomains() {
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-600 text-sm">{error}</p>
-        <button onClick={refetch} className="mt-3 text-sm text-blue-600 underline">Try again</button>
+        <p className="text-sm" style={{ color: 'var(--color-error)' }}>{error}</p>
+        <button onClick={refetch} className="mt-3 text-sm underline" style={{ color: 'var(--color-text-accent)' }}>Try again</button>
       </div>
     );
   }
 
   if (domains.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-400">
+      <div className="text-center py-16" style={{ color: 'var(--color-text-secondary)' }}>
         <p className="text-lg font-medium">No domains found</p>
         <p className="text-sm mt-2">Register a .arc or .circle name to get started</p>
       </div>
@@ -213,32 +233,32 @@ export default function MyDomains() {
   return (
     <div className="space-y-6">
       {/* Primary name status */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+      <div className="rounded-2xl border p-5" style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}>
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-sm font-semibold text-gray-700">Primary Name</p>
+            <p className="text-sm font-semibold" style={{ color: 'var(--color-text-secondary)' }}>Primary Name</p>
             {primaryName ? (
-              <p className="text-lg font-bold text-gray-900 mt-0.5">
+              <p className="text-lg font-bold mt-0.5" style={{ color: 'var(--color-text-primary)' }}>
                 {primaryName}
                 {primaryStatus === "stale" ? (
-                  <span className="ml-2 text-xs text-amber-600 font-normal">(stale — name no longer owned)</span>
+                  <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-warning)' }}>(stale — name no longer owned)</span>
                 ) : primaryStatus === "verified" ? (
-                  <span className="ml-2 text-xs text-green-600 font-normal">✓ verified</span>
+                  <span className="ml-2 text-xs font-normal" style={{ color: 'var(--color-success)' }}>✓ verified</span>
                 ) : null}
               </p>
             ) : (
-              <p className="text-sm text-gray-400 mt-0.5">No primary name set</p>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>No primary name set</p>
             )}
           </div>
           {setStep === "success" ? (
-            <button onClick={resetSet} className="text-xs text-green-600 underline">✓ Updated · Dismiss</button>
+            <button onClick={resetSet} className="text-xs underline" style={{ color: 'var(--color-success)' }}>✓ Updated · Dismiss</button>
           ) : null}
         </div>
 
         {/* Selection + action — only shown when there are selectable domains */}
         {selectableDomains.length > 0 ? (
           <div className="mt-3 space-y-2">
-            <p className="text-xs text-gray-500">
+            <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
               {primaryName ? "Select a domain to change your primary name:" : "Select a domain to set as your primary name:"}
             </p>
             <div className="flex gap-2">
@@ -249,7 +269,8 @@ export default function MyDomains() {
                   // Only accept values that are in the owned set — reject empty string and anything else.
                   setSelectedDomain(val && ownedNameSet.has(val) ? val : null);
                 }}
-                className="flex-1 px-3 py-2.5 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+                className="flex-1 px-3 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500"
+                style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
               >
                 <option value="">— choose a domain —</option>
                 {selectableDomains.map(d => {
@@ -264,32 +285,33 @@ export default function MyDomains() {
               <button
                 onClick={handleSetPrimary}
                 disabled={!canSubmit}
-                className="px-4 py-2.5 bg-blue-600 text-white text-sm rounded-xl font-medium hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+                className="px-4 py-2.5 text-white text-sm rounded-xl font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90 whitespace-nowrap"
+                style={{ background: 'var(--color-accent-primary)' }}
               >
                 {buttonLabel}
               </button>
             </div>
             {isAlreadyPrimary && selectedDomain ? (
-              <p className="text-xs text-gray-400">{selectedDomain} is already your primary name.</p>
+              <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{selectedDomain} is already your primary name.</p>
             ) : null}
           </div>
         ) : domains.length > 0 ? (
           /* Domains exist but none have a resolved label (RPC-only fallback) */
-          <p className="text-xs text-gray-400 mt-2">
+          <p className="text-xs mt-2" style={{ color: 'var(--color-text-tertiary)' }}>
             Domain names are not yet resolved. Primary name selection will be available once the subgraph is indexed.
           </p>
         ) : null}
 
         {setPrimaryError ? (
-          <p className="text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2 mt-2">{setPrimaryError}</p>
+          <p className="text-xs rounded-lg px-3 py-2 mt-2" style={{ background: 'var(--color-error-surface)', color: 'var(--color-error)' }}>{setPrimaryError}</p>
         ) : null}
       </div>
 
       {/* Domain list */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">Your Domains</h2>
-          <span className="text-xs text-gray-400">{domains.length} name{domains.length !== 1 ? "s" : ""}</span>
+      <div className="rounded-2xl border overflow-hidden" style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}>
+        <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--color-border-subtle)' }}>
+          <h2 className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>Your Domains</h2>
+          <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{domains.length} name{domains.length !== 1 ? "s" : ""}</span>
         </div>
         <div className="px-5">
           {domains.map((d, i) => {
@@ -318,10 +340,10 @@ export default function MyDomains() {
 
       {/* Renew modal (minimal) */}
       {renewTarget ? (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-xl">
-            <h3 className="font-bold text-gray-900 mb-4">Renew Domain</h3>
-            <p className="text-sm text-gray-500 mb-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="rounded-2xl p-6 max-w-sm w-full border" style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}>
+            <h3 className="font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>Renew Domain</h3>
+            <p className="text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
               Select a renewal duration. Payment will be in USDC.
             </p>
             <div className="flex gap-2 flex-wrap mb-4">
@@ -331,16 +353,18 @@ export default function MyDomains() {
                   onClick={async () => {
                     setRenewTarget(null);
                   }}
-                  className="px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                  style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }}
                 >
                   {opt.label}
                 </button>
               ))}
             </div>
-            {renew.error ? <p className="text-xs text-red-500 mb-3">{renew.error}</p> : null}
+            {renew.error ? <p className="text-xs mb-3" style={{ color: 'var(--color-error)' }}>{renew.error}</p> : null}
             <button
               onClick={() => { setRenewTarget(null); renew.reset(); }}
-              className="w-full py-2.5 text-sm text-gray-500 hover:text-gray-700"
+              className="w-full py-2.5 text-sm transition-colors"
+              style={{ color: 'var(--color-text-secondary)' }}
             >
               Cancel
             </button>
@@ -350,7 +374,7 @@ export default function MyDomains() {
 
       {/* Scope note — visible in dev, hidden in prod */}
       {process.env.NODE_ENV === "development" ? (
-        <p className="text-xs text-gray-300 text-center">
+        <p className="text-xs text-center" style={{ color: 'var(--color-text-tertiary)' }}>
           Portfolio is RPC-backed (v1/founder-demo scope). Subgraph integration ships in Phase F.
         </p>
       ) : null}

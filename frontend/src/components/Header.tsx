@@ -11,12 +11,14 @@ function WalletButton() {
   if (isConnected && address) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs font-mono text-gray-500 hidden sm:block">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 hidden sm:block" />
+        <span className="text-xs font-mono hidden sm:block" style={{ color: 'var(--color-text-secondary)' }}>
           {address.slice(0, 6)}…{address.slice(-4)}
         </span>
         <button
           onClick={() => disconnect()}
-          className="px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+          className="px-3 py-1.5 text-sm font-medium rounded-lg transition-colors"
+          style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }}
         >
           Disconnect
         </button>
@@ -34,7 +36,8 @@ function WalletButton() {
         <button
           onClick={() => connect({ connector: injectedConnector })}
           disabled={isPending}
-          className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 text-sm font-semibold text-white rounded-xl disabled:opacity-50 transition-colors hover:opacity-90"
+          style={{ background: 'var(--color-accent-primary)' }}
         >
           {isPending ? "Connecting…" : "MetaMask"}
         </button>
@@ -43,7 +46,8 @@ function WalletButton() {
         <button
           onClick={() => connect({ connector: wcConnector })}
           disabled={isPending}
-          className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 text-sm font-semibold rounded-xl disabled:opacity-50 transition-colors"
+          style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-primary)' }}
         >
           WalletConnect
         </button>
@@ -54,20 +58,30 @@ function WalletButton() {
 
 export default function Header() {
   return (
-    <header className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <header
+      className="sticky top-0 z-50 backdrop-blur-sm border-b"
+      style={{ background: 'rgba(13,17,23,0.85)', borderColor: 'var(--color-border-subtle)' }}
+    >
       <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg" />
-          <span className="font-bold text-xl text-gray-900">ArcNS</span>
-          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="14" cy="14" r="11" stroke="var(--color-accent-primary)" strokeWidth="2" fill="none"/>
+            <path d="M 14 3 A 11 11 0 0 1 25 14" stroke="var(--color-accent-primary)" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
+            <circle cx="14" cy="14" r="2.5" fill="var(--color-accent-primary)"/>
+          </svg>
+          <span className="font-bold text-xl" style={{ color: 'var(--color-text-primary)' }}>ArcNS</span>
+          <span
+            className="text-xs px-2 py-0.5 rounded-full font-medium"
+            style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }}
+          >
             Testnet
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
-          <Link href="/" className="hover:text-gray-900 transition-colors">Search</Link>
-          <Link href="/my-domains" className="hover:text-gray-900 transition-colors">My Domains</Link>
-          <Link href="/resolve" className="hover:text-gray-900 transition-colors">Resolve</Link>
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <Link href="/" className="hover:text-white transition-colors" style={{ color: 'var(--color-text-secondary)' }}>Search</Link>
+          <Link href="/my-domains" className="hover:text-white transition-colors" style={{ color: 'var(--color-text-secondary)' }}>My Domains</Link>
+          <Link href="/resolve" className="hover:text-white transition-colors" style={{ color: 'var(--color-text-secondary)' }}>Resolve</Link>
         </nav>
 
         <WalletButton />

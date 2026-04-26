@@ -31,7 +31,7 @@ function ChainGuardBanner() {
     <div
       style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
-        background: "#dc2626", color: "#fff",
+        background: "var(--color-error)", color: "#fff",
         padding: "10px 16px", fontSize: "13px",
         fontFamily: "monospace", textAlign: "center",
       }}

@@ -37,15 +37,24 @@ export default function HomePage() {
 
       {/* Hero */}
       <section className="text-center py-10 space-y-4">
-        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-medium">
-          <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
+          style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }}
+        >
+          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
           Live on Arc Testnet · Chain ID 5042002
         </div>
-        <h1 className="text-5xl font-bold text-gray-900 tracking-tight">
+        <h1
+          className="text-4xl md:text-5xl font-extrabold tracking-tight"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
           Your name on Arc
         </h1>
-        <p className="text-xl text-gray-500 max-w-lg mx-auto leading-relaxed">
-          Register <strong>.arc</strong> and <strong>.circle</strong> domains.
+        <p
+          className="text-xl max-w-lg mx-auto leading-relaxed"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          Register <strong style={{ color: 'var(--color-text-accent)' }}>.arc</strong> and <strong style={{ color: 'var(--color-text-accent)' }}>.circle</strong> domains.
           Pay with USDC. Own your on-chain identity as an NFT.
         </p>
       </section>
@@ -90,11 +99,27 @@ export default function HomePage() {
           ].map(f => (
             <div
               key={f.title}
-              className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="rounded-2xl border p-6 transition-colors"
+              style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}
             >
-              <div className="text-3xl mb-3">{f.icon}</div>
-              <h3 className="font-semibold text-gray-900 mb-1">{f.title}</h3>
-              <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3"
+                style={{ background: 'var(--color-surface-elevated)' }}
+              >
+                {f.icon}
+              </div>
+              <h3
+                className="font-semibold mb-1"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                {f.title}
+              </h3>
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                {f.desc}
+              </p>
             </div>
           ))}
         </section>
@@ -103,27 +128,65 @@ export default function HomePage() {
       {/* Pricing table */}
       {!display ? (
         <section className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">Pricing</h2>
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <h2
+            className="text-2xl font-bold mb-4 text-center"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
+            Pricing
+          </h2>
+          <div
+            className="rounded-2xl border overflow-hidden"
+            style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}
+          >
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead
+                className="border-b"
+                style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)' }}
+              >
                 <tr>
-                  <th className="text-left px-6 py-3 font-semibold text-gray-600">Name length</th>
-                  <th className="text-right px-6 py-3 font-semibold text-gray-600">Annual price</th>
+                  <th
+                    className="text-left px-6 py-3 font-semibold"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    Name length
+                  </th>
+                  <th
+                    className="text-right px-6 py-3 font-semibold"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    Annual price
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-[rgba(48,54,61,1)]">
                 {PRICING_TABLE.map(row => (
-                  <tr key={row.len} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-gray-900">{row.len}</td>
-                    <td className="px-6 py-4 text-right font-bold text-gray-900">{row.price}</td>
+                  <tr key={row.len} className="hover:bg-[#1c2128] transition-colors">
+                    <td
+                      className="px-6 py-4"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      {row.len}
+                    </td>
+                    <td
+                      className="px-6 py-4 text-right font-bold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      {row.price}
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between flex-wrap gap-2">
-              <p className="text-xs text-gray-400">All prices in USDC · Pro-rated for multi-year registrations</p>
-              <p className="text-xs text-gray-400">+$100 premium for recently expired names (decays over 28 days)</p>
+            <div
+              className="px-6 py-3 border-t flex items-center justify-between flex-wrap gap-2"
+              style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)' }}
+            >
+              <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                All prices in USDC · Pro-rated for multi-year registrations
+              </p>
+              <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                +$100 premium for recently expired names (decays over 28 days)
+              </p>
             </div>
           </div>
         </section>

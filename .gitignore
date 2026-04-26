@@ -22,6 +22,9 @@ yarn-error.log*
 # dotenv environment variables file
 .env
 
+# Local environment overrides (copy from frontend/.env.local.example)
+frontend/.env.local
+
 # Testing
 coverage
 coverage.json

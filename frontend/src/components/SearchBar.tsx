@@ -53,7 +53,6 @@ export default function SearchBar({
     }
 
     if (error) {
-      // Show hint for character/format errors; suppress for empty
       const hints: Record<string, string> = {
         LEADING_HYPHEN:     "Name cannot start with a hyphen.",
         TRAILING_HYPHEN:    "Name cannot end with a hyphen.",
@@ -112,10 +111,17 @@ export default function SearchBar({
   return (
     <div className="max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="relative">
-        <div className={`flex items-center bg-white rounded-2xl border-2 shadow-sm transition-colors ${
-          hint ? "border-red-300" : isValid ? "border-blue-400" : "border-gray-200"
-        } focus-within:border-blue-500`}>
-
+        <div
+          className="flex items-center rounded-2xl border-2 transition-colors"
+          style={{
+            background: 'var(--color-surface-card)',
+            borderColor: hint
+              ? 'rgba(239,68,68,0.6)'
+              : isValid
+                ? 'var(--color-border-accent)'
+                : 'var(--color-border-subtle)',
+          }}
+        >
           {/* Text input */}
           <input
             type="text"
@@ -126,21 +132,22 @@ export default function SearchBar({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="flex-1 px-5 py-4 text-lg bg-transparent outline-none text-gray-900 placeholder-gray-400 min-w-0"
+            className="flex-1 px-5 py-4 text-lg bg-transparent outline-none placeholder-gray-500 min-w-0"
+            style={{ color: 'var(--color-text-primary)' }}
           />
 
           {/* TLD selector */}
-          <div className="flex items-center gap-1 px-3 border-l border-gray-100">
+          <div className="flex items-center gap-1 px-3 border-l" style={{ borderColor: 'var(--color-border-subtle)' }}>
             {SUPPORTED_TLDS.map(t => (
               <button
                 key={t}
                 type="button"
                 onClick={() => handleTldChange(t)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-                  tld === t
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-500 hover:bg-gray-100"
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${tld === t ? 'text-white' : ''}`}
+                style={tld === t
+                  ? { background: 'var(--color-accent-primary)' }
+                  : { color: 'var(--color-text-secondary)', background: 'transparent' }
+                }
               >
                 .{t}
               </button>
@@ -151,7 +158,8 @@ export default function SearchBar({
           <button
             type="submit"
             disabled={!isValid}
-            className="m-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="m-2 px-5 py-2.5 text-white rounded-xl font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
+            style={{ background: 'var(--color-accent-primary)' }}
           >
             Search
           </button>
@@ -160,13 +168,13 @@ export default function SearchBar({
 
       {/* Validation hint */}
       {hint ? (
-        <p className="mt-2 text-sm text-red-500 px-1">{hint}</p>
+        <p className="mt-2 text-sm px-1" style={{ color: 'var(--color-error)' }}>{hint}</p>
       ) : null}
 
       {/* Price-tier preview — instant, no RPC */}
       {isValid && tier ? (
-        <p className="mt-2 text-sm text-gray-400 px-1">
-          <span className="font-medium text-gray-600">{normalized}.{tld}</span>
+        <p className="mt-2 text-sm px-1" style={{ color: 'var(--color-text-tertiary)' }}>
+          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{normalized}.{tld}</span>
           {" · "}
           {tier.label} · from {formatUSDC(tier.annualUSDC)}/year
         </p>

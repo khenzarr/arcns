@@ -72,31 +72,31 @@ export default function PrimaryName() {
   if (!isConnected) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+    <div className="rounded-2xl border p-5" style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-lg">⭐</span>
           <div>
-            <h3 className="font-semibold text-gray-900 text-sm">Primary Name</h3>
-            <p className="text-xs text-gray-400">Your wallet&apos;s human-readable identity</p>
+            <h3 className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>Primary Name</h3>
+            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Your wallet&apos;s human-readable identity</p>
           </div>
         </div>
         {primaryName ? (
-          <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full flex items-center gap-1.5">
+          <span className="text-sm font-semibold px-3 py-1 rounded-full flex items-center gap-1.5" style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-text-accent)' }}>
             {primaryName}
             {status === "verified" ? (
-              <span className="text-xs text-green-600">✓</span>
+              <span className="text-xs" style={{ color: 'var(--color-success)' }}>✓</span>
             ) : status === "stale" ? (
-              <span className="text-xs text-amber-500">⚠</span>
+              <span className="text-xs" style={{ color: 'var(--color-warning)' }}>⚠</span>
             ) : null}
           </span>
         ) : null}
       </div>
 
       {setStep === "success" ? (
-        <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-sm text-green-700 font-medium text-center">
+        <div className="rounded-xl p-3 text-sm font-medium text-center border" style={{ background: 'var(--color-success-surface)', borderColor: 'var(--color-success-border)', color: 'var(--color-success)' }}>
           ✓ Primary name updated
-          <button onClick={resetSet} className="ml-2 text-xs text-green-600 underline">Dismiss</button>
+          <button onClick={resetSet} className="ml-2 text-xs underline" style={{ color: 'var(--color-success)' }}>Dismiss</button>
         </div>
       ) : selectableDomains.length > 0 ? (
         <div className="flex gap-2">
@@ -106,7 +106,8 @@ export default function PrimaryName() {
               const val = e.target.value;
               setSelectedDomain(val && ownedNameSet.has(val) ? val : null);
             }}
-            className="flex-1 px-3 py-2.5 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
+            className="flex-1 px-3 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500"
+            style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
           >
             <option value="">— choose a domain —</option>
             {selectableDomains.map(d => {
@@ -121,15 +122,16 @@ export default function PrimaryName() {
           <button
             onClick={handleSet}
             disabled={!canSubmit}
-            className="px-4 py-2.5 bg-blue-600 text-white text-sm rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
+            className="px-4 py-2.5 text-white text-sm rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90 whitespace-nowrap"
+            style={{ background: 'var(--color-accent-primary)' }}
           >
             {setStep === "setting" ? "Updating…" : primaryName ? "Update Primary Name" : "Set as Primary"}
           </button>
         </div>
       ) : isLoading ? (
-        <div className="h-10 bg-gray-100 rounded-xl animate-pulse" />
+        <div className="h-10 rounded-xl animate-pulse" style={{ background: 'var(--color-surface-overlay)' }} />
       ) : (
-        <p className="text-xs text-gray-400">
+        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
           {domains.length === 0
             ? "No domains found. Register a .arc or .circle name first."
             : "Domain names are not yet resolved. Primary name selection will be available once the subgraph is indexed."}
@@ -137,15 +139,15 @@ export default function PrimaryName() {
       )}
 
       {setError ? (
-        <p className="mt-2 text-xs text-red-500 bg-red-50 rounded-lg px-3 py-2">{setError}</p>
+        <p className="mt-2 text-xs rounded-lg px-3 py-2" style={{ background: 'var(--color-error-surface)', color: 'var(--color-error)' }}>{setError}</p>
       ) : null}
 
       {isAlreadyPrimary && selectedDomain ? (
-        <p className="mt-2 text-xs text-gray-400">{selectedDomain} is already your primary name.</p>
+        <p className="mt-2 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{selectedDomain} is already your primary name.</p>
       ) : null}
 
       {status === "stale" && primaryName ? (
-        <p className="mt-2 text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+        <p className="mt-2 text-xs rounded-lg px-3 py-2" style={{ background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }}>
           ⚠ This name no longer resolves to your address. Select a different domain to update it.
         </p>
       ) : null}

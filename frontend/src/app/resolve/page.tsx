@@ -88,23 +88,28 @@ export default function ResolvePage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Resolve</h1>
-        <p className="text-gray-500 mt-1">Look up any ArcNS name</p>
+        <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>Resolve</h1>
+        <p className="mt-1" style={{ color: 'var(--color-text-secondary)' }}>Look up any ArcNS name</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-        <div className="flex gap-2">
+      <div
+        className="rounded-2xl border p-6 space-y-4"
+        style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}
+      >
+        <div className="flex gap-2 flex-wrap">
           <input
             type="text"
             value={domain}
             onChange={e => setDomain(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleResolve()}
             placeholder="alice.arc"
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 text-sm"
+            className="flex-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm min-w-0"
+            style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
           />
           <button
             onClick={handleResolve}
-            className="px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors text-sm"
+            className="px-6 py-3 text-white rounded-xl font-semibold transition-opacity hover:opacity-90 text-sm"
+            style={{ background: 'var(--color-accent-primary)' }}
           >
             Resolve
           </button>
@@ -113,44 +118,77 @@ export default function ResolvePage() {
         {hasResult && (
           <div className="space-y-3">
             {/* Resolved address */}
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+            <div
+              className="rounded-xl p-4"
+              style={{ background: 'var(--color-surface-elevated)' }}
+            >
+              <p
+                className="text-xs font-semibold uppercase tracking-wide mb-1.5"
+                style={{ color: 'var(--color-text-tertiary)' }}
+              >
                 Resolved Address
               </p>
               {isLoading ? (
-                <div className="h-5 bg-gray-200 rounded animate-pulse w-3/4" />
+                <div className="h-5 rounded animate-pulse w-3/4" style={{ background: 'var(--color-surface-overlay)' }} />
               ) : hasAddr ? (
                 <div className="flex items-center gap-2">
-                  <p className="font-mono text-sm text-gray-900 break-all">{addr}</p>
+                  <p className="font-mono text-sm break-all" style={{ color: 'var(--color-text-primary)' }}>{addr}</p>
                   <a
                     href={`https://testnet.arcscan.app/address/${addr}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 text-xs shrink-0 hover:underline"
+                    className="text-xs shrink-0 hover:underline"
+                    style={{ color: 'var(--color-text-accent)' }}
                   >↗</a>
                 </div>
               ) : (
-                <p className="text-sm text-gray-400">No address record set</p>
+                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No address record set</p>
               )}
             </div>
 
             {/* Expiry + status */}
             {expiryTs > 0n && (
-              <div className="bg-gray-50 rounded-xl p-4 flex items-center justify-between">
+              <div
+                className="rounded-xl p-4 flex items-center justify-between"
+                style={{ background: 'var(--color-surface-elevated)' }}
+              >
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">Expiry</p>
-                  <p className="text-sm text-gray-900">{formatExpiry(expiryTs)}</p>
+                  <p
+                    className="text-xs font-semibold uppercase tracking-wide mb-1"
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                  >Expiry</p>
+                  <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{formatExpiry(expiryTs)}</p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${badge.className}`}>
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-semibold"
+                  style={{
+                    background: expiryState === 'expiring-soon' || expiryState === 'grace'
+                      ? 'var(--color-warning-surface)'
+                      : expiryState === 'expired'
+                        ? 'var(--color-error-surface)'
+                        : 'rgba(16,185,129,0.15)',
+                    color: expiryState === 'expiring-soon' || expiryState === 'grace'
+                      ? 'var(--color-warning)'
+                      : expiryState === 'expired'
+                        ? 'var(--color-error)'
+                        : '#10b981',
+                  }}
+                >
                   {badge.label}
                 </span>
               </div>
             )}
 
             {/* Namehash */}
-            <div className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Namehash</p>
-              <p className="font-mono text-xs text-gray-500 break-all">{node}</p>
+            <div
+              className="rounded-xl p-4"
+              style={{ background: 'var(--color-surface-elevated)' }}
+            >
+              <p
+                className="text-xs font-semibold uppercase tracking-wide mb-1.5"
+                style={{ color: 'var(--color-text-tertiary)' }}
+              >Namehash</p>
+              <p className="font-mono text-xs break-all" style={{ color: 'var(--color-text-secondary)' }}>{node}</p>
             </div>
 
             {/* ArcScan link */}
@@ -159,7 +197,8 @@ export default function ResolvePage() {
                 href={`https://testnet.arcscan.app/token/${registrar}?a=${tokenId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center text-sm text-blue-600 hover:text-blue-700 py-2"
+                className="block text-center text-sm py-2 hover:opacity-80 transition-opacity"
+                style={{ color: 'var(--color-text-accent)' }}
               >
                 View NFT on ArcScan ↗
               </a>
