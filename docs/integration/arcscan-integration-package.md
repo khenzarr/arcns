@@ -428,7 +428,7 @@ ArcNS names are ERC-721 tokens on the BaseRegistrar contracts. When ArcScan disp
 | Name is expired | Show "Expired" status. Do not show the previous owner as the current owner. |
 | Resolver set but no addr record | Show "No address record" — not an error, just unset. |
 | Name has never been registered | Show "Available" — not "Not found". |
-| User searches `alice.eth` | Reject — `.eth` is not an ArcNS TLD. Show "Unsupported name format". |
+| User searches `alice.xyz` | Reject — `.xyz` is not an ArcNS TLD. Show "Unsupported name format". |
 
 ---
 
@@ -603,9 +603,9 @@ The `/address/` endpoint will return a `verified` field indicating whether forwa
 ### 8.6 Malformed input
 
 **Symptom:** User types something that looks like a name but is not valid ArcNS syntax.  
-**Examples:** `alice.eth`, `alice.`, `.arc`, `alice..arc`, `--alice.arc`  
+**Examples:** `alice.xyz`, `alice.`, `.arc`, `alice..arc`, `--alice.arc`  
 **Correct behavior:**
-- `.eth`: unsupported TLD — show "Unsupported name format. ArcNS supports .arc and .circle."
+- `.xyz`: unsupported TLD — show "Unsupported name format. ArcNS supports .arc and .circle."
 - `alice.` or `.arc`: malformed — show "Invalid name format."
 - `--alice.arc`: leading hyphen — show "Invalid name: names cannot start with a hyphen."
 - Do not attempt resolution on invalid input.
