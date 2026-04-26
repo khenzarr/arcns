@@ -1,4 +1,4 @@
-# ArcNS — ArcScan Integration Package
+# ArcNS - ArcScan Integration Package
 
 **Phase:** 8C  
 **Date:** 2026-04-25  
@@ -12,7 +12,7 @@
 
 ### What ArcScan-native ArcNS support enables
 
-ArcNS maps human-readable names (e.g. `alice.arc`, `bob.circle`) to EVM addresses on Arc Testnet. Without ArcScan integration, users see raw addresses everywhere — in search results, address pages, and token pages. With integration, ArcScan can:
+ArcNS maps human-readable names (e.g. `alice.arc`, `bob.circle`) to EVM addresses on Arc Testnet. Without ArcScan integration, users see raw addresses everywhere in search results, address pages, and token pages. With integration, ArcScan can:
 
 - Accept `.arc` and `.circle` names directly in the search bar and resolve them to addresses
 - Display a user's primary ArcNS name on their address page (e.g. `alice.arc` instead of `0xabc...`)
@@ -21,7 +21,7 @@ ArcNS maps human-readable names (e.g. `alice.arc`, `bob.circle`) to EVM addresse
 
 ### Why this matters for users
 
-Users who have registered ArcNS names expect those names to appear wherever their address appears. An explorer that shows only raw addresses makes ArcNS invisible to the broader ecosystem. ArcScan is the primary block explorer for Arc Testnet — its adoption of ArcNS is the highest-visibility integration available.
+Users who have registered ArcNS names expect those names to appear wherever their address appears. An explorer that shows only raw addresses makes ArcNS invisible to the broader ecosystem. ArcScan is the primary block explorer for Arc Testnet its adoption of ArcNS is the highest-visibility integration available.
 
 ### What is already available vs what ArcScan must consume
 
@@ -32,9 +32,9 @@ Users who have registered ArcNS names expect those names to appear wherever thei
 | Ownership and expiry data | ✅ Fully on-chain and indexed in subgraph |
 | NFT metadata (on-chain SVG) | ✅ Available via `tokenURI(tokenId)` |
 | Name search | ✅ Computable from on-chain data |
-| ArcScan search bar accepting `.arc`/`.circle` | ❌ Not implemented — ArcScan must build this |
-| Address pages showing primary name | ❌ Not implemented — ArcScan must build this |
-| Token pages showing domain name | ❌ Not implemented — ArcScan must build this |
+| ArcScan search bar accepting `.arc`/`.circle` | ❌ Not implemented ArcScan must build this |
+| Address pages showing primary name | ❌ Not implemented - ArcScan must build this |
+| Token pages showing domain name | ❌ Not implemented - ArcScan must build this |
 
 ---
 
@@ -56,7 +56,7 @@ Users who have registered ArcNS names expect those names to appear wherever thei
 ```
 ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2
 ```
-This is `namehash("addr.reverse")` — the root node for all reverse records.
+This is `namehash("addr.reverse")` the root node for all reverse records.
 
 ### 2.2 RPC endpoints (Arc Testnet)
 
@@ -66,7 +66,7 @@ Secondary: https://rpc.blockdaemon.testnet.arc.network
 Tertiary:  https://rpc.quicknode.testnet.arc.network
 ```
 
-All resolution calls are standard `eth_call` — no authentication required.
+All resolution calls are standard `eth_call` no authentication required.
 
 ### 2.3 Subgraph (optional, speed layer)
 
@@ -74,7 +74,7 @@ All resolution calls are standard `eth_call` — no authentication required.
 URL: https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
 ```
 
-The subgraph provides fast indexed access to domain data, ownership, expiry, and registration history. It is a convenience layer — not a trust layer. See §6 for trust rules.
+The subgraph provides fast indexed access to domain data, ownership, expiry, and registration history. It is a convenience layer not a trust layer. See §6 for trust rules.
 
 ### 2.4 ArcNS public resolution API (future)
 
@@ -85,7 +85,7 @@ GET /api/v1/resolve/name/{name}    → { name, address, owner, expiry, source }
 GET /api/v1/resolve/address/{addr} → { address, name, verified, source }
 ```
 
-This API is publicly hosted at `https://arcns-app.vercel.app`. ArcScan may use the v1 endpoints directly. Rate limiting is not yet implemented — coordinate with the ArcNS team before high-volume production use.
+This API is publicly hosted at `https://arcns-app.vercel.app`. ArcScan may use the v1 endpoints directly. Rate limiting is not yet implemented coordinate with the ArcNS team before high-volume production use.
 
 ---
 
@@ -100,7 +100,7 @@ Input:  name (string, e.g. "alice.arc")
 Output: address (string) | null
 ```
 
-**Step 1 — Normalize the name**
+**Step 1 - Normalize the name**
 ```
 label = name.split(".")[0].trim().toLowerCase()
 tld   = name.split(".").slice(1).join(".")  // "arc" or "circle"
@@ -108,7 +108,7 @@ normalizedName = label + "." + tld
 ```
 Reject if: empty, leading/trailing hyphen, double-hyphen at positions 2–3, characters outside `[a-z0-9\-_]` plus Unicode letters/digits/emoji.
 
-**Step 2 — Compute namehash**
+**Step 2 - Compute namehash**
 ```
 namehash("") = 0x0000...0000
 namehash(name) = keccak256(namehash(parent) || keccak256(label))
@@ -118,14 +118,14 @@ namehash(name) = keccak256(namehash(parent) || keccak256(label))
 //   = keccak256(0x9a7ad1c5... || keccak256("alice"))
 ```
 
-**Step 3 — Get resolver from Registry**
+**Step 3 - Get resolver from Registry**
 ```solidity
 // eth_call
 ArcNSRegistry.resolver(bytes32 node) → address resolverAddr
 ```
 If `resolverAddr == address(0)`: name has no resolver set → return `null`.
 
-**Step 4 — Get address from Resolver**
+**Step 4 - Get address from Resolver**
 ```solidity
 // eth_call
 ArcNSResolver.addr(bytes32 node) → address payable
@@ -145,21 +145,21 @@ Input:  address (string, e.g. "0xabc...")
 Output: { name: string | null, verified: boolean }
 ```
 
-**Step 1 — Compute reverse node**
+**Step 1 - Compute reverse node**
 ```
 hexAddr    = address.toLowerCase().slice(2)   // 40 hex chars, no 0x prefix
 labelHash  = keccak256(hexAddr)               // keccak256 of the hex string
 reverseNode = keccak256(ADDR_REVERSE_NODE || labelHash)
 ```
 
-**Step 2 — Get name from Resolver**
+**Step 2 - Get name from Resolver**
 ```solidity
 // eth_call
 ArcNSResolver.name(bytes32 reverseNode) → string
 ```
 If result is `""`: no primary name set → return `{ name: null, verified: false }`.
 
-**Step 3 — Forward-confirm (mandatory)**
+**Step 3 - Forward-confirm (mandatory)**
 ```
 forwardNode  = namehash(returnedName)
 resolvedAddr = ArcNSResolver.addr(forwardNode)
@@ -167,7 +167,7 @@ resolvedAddr = ArcNSResolver.addr(forwardNode)
 if resolvedAddr == address:
     return { name: returnedName, verified: true }
 else:
-    return { name: null, verified: false }   // stale record — do not display
+    return { name: null, verified: false }   // stale record do not display
 ```
 
 **Do not skip step 3.** A reverse record can be stale (name transferred or expired). Displaying an unverified name is incorrect. See §6 for the full trust model.
@@ -197,7 +197,7 @@ Use this for name detail pages and token pages.
 ```solidity
 tokenId = uint256(keccak256(label))   // label only, not full name
 
-// Check expiry first — ownerOf reverts on expired tokens
+// Check expiry first ownerOf reverts on expired tokens
 ArcNSBaseRegistrar.nameExpires(uint256 tokenId) → uint256 expiry
 
 // If expiry > block.timestamp:
@@ -230,7 +230,7 @@ Input:  query string (e.g. "alice.arc" or "alice" or "bob.circle")
 Output: { name, address, owner, expiry, expiryState, tokenId, tld } | null
 ```
 
-**Step 1 — Parse the query**
+**Step 1 - Parse the query**
 ```
 if query contains ".":
     label = query.split(".")[0].toLowerCase()
@@ -241,32 +241,32 @@ else:
     tld   = "arc"  // default to .arc; optionally search both
 ```
 
-**Step 2 — Compute identifiers**
+**Step 2 - Compute identifiers**
 ```
 tokenId      = uint256(keccak256(label))
 namehashNode = namehash(label + "." + tld)
 ```
 
-**Step 3 — Get expiry**
+**Step 3 - Get expiry**
 ```solidity
 expiry = BaseRegistrar.nameExpires(tokenId)
 ```
 If `expiry == 0`: name has never been registered → show as available.
 
-**Step 4 — Get owner (if not expired)**
+**Step 4 - Get owner (if not expired)**
 ```solidity
 if expiry > block.timestamp:
     owner = BaseRegistrar.ownerOf(tokenId)
 ```
 
-**Step 5 — Get resolved address**
+**Step 5 - Get resolved address**
 ```solidity
 resolverAddr = Registry.resolver(namehashNode)
 if resolverAddr != address(0):
     addr = Resolver.addr(namehashNode)
 ```
 
-**Step 6 — Return result**
+**Step 6 - Return result**
 ```json
 {
   "name": "alice.arc",
@@ -310,9 +310,9 @@ NameRenewed(string name, bytes32 indexed label, uint256 cost, uint256 expires)
 ```
 Transfer(address indexed from, address indexed to, uint256 indexed tokenId)
 ```
-- `from == address(0)`: mint (new registration) — already captured by `NameRegistered`.
-- `from != address(0)` and `to != address(0)`: ownership transfer — update owner.
-- `to == address(0)`: burn — should not occur in normal operation.
+- `from == address(0)`: mint (new registration) already captured by `NameRegistered`.
+- `from != address(0)` and `to != address(0)`: ownership transfer update owner.
+- `to == address(0)`: burn should not occur in normal operation.
 
 **ArcNSResolver**
 ```
@@ -380,7 +380,7 @@ Optionally: search both `alice.arc` and `alice.circle` and show results for both
 
 **When displaying an address page:**
 
-1. Call `lookupAddress(address)` (§3.2) — reverse resolution with forward-confirmation.
+1. Call `lookupAddress(address)` (§3.2) reverse resolution with forward-confirmation.
 2. If `verified == true`: display the primary name prominently near the address (e.g. `alice.arc` as a badge or subtitle).
 3. If `verified == false` or no primary name: display nothing. Do not show an unverified name.
 4. Optionally: show a "Owns N ArcNS names" count with a link to a names tab.
@@ -393,7 +393,7 @@ Address: 0xabc...def
 
 **Do not:**
 - Display a primary name without forward-confirmation.
-- Display a stale name with a disclaimer — just omit it.
+- Display a stale name with a disclaimer just omit it.
 
 ### 5.3 Name detail pages
 
@@ -415,9 +415,9 @@ When a user navigates to a name (via search or a direct link), show:
 ArcNS names are ERC-721 tokens on the BaseRegistrar contracts. When ArcScan displays an NFT from these contracts:
 
 - Show the domain name (e.g. `alice.arc`) as the token name, not just the token ID.
-- The token ID is `uint256(keccak256(label))` — it is not human-readable on its own.
+- The token ID is `uint256(keccak256(label))`  it is not human-readable on its own.
 - `tokenURI(tokenId)` returns a base64-encoded JSON metadata object with `name`, `description`, `image` (inline SVG), and `attributes` fields. ArcScan can render this directly.
-- The `image` field is a `data:image/svg+xml;base64,...` URI — no external fetch required.
+- The `image` field is a `data:image/svg+xml;base64,...` URI no external fetch required.
 
 ### 5.5 Avoiding misleading output
 
@@ -426,9 +426,9 @@ ArcNS names are ERC-721 tokens on the BaseRegistrar contracts. When ArcScan disp
 | Reverse record exists but forward-confirmation fails | Show no primary name. Do not show the unverified name. |
 | Name is in grace period | Show "Grace Period" status, not "Active". Owner can still renew. |
 | Name is expired | Show "Expired" status. Do not show the previous owner as the current owner. |
-| Resolver set but no addr record | Show "No address record" — not an error, just unset. |
-| Name has never been registered | Show "Available" — not "Not found". |
-| User searches `alice.eth` | Reject — `.eth` is not an ArcNS TLD. Show "Unsupported name format". |
+| Resolver set but no addr record | Show "No address record"  not an error, just unset. |
+| Name has never been registered | Show "Available"  not "Not found". |
+| User searches `alice.xyz` | Reject  `.xyz` is not an ArcNS TLD. Show "Unsupported name format". |
 
 ---
 
@@ -481,7 +481,7 @@ ArcScan makes `eth_call` requests directly to Arc Testnet RPC endpoints for all 
 
 **Pros:**
 - No dependency on ArcNS infrastructure beyond the deployed contracts.
-- Always reads from chain head — no indexer lag.
+- Always reads from chain head no indexer lag.
 - Fully self-contained.
 
 **Cons:**
@@ -583,7 +583,7 @@ The `/address/` endpoint will return a `verified` field indicating whether forwa
 ### 8.3 No resolver set
 
 **Symptom:** `Registry.resolver(node)` returns `address(0)`.  
-**Cause:** Name was registered but no resolver was configured (unusual in v3 — the Controller sets a resolver at registration time).  
+**Cause:** Name was registered but no resolver was configured (unusual in v3 - the Controller sets a resolver at registration time).  
 **Correct behavior:** Show "No resolver set" on the name detail page. Do not attempt to call `Resolver.addr()`.
 
 ### 8.4 Resolver set but no addr record
@@ -598,16 +598,16 @@ The `/address/` endpoint will return a `verified` field indicating whether forwa
 **Cause:** Name expired and was not renewed.  
 **Correct behavior:**
 - If within 90-day grace period: show "Grace Period" status. The previous owner can still renew.
-- If past grace period: show "Expired / Available". Do not show the previous owner as the current owner. `ownerOf()` will revert — do not call it.
+- If past grace period: show "Expired / Available". Do not show the previous owner as the current owner. `ownerOf()` will revert do not call it.
 
 ### 8.6 Malformed input
 
 **Symptom:** User types something that looks like a name but is not valid ArcNS syntax.  
-**Examples:** `alice.eth`, `alice.`, `.arc`, `alice..arc`, `--alice.arc`  
+**Examples:** `alice.xyz`, `alice.`, `.arc`, `alice..arc`, `--alice.arc`  
 **Correct behavior:**
-- `.eth`: unsupported TLD — show "Unsupported name format. ArcNS supports .arc and .circle."
-- `alice.` or `.arc`: malformed — show "Invalid name format."
-- `--alice.arc`: leading hyphen — show "Invalid name: names cannot start with a hyphen."
+- `.xyz`: unsupported TLD show "Unsupported name format. ArcNS supports .arc and .circle."
+- `alice.` or `.arc`: malformed show "Invalid name format."
+- `--alice.arc`: leading hyphen show "Invalid name: names cannot start with a hyphen."
 - Do not attempt resolution on invalid input.
 
 ### 8.7 Unsupported name search formats
@@ -617,7 +617,7 @@ ArcScan should only attempt ArcNS resolution for names ending in `.arc` or `.cir
 ### 8.8 RPC unavailability
 
 **Symptom:** All Arc Testnet RPC endpoints are timing out.  
-**Correct behavior:** Show a degraded state indicator. Do not show stale cached data as current. Do not show an error that implies the name does not exist — it may simply be unreachable.
+**Correct behavior:** Show a degraded state indicator. Do not show stale cached data as current. Do not show an error that implies the name does not exist it may simply be unreachable.
 
 ### 8.9 Name with no registration history
 
@@ -656,8 +656,8 @@ ArcScan should only attempt ArcNS resolution for names ending in `.arc` or `.cir
 
 ### Contact
 
-For integration questions, contract ABI clarifications, or test name provisioning, contact the ArcNS team directly. This document is the canonical integration reference — if anything in it is unclear or incorrect, we want to know.
+For integration questions, contract ABI clarifications, or test name provisioning, contact the ArcNS team directly. This document is the canonical integration reference if anything in it is unclear or incorrect, we want to know.
 
 ---
 
-*End of ArcNS ArcScan Integration Package — Phase 8C*
+*End of ArcNS ArcScan Integration Package Phase 8C*
