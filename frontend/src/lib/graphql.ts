@@ -196,9 +196,14 @@ export async function resolveName(name: string): Promise<{
   const domain = await getDomainByName(name);
   if (domain) {
     const address = domain.resolvedAddress ?? domain.resolverRecord?.addr ?? null;
-    return { address, owner: domain.owner?.id ?? null, expiry: domain.expiry, source: "subgraph" };
+    if (address) {
+      // Subgraph has a non-null address — return it directly (fast path)
+      return { address, owner: domain.owner?.id ?? null, expiry: domain.expiry, source: "subgraph" };
+    }
+    // Subgraph has the domain entity but addr is null/stale — fall through to RPC
+    // to verify the current on-chain state before returning not_found
   }
-  // RPC fallback
+  // RPC fallback (reached when: domain absent from subgraph, OR domain present but addr null)
   try {
     const { publicClient } = await import("./publicClient");
     const { namehash } = await import("./namehash");
