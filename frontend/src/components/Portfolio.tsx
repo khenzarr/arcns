@@ -217,10 +217,10 @@ export default function Portfolio() {
 // called unconditionally at the top level of a component — not inside a map.
 
 interface DomainRowWithAddrProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   d: any;
   displayName: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line
   badge: any;
   daysLeft: number;
   canRenew: boolean;
