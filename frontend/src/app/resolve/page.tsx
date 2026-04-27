@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { useReadContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { namehash, labelToTokenId } from "../../lib/namehash";
 import {
   getExpiryState,
@@ -21,8 +21,10 @@ import {
   ADDR_RESOLVER,
   ADDR_ARC_REGISTRAR,
   ADDR_CIRCLE_REGISTRAR,
+  REGISTRY_CONTRACT,
 } from "../../lib/contracts";
 import { isValidLabel } from "../../lib/domain";
+import { useReceivingAddress } from "../../hooks/useReceivingAddress";
 
 // ─── Forward resolution via publicClient ──────────────────────────────────────
 
@@ -58,6 +60,8 @@ export default function ResolvePage() {
   const [domain,  setDomain]  = useState("");
   const [queried, setQueried] = useState("");
 
+  const { address: connectedAddress } = useAccount();
+
   const { data: resolvedAddr, isLoading } = useResolveAddress(queried);
 
   const parts     = queried.split(".");
@@ -80,10 +84,36 @@ export default function ResolvePage() {
   const badge       = expiryBadge(expiryState);
 
   const handleResolve = () => setQueried(domain.trim().toLowerCase());
-  const node          = namehash(queried);
+  const nodeBytes     = queried ? namehash(queried) as `0x${string}` : undefined;
+  const node          = queried ? namehash(queried) : "";
   const hasResult     = !!queried && queried.includes(".");
   const addr          = resolvedAddr as string | undefined;
   const hasAddr       = addr && addr !== "0x0000000000000000000000000000000000000000";
+  const isUnregistered = hasResult && !isLoading && expiryTs === 0n;
+
+  // ── Registry owner read (enabled only when queried and wallet connected) ──
+  const { data: ownerData } = useReadContract({
+    ...REGISTRY_CONTRACT,
+    functionName: "owner",
+    args: nodeBytes ? [nodeBytes] : undefined,
+    query: {
+      enabled: !!queried && queried.includes(".") && !!connectedAddress,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+  });
+  const isOwner =
+    !!connectedAddress &&
+    !!ownerData &&
+    (ownerData as string).toLowerCase() === connectedAddress.toLowerCase();
+
+  // ── useReceivingAddress for inline CTA ────────────────────────────────────
+  const {
+    setStep: addrSetStep,
+    setError: addrSetError,
+    setReceivingAddress,
+    resetSet: resetAddrSet,
+  } = useReceivingAddress(nodeBytes, { enabled: !!nodeBytes && !hasAddr && isOwner });
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -141,8 +171,36 @@ export default function ResolvePage() {
                     style={{ color: 'var(--color-text-accent)' }}
                   >↗</a>
                 </div>
+              ) : isUnregistered ? (
+                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Name not registered</p>
               ) : (
-                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No address record set</p>
+                <div>
+                  <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No receiving address set</p>
+                  {isOwner && addrSetStep !== "success" && (
+                    <div className="mt-2">
+                      <button
+                        onClick={() => connectedAddress && setReceivingAddress(connectedAddress)}
+                        disabled={addrSetStep === "setting" || !connectedAddress}
+                        className="px-4 py-2 rounded-lg text-xs font-medium transition-opacity disabled:opacity-50"
+                        style={{ background: 'var(--color-accent-primary)', color: '#fff' }}
+                      >
+                        {addrSetStep === "setting" ? "Setting…" : "Set to connected wallet"}
+                      </button>
+                      {addrSetError && (
+                        <p className="mt-1 text-xs" style={{ color: 'var(--color-error)' }}>
+                          {addrSetError}
+                          <button onClick={resetAddrSet} className="ml-2 underline" style={{ color: 'var(--color-error)' }}>Retry</button>
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {isOwner && addrSetStep === "success" && (
+                    <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--color-success-surface)', color: 'var(--color-success)' }}>
+                      ✓ Receiving address set to your connected wallet.
+                      <button onClick={resetAddrSet} className="ml-2 underline" style={{ color: 'var(--color-success)' }}>Dismiss</button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 

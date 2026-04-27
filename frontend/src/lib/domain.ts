@@ -126,6 +126,15 @@ export function isValidLabel(label: string): boolean {
 }
 
 /**
+ * Validate an EVM address string.
+ * Returns true for any 42-char hex string starting with 0x (case-insensitive).
+ * Used to validate manual receiving address input.
+ */
+export function isValidEvmAddress(value: string): value is `0x${string}` {
+  return /^0x[0-9a-fA-F]{40}$/.test(value);
+}
+
+/**
  * Normalise raw search input into a clean label + TLD pair.
  * Strips the TLD suffix if present, lowercases, trims whitespace.
  * Returns null only if the result fails character/format validation.

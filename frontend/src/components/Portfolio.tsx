@@ -7,12 +7,15 @@
  * No v1/v2 imports. No ENS-branded strings.
  */
 
-import { useAccount } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import { useState } from "react";
 import { useMyDomains }  from "../hooks/useMyDomains";
 import { useRenew }      from "../hooks/useRenew";
+import { useReceivingAddress } from "../hooks/useReceivingAddress";
+import { ReceivingAddressPanel } from "./ReceivingAddressPanel";
+import { namehash } from "../lib/namehash";
+import { REGISTRY_CONTRACT } from "../lib/contracts";
 import {
-  formatUSDC,
   formatExpiry,
   daysUntilExpiry,
   expiryBadge,
@@ -21,11 +24,13 @@ import {
 } from "../lib/normalization";
 
 export default function Portfolio() {
-  const { isConnected } = useAccount();
+  const { isConnected, address: connectedAddress } = useAccount();
   const { domains, isLoading, error, refetch } = useMyDomains();
   const renew = useRenew();
   const [renewTarget, setRenewTarget] = useState<{ label: string; tld: SupportedTLD } | null>(null);
   const [renewDuration, setRenewDuration] = useState(BigInt(DURATION_OPTIONS[0].seconds));
+  // Track which domain key is expanded (only one at a time)
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
 
   if (!isConnected) {
     return (
@@ -85,6 +90,27 @@ export default function Portfolio() {
             ? `${d.tokenId.toString()}-${d.tld}`
             : `${i}-${d.tld}`;
 
+        const isExpanded = expandedKey === key;
+
+        // Only enrich rows where labelName is available (subgraph path)
+        if (d.labelName) {
+          return (
+            <DomainRowWithAddr
+              key={key}
+              d={d}
+              displayName={displayName}
+              badge={badge}
+              daysLeft={daysLeft}
+              canRenew={canRenew}
+              connectedAddress={connectedAddress}
+              isExpanded={isExpanded}
+              onToggleExpand={() => setExpandedKey(isExpanded ? null : key)}
+              onRenew={() => setRenewTarget({ label: d.labelName!, tld: d.tld })}
+            />
+          );
+        }
+
+        // RPC-fallback rows — no receiving address indicator or expand control
         return (
           <div
             key={key}
@@ -100,9 +126,7 @@ export default function Portfolio() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>{displayName}</span>
-                {d.source === "rpc" ? (
-                  <span className="text-xs shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>RPC</span>
-                ) : null}
+                <span className="text-xs shrink-0" style={{ color: 'var(--color-text-tertiary)' }}>RPC</span>
               </div>
               <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
                 {d.expiryState === "expired"
@@ -129,15 +153,6 @@ export default function Portfolio() {
               >
                 {badge.label}
               </span>
-              {canRenew && d.labelName ? (
-                <button
-                  onClick={() => setRenewTarget({ label: d.labelName!, tld: d.tld })}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
-                  style={{ background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }}
-                >
-                  Renew
-                </button>
-              ) : null}
             </div>
           </div>
         );
@@ -182,7 +197,6 @@ export default function Portfolio() {
               <button
                 onClick={async () => {
                   // Renew requires a price — redirect to search for full renew flow
-                  // Full renew-by-name is available on the home search page
                   setRenewTarget(null);
                 }}
                 className="flex-1 py-2.5 text-sm font-medium text-white rounded-xl transition-opacity hover:opacity-90"
@@ -194,6 +208,164 @@ export default function Portfolio() {
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+// ─── DomainRowWithAddr ────────────────────────────────────────────────────────
+// Extracted sub-component so hooks (useReceivingAddress, useReadContract) are
+// called unconditionally at the top level of a component — not inside a map.
+
+interface DomainRowWithAddrProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  d: any;
+  displayName: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  badge: any;
+  daysLeft: number;
+  canRenew: boolean;
+  connectedAddress: `0x${string}` | undefined;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onRenew: () => void;
+}
+
+function DomainRowWithAddr({
+  d,
+  displayName,
+  badge,
+  daysLeft,
+  canRenew,
+  connectedAddress,
+  isExpanded,
+  onToggleExpand,
+  onRenew,
+}: DomainRowWithAddrProps) {
+  const node = namehash(`${d.labelName}.${d.tld}`) as `0x${string}`;
+
+  // Read Registry owner for this node
+  const { data: ownerData } = useReadContract({
+    ...REGISTRY_CONTRACT,
+    functionName: "owner",
+    args: [node],
+    query: { enabled: !!d.labelName, staleTime: 30_000 },
+  });
+
+  const isOwner =
+    (ownerData as string | undefined)?.toLowerCase() === connectedAddress?.toLowerCase();
+
+  // Read receiving address
+  const { receivingAddress, addrState } = useReceivingAddress(node);
+
+  const isStale =
+    receivingAddress !== null &&
+    receivingAddress.toLowerCase() !== connectedAddress?.toLowerCase();
+
+  return (
+    <div
+      className="rounded-xl border"
+      style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}
+    >
+      {/* Main row */}
+      <div className="p-4 flex items-center gap-4">
+        <div
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 border"
+          style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-accent)' }}
+        >
+          .{d.tld}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>{displayName}</span>
+          </div>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
+            {d.expiryState === "expired"
+              ? `Expired ${formatExpiry(d.expiry)}`
+              : `Expires ${formatExpiry(d.expiry)}`}
+            {d.expiryState === "expiring-soon" ? ` · ${daysLeft}d left` : ""}
+          </p>
+          {/* Receiving address indicator */}
+          <div className="mt-1">
+            {addrState === "loading" && (
+              <span className="inline-block w-16 h-3 animate-pulse rounded" style={{ background: 'var(--color-surface-elevated)' }} />
+            )}
+            {addrState === "set" && !isStale && receivingAddress && (
+              <span className="flex items-center gap-1 text-xs" style={{ color: '#10b981' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-current inline-block" />
+                {receivingAddress.slice(0, 6)}…{receivingAddress.slice(-4)}
+              </span>
+            )}
+            {addrState === "set" && isStale && (
+              <span className="text-xs" style={{ color: 'var(--color-warning)' }}>
+                This name does not resolve to your connected wallet.
+              </span>
+            )}
+            {addrState === "missing" && (
+              <span className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+                No receiving address set
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <span
+            className="px-2.5 py-1 rounded-full text-xs font-semibold"
+            style={{
+              background: d.expiryState === 'expiring-soon' || d.expiryState === 'grace'
+                ? 'var(--color-warning-surface)'
+                : d.expiryState === 'expired'
+                  ? 'var(--color-error-surface)'
+                  : 'rgba(16,185,129,0.15)',
+              color: d.expiryState === 'expiring-soon' || d.expiryState === 'grace'
+                ? 'var(--color-warning)'
+                : d.expiryState === 'expired'
+                  ? 'var(--color-error)'
+                  : '#10b981',
+            }}
+          >
+            {badge.label}
+          </span>
+          {canRenew && (
+            <button
+              onClick={onRenew}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+              style={{ background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }}
+            >
+              Renew
+            </button>
+          )}
+          {/* Expand/collapse chevron — owner only */}
+          {isOwner && (
+            <button
+              onClick={onToggleExpand}
+              className="p-1.5 rounded-lg transition-colors"
+              style={{ color: 'var(--color-text-tertiary)' }}
+              aria-label={isExpanded ? "Collapse" : "Expand"}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }}
+              >
+                <polyline points="2 5 7 10 12 5" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Expanded panel */}
+      {isExpanded && (
+        <div className="px-4 pb-4">
+          <ReceivingAddressPanel node={node} isOwner={isOwner} />
+        </div>
+      )}
     </div>
   );
 }

@@ -19,7 +19,7 @@
  */
 
 import { useReadContract, useWriteContract, useAccount } from "wagmi";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { RESOLVER_CONTRACT, REVERSE_REGISTRAR_CONTRACT } from "../lib/contracts";
 import { DEPLOYED_CHAIN_ID } from "../lib/generated-contracts";
 import { reverseNodeFor, namehash } from "../lib/namehash";
@@ -28,6 +28,14 @@ import { classifyRawError, userFacingMessage, ARC_ERR } from "../lib/errors";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type PrimaryNameStatus = "none" | "verified" | "stale";
+
+export type AddrSyncStep =
+  | "idle"
+  | "syncing"
+  | "synced"
+  | "partial-success"
+  | "stale-prompt"
+  | "failed";
 
 export interface PrimaryNameState {
   /** The primary name string, or null if not set */
@@ -44,6 +52,16 @@ export interface PrimaryNameState {
   setPrimaryName: (fullName: string) => Promise<void>;
   /** Reset the set flow state */
   resetSet:      () => void;
+  /** True when addr sync succeeded in the current session */
+  addrSynced:    boolean;
+  /** Step for the addr sync sub-flow */
+  addrSyncStep:  AddrSyncStep;
+  /** User-facing error from the addr sync sub-flow, or null */
+  addrSyncError: string | null;
+  /** User confirms overwrite of stale addr */
+  confirmStaleSync: () => Promise<void>;
+  /** User skips overwrite of stale addr */
+  skipStaleSync: () => void;
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────
@@ -56,6 +74,13 @@ export function usePrimaryName(address?: `0x${string}`): PrimaryNameState {
 
   const [setStep,  setSetStep]  = useState<"idle" | "setting" | "success" | "failed">("idle");
   const [setError, setSetError] = useState<string | null>(null);
+
+  // ── Addr sync state ────────────────────────────────────────────────────────
+  const [addrSynced,    setAddrSynced]    = useState(false);
+  const [addrSyncStep,  setAddrSyncStep]  = useState<AddrSyncStep>("idle");
+  const [addrSyncError, setAddrSyncError] = useState<string | null>(null);
+  // Ref to hold the node for stale-prompt confirm/skip
+  const staleSyncNodeRef = useRef<`0x${string}` | null>(null);
 
   // ── Read reverse record ────────────────────────────────────────────────────
   const reverseNode = addr ? reverseNodeFor(addr) : undefined;
@@ -107,7 +132,38 @@ export function usePrimaryName(address?: `0x${string}`): PrimaryNameState {
   const resetSet = useCallback(() => {
     setSetStep("idle");
     setSetError(null);
+    setAddrSynced(false);
+    setAddrSyncStep("idle");
+    setAddrSyncError(null);
+    staleSyncNodeRef.current = null;
   }, []);
+
+  const skipStaleSync = useCallback(() => {
+    setAddrSyncStep("idle");
+    staleSyncNodeRef.current = null;
+  }, []);
+
+  const confirmStaleSync = useCallback(async () => {
+    const node = staleSyncNodeRef.current;
+    if (!node || !connectedAddress) return;
+    setAddrSyncStep("syncing");
+    try {
+      const { publicClient } = await import("../lib/publicClient");
+      const addrTxHash = await writeContractAsync({
+        ...RESOLVER_CONTRACT,
+        functionName: "setAddr",
+        args: [node, connectedAddress],
+      });
+      await publicClient.waitForTransactionReceipt({ hash: addrTxHash });
+      setAddrSynced(true);
+      setAddrSyncStep("synced");
+      staleSyncNodeRef.current = null;
+    } catch (e: unknown) {
+      const { toUserMessage } = await import("../lib/errors");
+      setAddrSyncStep("partial-success");
+      setAddrSyncError(toUserMessage(e));
+    }
+  }, [connectedAddress, writeContractAsync]);
 
   const setPrimaryName = useCallback(async (fullName: string) => {
     if (!addr) {
@@ -136,6 +192,44 @@ export function usePrimaryName(address?: `0x${string}`): PrimaryNameState {
       await publicClient.waitForTransactionReceipt({ hash: txHash });
       // Force refetch so the read path reflects the new on-chain state
       await refetchPrimaryName();
+
+      // ── Addr sync after setName confirms ──────────────────────────────────
+      const node = namehash(fullName) as `0x${string}`;
+      const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+      try {
+        const currentAddr = await publicClient.readContract({
+          ...RESOLVER_CONTRACT,
+          functionName: "addr",
+          args: [node],
+        }) as string;
+
+        if (!currentAddr || currentAddr === ZERO_ADDRESS) {
+          // Branch 1: Missing addr — auto-sync to connected wallet
+          setAddrSyncStep("syncing");
+          try {
+            const addrTxHash = await writeContractAsync({
+              ...RESOLVER_CONTRACT,
+              functionName: "setAddr",
+              args: [node, addr as `0x${string}`],
+            });
+            await publicClient.waitForTransactionReceipt({ hash: addrTxHash });
+            setAddrSynced(true);
+            setAddrSyncStep("synced");
+          } catch (addrErr: unknown) {
+            const { toUserMessage } = await import("../lib/errors");
+            setAddrSyncStep("partial-success");
+            setAddrSyncError(toUserMessage(addrErr));
+          }
+        } else if (currentAddr.toLowerCase() !== (addr as string).toLowerCase()) {
+          // Branch 2: Stale addr — prompt user
+          staleSyncNodeRef.current = node;
+          setAddrSyncStep("stale-prompt");
+        }
+        // Branch 3: Already matches — skip (no transaction)
+      } catch {
+        // Addr read failed — skip sync silently, setName still succeeded
+      }
+
       setSetStep("success");
     } catch (e: unknown) {
       const { code } = classifyRawError(e);
@@ -152,5 +246,10 @@ export function usePrimaryName(address?: `0x${string}`): PrimaryNameState {
     setError,
     setPrimaryName,
     resetSet,
+    addrSynced,
+    addrSyncStep,
+    addrSyncError,
+    confirmStaleSync,
+    skipStaleSync,
   };
 }

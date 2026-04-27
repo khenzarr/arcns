@@ -14,12 +14,13 @@
  *   - Primary name toggle (registration-time, optional, non-fatal)
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAccount, useReadContract } from "wagmi";
 import { useAvailability }  from "../hooks/useAvailability";
 import { useRegistration }  from "../hooks/useRegistration";
 import { useRenew }         from "../hooks/useRenew";
 import { USDC_CONTRACT, RESOLVER_CONTRACT, ADDR_RESOLVER, ADDR_ARC_CONTROLLER, ADDR_CIRCLE_CONTROLLER } from "../lib/contracts";
+import { namehash } from "../lib/namehash";
 import { DEPLOYED_CHAIN_ID } from "../lib/generated-contracts";
 import {
   formatUSDC,
@@ -193,6 +194,62 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
     : null;
 
   const activeError = reg.error ?? renew.error ?? null;
+
+  // ── Post-registration addr confirmation polling ────────────────────────────
+  // Poll addr(node) after registration succeeds to confirm forward resolution.
+  // Only active when reg.step === "success" and a result is available.
+  const POLL_INTERVAL_MS = 2000;
+  const POLL_TIMEOUT_MS  = 15_000;
+  const pollStartTime = useRef<number | null>(null);
+  const [addrTimedOut, setAddrTimedOut] = useState(false);
+
+  const successFullName = reg.result ? `${reg.result.name}.${reg.result.tld}` : "";
+  const successNode = successFullName ? namehash(successFullName) as `0x${string}` : undefined;
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+  // Reset poll state when registration resets
+  useEffect(() => {
+    if (reg.step === "idle") {
+      pollStartTime.current = null;
+      setAddrTimedOut(false);
+    }
+    if (reg.step === "success") {
+      pollStartTime.current = Date.now();
+      setAddrTimedOut(false);
+    }
+  }, [reg.step]);
+
+  const { data: successAddr, isFetched: successAddrFetched } = useReadContract({
+    ...RESOLVER_CONTRACT,
+    functionName: "addr",
+    args: successNode ? [successNode] : undefined,
+    query: {
+      enabled: reg.step === "success" && !!successNode,
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+      refetchInterval: () => {
+        if (addrTimedOut || reg.step !== "success") return false;
+        if (
+          successAddr &&
+          address &&
+          (successAddr as string).toLowerCase() === address.toLowerCase()
+        ) return false;
+        if (pollStartTime.current && Date.now() - pollStartTime.current > POLL_TIMEOUT_MS) {
+          setAddrTimedOut(true);
+          return false;
+        }
+        return POLL_INTERVAL_MS;
+      },
+    },
+  });
+
+  const resolvedToWallet =
+    reg.step === "success" &&
+    successAddrFetched &&
+    !!successAddr &&
+    (successAddr as string) !== ZERO_ADDRESS &&
+    !!address &&
+    (successAddr as string).toLowerCase() === address.toLowerCase();
 
   return (
     <div
@@ -419,6 +476,12 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           <span>✓</span>
           <div>
             <p className="font-medium">{reg.result.name}.{reg.result.tld} registered!</p>
+            {resolvedToWallet && address ? (
+              <p className="text-xs mt-1" style={{ color: 'var(--color-success)' }}>
+                This name now resolves to{" "}
+                <span className="font-mono break-all">{address}</span>
+              </p>
+            ) : null}
             <button onClick={reg.reset} className="text-xs underline mt-1" style={{ color: 'var(--color-success)' }}>Register another</button>
           </div>
         </div>

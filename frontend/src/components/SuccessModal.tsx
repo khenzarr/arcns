@@ -6,11 +6,17 @@
  * No v1/v2 imports. No ENS-branded strings.
  */
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { keccak256, stringToBytes } from "viem";
+import { useAccount, useReadContract } from "wagmi";
 import { usePrimaryName } from "../hooks/usePrimaryName";
 import { formatUSDC, formatExpiry } from "../lib/normalization";
+import { RESOLVER_CONTRACT } from "../lib/contracts";
+import { namehash } from "../lib/namehash";
 import type { RegistrationResult } from "../hooks/useRegistration";
+
+const POLL_INTERVAL_MS = 2000;
+const POLL_TIMEOUT_MS = 15_000;
 
 interface SuccessModalProps {
   result: RegistrationResult;
@@ -20,13 +26,52 @@ interface SuccessModalProps {
 
 export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessModalProps) {
   const { setStep, setPrimaryName } = usePrimaryName();
+  const { address: connectedAddress } = useAccount();
   const [copied, setCopied] = useState(false);
+  const startTime = useRef(Date.now());
+  const [timedOut, setTimedOut] = useState(false);
 
   const label = result.name.split(".")[0];
   const tokenId = BigInt(keccak256(stringToBytes(label))).toString();
   const tokenIdShort = `${tokenId.slice(0, 8)}...${tokenId.slice(-6)}`;
 
   const tld = result.tld ?? result.name.split(".").pop() ?? "arc";
+
+  const fullName = `${result.name}.${tld}`;
+  const nameNode = namehash(fullName) as `0x${string}`;
+  const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+  const { data: registeredAddr, isFetched } = useReadContract({
+    ...RESOLVER_CONTRACT,
+    functionName: "addr",
+    args: [nameNode],
+    query: {
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+      refetchInterval: () => {
+        if (timedOut) return false;
+        if (
+          registeredAddr &&
+          connectedAddress &&
+          (registeredAddr as string).toLowerCase() === connectedAddress.toLowerCase()
+        ) {
+          return false;
+        }
+        if (Date.now() - startTime.current > POLL_TIMEOUT_MS) {
+          setTimedOut(true);
+          return false;
+        }
+        return POLL_INTERVAL_MS;
+      },
+    },
+  });
+
+  const resolvedToWallet =
+    isFetched &&
+    !!registeredAddr &&
+    (registeredAddr as string) !== ZERO_ADDRESS &&
+    !!connectedAddress &&
+    (registeredAddr as string).toLowerCase() === connectedAddress.toLowerCase();
   const registrarAddr = tld === "arc"
     ? "0xb156d9726661E92C541e3a267ee8710Fdcd24969"
     : "0xBdfF2790Dd72E86C3510Cc8374EaC5E2E0659c5e";
@@ -56,7 +101,9 @@ export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessM
             <span className="text-3xl">🎉</span>
           </div>
           <h2 className="text-xl font-bold text-white">Registration Successful!</h2>
-          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>Your domain is live on Arc Testnet</p>
+          <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
+            {resolvedToWallet ? "Registered and resolving to your wallet" : "Your domain is live on Arc Testnet"}
+          </p>
         </div>
 
         <div className="p-6 space-y-4">
@@ -88,6 +135,17 @@ export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessM
               <span className="font-mono text-xs" style={{ color: 'var(--color-text-secondary)' }}>{tokenIdShort}</span>
             </div>
           </div>
+
+          {/* Set primary name */}
+          {resolvedToWallet && connectedAddress ? (
+            <div
+              className="rounded-xl p-3 text-sm"
+              style={{ background: 'var(--color-success-surface)', color: 'var(--color-success)' }}
+            >
+              ✓ This name now resolves to{" "}
+              <span className="font-mono text-xs break-all">{connectedAddress}</span>
+            </div>
+          ) : null}
 
           {/* Set primary name */}
           {!primaryDone ? (
