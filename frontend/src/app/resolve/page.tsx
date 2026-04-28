@@ -24,7 +24,7 @@ import {
   REGISTRY_CONTRACT,
 } from "../../lib/contracts";
 import { isValidLabel } from "../../lib/domain";
-import { useReceivingAddress } from "../../hooks/useReceivingAddress";
+import Link from "next/link";
 
 // ─── Forward resolution via publicClient ──────────────────────────────────────
 
@@ -107,14 +107,6 @@ export default function ResolvePage() {
     !!ownerData &&
     (ownerData as string).toLowerCase() === connectedAddress.toLowerCase();
 
-  // ── useReceivingAddress for inline CTA ────────────────────────────────────
-  const {
-    setStep: addrSetStep,
-    setError: addrSetError,
-    setReceivingAddress,
-    resetSet: resetAddrSet,
-  } = useReceivingAddress(nodeBytes, { enabled: !!nodeBytes && !hasAddr && isOwner });
-
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
@@ -176,28 +168,12 @@ export default function ResolvePage() {
               ) : (
                 <div>
                   <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No receiving address set</p>
-                  {isOwner && addrSetStep !== "success" && (
-                    <div className="mt-2">
-                      <button
-                        onClick={() => connectedAddress && setReceivingAddress(connectedAddress)}
-                        disabled={addrSetStep === "setting" || !connectedAddress}
-                        className="px-4 py-2 rounded-lg text-xs font-medium transition-opacity disabled:opacity-50"
-                        style={{ background: 'var(--color-accent-primary)', color: '#fff' }}
-                      >
-                        {addrSetStep === "setting" ? "Setting…" : "Set to connected wallet"}
-                      </button>
-                      {addrSetError && (
-                        <p className="mt-1 text-xs" style={{ color: 'var(--color-error)' }}>
-                          {addrSetError}
-                          <button onClick={resetAddrSet} className="ml-2 underline" style={{ color: 'var(--color-error)' }}>Retry</button>
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  {isOwner && addrSetStep === "success" && (
-                    <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--color-success-surface)', color: 'var(--color-success)' }}>
-                      ✓ Receiving address set to your connected wallet.
-                      <button onClick={resetAddrSet} className="ml-2 underline" style={{ color: 'var(--color-success)' }}>Dismiss</button>
+                  {isOwner && (
+                    <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }}>
+                      Set this name as your Primary Name to activate it for receiving transfers.{" "}
+                      <Link href="/my-domains" className="underline" style={{ color: 'var(--color-text-accent)' }}>
+                        Go to My Domains →
+                      </Link>
                     </div>
                   )}
                 </div>

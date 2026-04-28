@@ -1,5 +1,14 @@
 "use client";
 /**
+ * DEPRECATED — ReceivingAddressPanel.tsx
+ *
+ * This component is no longer rendered anywhere in the application.
+ * It was removed as part of the arcns-primary-name-receiving-address refactor.
+ *
+ * The receiving address is now primary-name-linked and is not independently
+ * user-managed. All manual receiving-address write surfaces have been removed.
+ * This file is kept for reference only and can be safely deleted.
+ *
  * ReceivingAddressPanel.tsx — inline receiving address management for a domain row.
  *
  * Owner view: full address display, "Set to connected wallet" button,

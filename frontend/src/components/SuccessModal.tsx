@@ -20,11 +20,12 @@ const POLL_TIMEOUT_MS = 15_000;
 
 interface SuccessModalProps {
   result: RegistrationResult;
+  reverseRecord?: boolean;
   onClose: () => void;
   onSetPrimary?: () => void;
 }
 
-export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessModalProps) {
+export default function SuccessModal({ result, reverseRecord = false, onClose, onSetPrimary }: SuccessModalProps) {
   const { setStep, setPrimaryName } = usePrimaryName();
   const { address: connectedAddress } = useAccount();
   const [copied, setCopied] = useState(false);
@@ -136,14 +137,13 @@ export default function SuccessModal({ result, onClose, onSetPrimary }: SuccessM
             </div>
           </div>
 
-          {/* Set primary name */}
-          {resolvedToWallet && connectedAddress ? (
+          {/* Receiving address confirmation — only when primary was checked and name resolves */}
+          {reverseRecord && resolvedToWallet && connectedAddress ? (
             <div
               className="rounded-xl p-3 text-sm"
               style={{ background: 'var(--color-success-surface)', color: 'var(--color-success)' }}
             >
-              ✓ This name now resolves to{" "}
-              <span className="font-mono text-xs break-all">{connectedAddress}</span>
+              ✓ This name is now active for receiving transfers.
             </div>
           ) : null}
 

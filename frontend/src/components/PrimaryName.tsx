@@ -29,8 +29,6 @@ export default function PrimaryName() {
     addrSynced,
     addrSyncStep,
     addrSyncError,
-    confirmStaleSync,
-    skipStaleSync,
   } = usePrimaryName(address);
 
   const { domains, isLoading: domainsLoading } = useMyDomains();
@@ -111,38 +109,11 @@ export default function PrimaryName() {
             </p>
           ) : addrSyncStep === "synced" && addrSynced ? (
             <p className="mt-2 text-xs rounded-lg px-3 py-2" style={{ background: 'var(--color-success-surface)', color: 'var(--color-success)' }}>
-              ✓ Receiving address synced to your connected wallet.
+              ✓ Receiving address updated for this name.
             </p>
           ) : addrSyncStep === "partial-success" ? (
             <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }}>
               <p>Primary Name set, but receiving address could not be synced.{addrSyncError ? ` ${addrSyncError}` : ""}</p>
-              <button
-                onClick={confirmStaleSync}
-                className="mt-1 underline text-xs"
-                style={{ color: 'var(--color-warning)' }}
-              >
-                Try again
-              </button>
-            </div>
-          ) : addrSyncStep === "stale-prompt" ? (
-            <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }}>
-              <p>This name&apos;s receiving address points to a different wallet. Update it to your connected wallet?</p>
-              <div className="mt-2 flex gap-2">
-                <button
-                  onClick={confirmStaleSync}
-                  className="px-3 py-1 rounded-lg text-xs font-medium"
-                  style={{ background: 'var(--color-warning)', color: '#fff' }}
-                >
-                  Update receiving address
-                </button>
-                <button
-                  onClick={skipStaleSync}
-                  className="px-3 py-1 rounded-lg text-xs font-medium"
-                  style={{ background: 'transparent', color: 'var(--color-warning)', border: '1px solid var(--color-warning)' }}
-                >
-                  Keep existing address
-                </button>
-              </div>
             </div>
           ) : null}
         </div>

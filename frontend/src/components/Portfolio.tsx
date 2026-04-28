@@ -5,16 +5,21 @@
  * Subgraph-first via useMyDomains (RPC fallback built into the hook).
  * Shows human-readable domain names when subgraph is available.
  * No v1/v2 imports. No ENS-branded strings.
+ *
+ * Receiving address model (primary-name-linked):
+ *   - No manual receiving-address write surfaces anywhere in this component.
+ *   - Receiving address is read-only for all domain rows.
+ *   - Stale indicator is shown only for the current Primary Name row.
+ *   - Non-primary rows show addr state as read-only with no stale indicator.
  */
 
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount } from "wagmi";
 import { useState } from "react";
 import { useMyDomains }  from "../hooks/useMyDomains";
 import { useRenew }      from "../hooks/useRenew";
 import { useReceivingAddress } from "../hooks/useReceivingAddress";
-import { ReceivingAddressPanel } from "./ReceivingAddressPanel";
+import { usePrimaryName } from "../hooks/usePrimaryName";
 import { namehash } from "../lib/namehash";
-import { REGISTRY_CONTRACT } from "../lib/contracts";
 import {
   formatExpiry,
   daysUntilExpiry,
@@ -29,8 +34,9 @@ export default function Portfolio() {
   const renew = useRenew();
   const [renewTarget, setRenewTarget] = useState<{ label: string; tld: SupportedTLD } | null>(null);
   const [renewDuration, setRenewDuration] = useState(BigInt(DURATION_OPTIONS[0].seconds));
-  // Track which domain key is expanded (only one at a time)
-  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+
+  // Read current primary name at Portfolio level to pass down to rows
+  const { primaryName } = usePrimaryName(connectedAddress);
 
   if (!isConnected) {
     return (
@@ -90,8 +96,6 @@ export default function Portfolio() {
             ? `${d.tokenId.toString()}-${d.tld}`
             : `${i}-${d.tld}`;
 
-        const isExpanded = expandedKey === key;
-
         // Only enrich rows where labelName is available (subgraph path)
         if (d.labelName) {
           return (
@@ -103,14 +107,13 @@ export default function Portfolio() {
               daysLeft={daysLeft}
               canRenew={canRenew}
               connectedAddress={connectedAddress}
-              isExpanded={isExpanded}
-              onToggleExpand={() => setExpandedKey(isExpanded ? null : key)}
+              primaryName={primaryName}
               onRenew={() => setRenewTarget({ label: d.labelName!, tld: d.tld })}
             />
           );
         }
 
-        // RPC-fallback rows — no receiving address indicator or expand control
+        // RPC-fallback rows — no receiving address indicator
         return (
           <div
             key={key}
@@ -213,8 +216,11 @@ export default function Portfolio() {
 }
 
 // ─── DomainRowWithAddr ────────────────────────────────────────────────────────
-// Extracted sub-component so hooks (useReceivingAddress, useReadContract) are
-// called unconditionally at the top level of a component — not inside a map.
+// Extracted sub-component so hooks (useReceivingAddress) are called
+// unconditionally at the top level of a component — not inside a map.
+//
+// Receiving address is read-only for all rows. No write controls.
+// Stale indicator is shown only for the current Primary Name row.
 
 interface DomainRowWithAddrProps {
   // eslint-disable-next-line
@@ -225,8 +231,7 @@ interface DomainRowWithAddrProps {
   daysLeft: number;
   canRenew: boolean;
   connectedAddress: `0x${string}` | undefined;
-  isExpanded: boolean;
-  onToggleExpand: () => void;
+  primaryName: string | null;
   onRenew: () => void;
 }
 
@@ -237,27 +242,19 @@ function DomainRowWithAddr({
   daysLeft,
   canRenew,
   connectedAddress,
-  isExpanded,
-  onToggleExpand,
+  primaryName,
   onRenew,
 }: DomainRowWithAddrProps) {
   const node = namehash(`${d.labelName}.${d.tld}`) as `0x${string}`;
+  const fullName = `${d.labelName}.${d.tld}`;
 
-  // Read Registry owner for this node
-  const { data: ownerData } = useReadContract({
-    ...REGISTRY_CONTRACT,
-    functionName: "owner",
-    args: [node],
-    query: { enabled: !!d.labelName, staleTime: 30_000 },
-  });
-
-  const isOwner =
-    (ownerData as string | undefined)?.toLowerCase() === connectedAddress?.toLowerCase();
-
-  // Read receiving address
+  // Read receiving address (read path only — no write surface)
   const { receivingAddress, addrState } = useReceivingAddress(node);
 
+  // Stale indicator only for the primary name row
+  const isPrimary = primaryName === fullName;
   const isStale =
+    isPrimary &&
     receivingAddress !== null &&
     receivingAddress.toLowerCase() !== connectedAddress?.toLowerCase();
 
@@ -266,7 +263,7 @@ function DomainRowWithAddr({
       className="rounded-xl border"
       style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}
     >
-      {/* Main row */}
+      {/* Main row — no expand/collapse, no write controls */}
       <div className="p-4 flex items-center gap-4">
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold font-mono flex-shrink-0 border"
@@ -277,6 +274,11 @@ function DomainRowWithAddr({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-sm truncate" style={{ color: 'var(--color-text-primary)' }}>{displayName}</span>
+            {isPrimary && (
+              <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-text-accent)' }}>
+                Primary
+              </span>
+            )}
           </div>
           <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-tertiary)' }}>
             {d.expiryState === "expired"
@@ -284,7 +286,7 @@ function DomainRowWithAddr({
               : `Expires ${formatExpiry(d.expiry)}`}
             {d.expiryState === "expiring-soon" ? ` · ${daysLeft}d left` : ""}
           </p>
-          {/* Receiving address indicator */}
+          {/* Read-only receiving address indicator */}
           <div className="mt-1">
             {addrState === "loading" && (
               <span className="inline-block w-16 h-3 animate-pulse rounded" style={{ background: 'var(--color-surface-elevated)' }} />
@@ -296,6 +298,7 @@ function DomainRowWithAddr({
               </span>
             )}
             {addrState === "set" && isStale && (
+              // Stale indicator only shown for primary name row
               <span className="text-xs" style={{ color: 'var(--color-warning)' }}>
                 This name does not resolve to your connected wallet.
               </span>
@@ -334,38 +337,9 @@ function DomainRowWithAddr({
               Renew
             </button>
           )}
-          {/* Expand/collapse chevron — owner only */}
-          {isOwner && (
-            <button
-              onClick={onToggleExpand}
-              className="p-1.5 rounded-lg transition-colors"
-              style={{ color: 'var(--color-text-tertiary)' }}
-              aria-label={isExpanded ? "Collapse" : "Expand"}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 14 14"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s" }}
-              >
-                <polyline points="2 5 7 10 12 5" />
-              </svg>
-            </button>
-          )}
+          {/* No expand/collapse chevron — receiving address is not independently managed */}
         </div>
       </div>
-
-      {/* Expanded panel */}
-      {isExpanded && (
-        <div className="px-4 pb-4">
-          <ReceivingAddressPanel node={node} isOwner={isOwner} />
-        </div>
-      )}
     </div>
   );
 }

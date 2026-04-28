@@ -1,16 +1,14 @@
 /**
- * ResolvePage Bug Condition Exploration Test — Bug 2
+ * ResolvePage Tests — updated for arcns-primary-name-receiving-address refactor.
  *
- * Encodes the EXPECTED (correct) behavior.
- * Written BEFORE any fix is applied.
- * FAILS on unfixed code — failure confirms the bug exists.
+ * The Resolve page no longer shows a "Set to connected wallet" CTA.
+ * Instead, when the owner views a name with no addr set, they see:
+ *   "Set this name as your Primary Name to activate it for receiving transfers."
+ *   + a link to My Domains.
  *
- * Bug: !hasAddr is true for both unregistered names (expiryTs === 0n) and
- * registered-but-no-addr names (expiryTs > 0n, addr = ZERO_ADDRESS). Both
- * cases render "No receiving address set" and the owner CTA appears even for
- * unregistered names.
+ * Non-owners see "No receiving address set" only (read-only, no guidance).
  *
- * Validates: Requirements 1.3, 1.4
+ * Validates: Requirements 5.1, 5.2, 5.3, 5.4
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
@@ -35,21 +33,17 @@ vi.mock("../../lib/publicClient", () => ({
   },
 }));
 
+vi.mock("next/link", () => ({
+  default: ({ href, children, ...props }: any) =>
+    React.createElement("a", { href, ...props }, children),
+}));
+
 import { useReadContract } from "wagmi";
 
 // ─── Bug 2 — Resolve page state conflation ────────────────────────────────────
 //
-// Scope: { expiryTs: 0n, addr: ZERO_ADDRESS, isOwner: true }
-//
-// On unfixed code: !hasAddr branch renders "No receiving address set" + owner CTA
-// for BOTH unregistered names AND registered-but-no-addr names.
-//
-// Expected (correct) behavior:
-//   - expiryTs === 0n → "Name not registered", NO owner CTA
-//   - expiryTs > 0n, addr = ZERO_ADDRESS → "No receiving address set" + owner CTA
-//
-// This test asserts the EXPECTED behavior. It FAILS on unfixed code because
-// the !hasAddr branch does not check expiryTs.
+// Unregistered names (expiryTs === 0n) must show "Name not registered", not
+// "No receiving address set". This behavior is unchanged by the refactor.
 
 describe("Bug 2 — Resolve page state conflation: unregistered name shows wrong message", () => {
   beforeEach(() => {
@@ -57,23 +51,18 @@ describe("Bug 2 — Resolve page state conflation: unregistered name shows wrong
   });
 
   it(
-    "should show 'Name not registered' and hide owner CTA when expiryTs=0n (FAILS on unfixed code — shows 'No receiving address set' + CTA instead)",
+    "should show 'Name not registered' and hide owner guidance when expiryTs=0n",
     async () => {
-      // Mock useReadContract:
-      //   - nameExpires → 0n (unregistered)
-      //   - Registry.owner → CONNECTED_WALLET (isOwner = true)
       (useReadContract as ReturnType<typeof vi.fn>).mockImplementation((args: any) => {
         if (args?.functionName === "nameExpires") {
           return { data: 0n, isLoading: false };
         }
         if (args?.functionName === "owner") {
-          // Registry owner = connected wallet → isOwner = true
           return { data: CONNECTED_WALLET, isLoading: false };
         }
         return { data: undefined, isLoading: false };
       });
 
-      // Mock the publicClient used by useResolveAddress to return ZERO_ADDRESS
       const { publicClient } = await import("../../lib/publicClient");
       (publicClient.readContract as ReturnType<typeof vi.fn>).mockResolvedValue(ZERO_ADDRESS);
 
@@ -81,65 +70,40 @@ describe("Bug 2 — Resolve page state conflation: unregistered name shows wrong
 
       render(<ResolvePage />);
 
-      // Simulate a user typing and resolving an unregistered name.
-      // We need to trigger the queried state — find the input and resolve button.
       const input = screen.getByPlaceholderText(/alice\.arc/i);
       const button = screen.getByRole("button", { name: /resolve/i });
 
-      // Use fireEvent to set input value and click resolve
       const { fireEvent } = await import("@testing-library/react");
       fireEvent.change(input, { target: { value: "notexist.arc" } });
       fireEvent.click(button);
 
-      // Wait for async resolution
       await waitFor(() => {
-        // EXPECTED (correct) behavior: "Name not registered" shown, no owner CTA
-        //
-        // On UNFIXED code: this assertion FAILS because the page shows
-        // "No receiving address set" + "Set to connected wallet" CTA instead.
-        //
-        // Counterexample: ResolvePage({ expiryTs: 0n, addr: ZERO_ADDRESS, isOwner: true })
-        // → "No receiving address set" + CTA shown — BUG CONFIRMED.
         const notRegisteredMsg = screen.queryByText(/Name not registered/i);
         expect(notRegisteredMsg).not.toBeNull();
       }, { timeout: 500 });
 
-      // Also assert the owner CTA is absent
+      // No write CTA should appear
       const ownerCTA = screen.queryByRole("button", { name: /Set to connected wallet/i });
       expect(ownerCTA).toBeNull();
     }
   );
 });
 
-// ─── Preservation Property Tests — Bug 2 ─────────────────────────────────────
+// ─── Preservation Property Tests — updated for new product model ──────────────
 //
-// Property 2: Preservation — Resolve page registered-name cases
-//
-// These tests encode the NON-BUGGY paths that must PASS on unfixed code and
-// continue to pass after the fix is applied.
-//
-// For all expiryTs > 0n inputs, the following behaviors must hold:
+// New model:
 //   - expiryTs > 0n, addr = nonZeroAddr → resolved address displayed, no CTA
-//   - expiryTs > 0n, addr = ZERO_ADDRESS, isOwner = true  → "No receiving address set" + CTA
-//   - expiryTs > 0n, addr = ZERO_ADDRESS, isOwner = false → "No receiving address set", no CTA
+//   - expiryTs > 0n, addr = ZERO_ADDRESS, isOwner = true  → "No receiving address set"
+//     + Primary Name guidance message + My Domains link (NO write button)
+//   - expiryTs > 0n, addr = ZERO_ADDRESS, isOwner = false → "No receiving address set" only
 //
-// Validates: Requirements 3.3, 3.4, 3.5
+// Validates: Requirements 5.1, 5.2, 5.3, 5.4
 
 import * as fc from "fast-check";
 import { cleanup, fireEvent } from "@testing-library/react";
 
-// Arbitrary: a non-zero EVM address (40 hex chars, not all zeros)
-const nonZeroAddrArb = fc
-  .stringMatching(/^[0-9a-f]{40}$/)
-  .filter((hex) => hex !== "0".repeat(40))
-  .map((hex) => `0x${hex}` as string);
-
-// Arbitrary: a positive bigint representing a future expiry timestamp
-// Use values in a realistic range: 1 to year 2100 (4102444800)
 const positiveBigintArb = fc.bigInt({ min: 1n, max: 4102444800n });
 
-// Helper: set up mocks, render ResolvePage, and trigger a resolve
-// Returns unmount function. Caller must call unmount() + cleanup() after assertions.
 async function renderAndResolve(opts: {
   expiryTs: bigint;
   resolvedAddr: string;
@@ -156,10 +120,6 @@ async function renderAndResolve(opts: {
         data: isOwner ? CONNECTED_WALLET : "0x0000000000000000000000000000000000000001",
         isLoading: false,
       };
-    }
-    // useReceivingAddress addr read — return ZERO_ADDRESS (no addr set)
-    if (args?.functionName === "addr") {
-      return { data: ZERO_ADDRESS, isLoading: false };
     }
     return { data: undefined, isLoading: false };
   });
@@ -184,15 +144,8 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
   });
 
   it(
-    "should display resolved address and no CTA when expiryTs > 0n and addr is non-zero (Req 3.3)",
+    "should display resolved address and no CTA when expiryTs > 0n and addr is non-zero (Req 5.1)",
     async () => {
-      /**
-       * Validates: Requirements 3.3
-       *
-       * Preservation case: registered name with a non-zero addr record.
-       * The resolved address must be displayed and no owner CTA shown.
-       * Must pass on unfixed code.
-       */
       const NON_ZERO_ADDR = "0x1234567890123456789012345678901234567890";
 
       const { unmount } = await renderAndResolve({
@@ -206,6 +159,7 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
         expect(addrDisplay).not.toBeNull();
       }, { timeout: 1000 });
 
+      // No write CTA in new model
       const ownerCTA = screen.queryByRole("button", { name: /Set to connected wallet/i });
       expect(ownerCTA).toBeNull();
 
@@ -214,14 +168,11 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
   );
 
   it(
-    "should show 'No receiving address set' and owner CTA when expiryTs > 0n, addr=ZERO, isOwner=true (Req 3.4)",
+    "should show 'No receiving address set' and Primary Name guidance when expiryTs > 0n, addr=ZERO, isOwner=true (Req 5.1)",
     async () => {
       /**
-       * Validates: Requirements 3.4
-       *
-       * Preservation case: registered name with no addr set, connected wallet is owner.
-       * "No receiving address set" + owner CTA must be shown.
-       * Must pass on unfixed code.
+       * New model: owner sees guidance to set Primary Name, not a write button.
+       * Validates: Requirement 5.1
        */
       const { unmount } = await renderAndResolve({
         expiryTs: 1893456000n,
@@ -231,22 +182,29 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
 
       await waitFor(() => {
         expect(screen.queryByText(/No receiving address set/i)).not.toBeNull();
-        expect(screen.queryByRole("button", { name: /Set to connected wallet/i })).not.toBeNull();
       }, { timeout: 1000 });
+
+      // New model: guidance message shown, no write button
+      const guidance = screen.queryByText(/Set this name as your Primary Name/i);
+      expect(guidance).not.toBeNull();
+
+      const myDomainsLink = screen.queryByText(/Go to My Domains/i);
+      expect(myDomainsLink).not.toBeNull();
+
+      // No write button
+      const writeBtn = screen.queryByRole("button", { name: /Set to connected wallet/i });
+      expect(writeBtn).toBeNull();
 
       unmount();
     }
   );
 
   it(
-    "should show 'No receiving address set' and NO CTA when expiryTs > 0n, addr=ZERO, isOwner=false (Req 3.5)",
+    "should show 'No receiving address set' and NO guidance when expiryTs > 0n, addr=ZERO, isOwner=false (Req 5.2)",
     async () => {
       /**
-       * Validates: Requirements 3.5
-       *
-       * Preservation case: registered name with no addr set, connected wallet is NOT owner.
-       * "No receiving address set" shown, no owner CTA.
-       * Must pass on unfixed code.
+       * Non-owner sees read-only message only. No guidance, no write surface.
+       * Validates: Requirement 5.2
        */
       const { unmount } = await renderAndResolve({
         expiryTs: 1893456000n,
@@ -258,6 +216,8 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
         expect(screen.queryByText(/No receiving address set/i)).not.toBeNull();
       }, { timeout: 1000 });
 
+      // No guidance for non-owner
+      expect(screen.queryByText(/Set this name as your Primary Name/i)).toBeNull();
       expect(screen.queryByRole("button", { name: /Set to connected wallet/i })).toBeNull();
 
       unmount();
@@ -265,13 +225,13 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
   );
 
   it(
-    "property: for all expiryTs > 0n with ZERO addr and isOwner=true, 'No receiving address set' + CTA shown (Req 3.4)",
+    "property: for all expiryTs > 0n with ZERO addr and isOwner=true, 'No receiving address set' + guidance shown, no write button (Req 5.1, 5.3)",
     async () => {
       /**
-       * Validates: Requirements 3.4
-       *
-       * Property-based: for all positive expiryTs values with zero addr and owner=true,
-       * "No receiving address set" and the owner CTA must both be shown.
+       * Property: for all positive expiryTs values with zero addr and owner=true,
+       * "No receiving address set" and Primary Name guidance must be shown.
+       * No write button must appear.
+       * Validates: Requirements 5.1, 5.3
        */
       await fc.assert(
         fc.asyncProperty(positiveBigintArb, async (expiryTs) => {
@@ -285,17 +245,20 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
           });
 
           let noAddrShown = false;
-          let ctaShown = false;
+          let guidanceShown = false;
 
           await waitFor(() => {
             noAddrShown = screen.queryByText(/No receiving address set/i) !== null;
-            ctaShown = screen.queryByRole("button", { name: /Set to connected wallet/i }) !== null;
-            if (!noAddrShown || !ctaShown) throw new Error("not yet");
+            guidanceShown = screen.queryByText(/Set this name as your Primary Name/i) !== null;
+            if (!noAddrShown || !guidanceShown) throw new Error("not yet");
           }, { timeout: 1000 }).catch(() => {});
+
+          const noWriteBtn =
+            screen.queryByRole("button", { name: /Set to connected wallet/i }) === null;
 
           unmount();
           cleanup();
-          return noAddrShown && ctaShown;
+          return noAddrShown && guidanceShown && noWriteBtn;
         }),
         { numRuns: 10 }
       );
@@ -303,13 +266,12 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
   );
 
   it(
-    "property: for all expiryTs > 0n with ZERO addr and isOwner=false, 'No receiving address set' shown, no CTA (Req 3.5)",
+    "property: for all expiryTs > 0n with ZERO addr and isOwner=false, 'No receiving address set' shown, no CTA (Req 5.2, 5.4)",
     async () => {
       /**
-       * Validates: Requirements 3.5
-       *
-       * Property-based: for all positive expiryTs values with zero addr and owner=false,
-       * "No receiving address set" shown and no owner CTA.
+       * Property: for all positive expiryTs values with zero addr and owner=false,
+       * "No receiving address set" shown and no write CTA or guidance.
+       * Validates: Requirements 5.2, 5.4
        */
       await fc.assert(
         fc.asyncProperty(positiveBigintArb, async (expiryTs) => {
@@ -331,10 +293,12 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
 
           const ctaAbsent =
             screen.queryByRole("button", { name: /Set to connected wallet/i }) === null;
+          const guidanceAbsent =
+            screen.queryByText(/Set this name as your Primary Name/i) === null;
 
           unmount();
           cleanup();
-          return noAddrShown && ctaAbsent;
+          return noAddrShown && ctaAbsent && guidanceAbsent;
         }),
         { numRuns: 10 }
       );

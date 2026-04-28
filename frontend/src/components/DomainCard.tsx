@@ -15,12 +15,14 @@
  */
 
 import { useState, useEffect, useRef } from "react";
-import { useAccount, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useAvailability }  from "../hooks/useAvailability";
 import { useRegistration }  from "../hooks/useRegistration";
 import { useRenew }         from "../hooks/useRenew";
+import { usePrimaryName }   from "../hooks/usePrimaryName";
 import { USDC_CONTRACT, RESOLVER_CONTRACT, ADDR_RESOLVER, ADDR_ARC_CONTROLLER, ADDR_CIRCLE_CONTROLLER } from "../lib/contracts";
 import { namehash } from "../lib/namehash";
+import { clearPrevPrimaryAddr } from "../lib/clearPrevPrimaryAddr";
 import { DEPLOYED_CHAIN_ID } from "../lib/generated-contracts";
 import {
   formatUSDC,
@@ -144,6 +146,51 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
 
   const reg  = useRegistration();
   const renew = useRenew();
+
+  // Read current primary name so we can clear its addr if the user registers
+  // a new name with "Set as primary name" checked (registration-time switching).
+  // This mirrors the clearing logic in usePrimaryName.setPrimaryName.
+  const { primaryName: currentPrimaryName } = usePrimaryName(address);
+
+  // writeContractAsync for the post-registration clearing step
+  const { writeContractAsync } = useWriteContract();
+
+  // Snapshot the previous primary name at the moment the user clicks Register.
+  // Stored in a ref so it survives across the async registration flow.
+  const prevPrimaryAtRegRef = useRef<string | null>(null);
+  const clearAttemptedRef   = useRef(false);
+
+  const handleRegister = () => {
+    if (reverseRecord) {
+      // Capture the current primary name before registration changes it on-chain
+      prevPrimaryAtRegRef.current = currentPrimaryName;
+    } else {
+      prevPrimaryAtRegRef.current = null;
+    }
+    clearAttemptedRef.current = false;
+    reg.register({ label, tld, duration, totalCost, resolverAddr: reverseRecord ? ADDR_RESOLVER : ZERO_ADDRESS, reverseRecord });
+  };
+
+  // After registration succeeds with reverseRecord=true, attempt to clear the
+  // previous primary name's addr (best-effort, owner-guarded).
+  // Uses the shared clearPrevPrimaryAddr utility — same logic as usePrimaryName.
+  useEffect(() => {
+    if (
+      reg.step !== "success" ||
+      !reverseRecord ||
+      clearAttemptedRef.current ||
+      !prevPrimaryAtRegRef.current ||
+      !reg.result ||
+      !address
+    ) return;
+
+    const newFullName = `${reg.result.name}.${reg.result.tld}`;
+    const prevPrimary = prevPrimaryAtRegRef.current;
+    clearAttemptedRef.current = true;
+
+    // Non-blocking — registration success is already confirmed, clearing is best-effort
+    clearPrevPrimaryAddr(prevPrimary, newFullName, address, writeContractAsync).catch(() => {});
+  }, [reg.step, reverseRecord, address, reg.result, writeContractAsync]);
 
   // ── USDC allowance check ───────────────────────────────────────────────────
   const maxCost = withSlippage(totalCost);
@@ -407,7 +454,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           </button>
         ) : (
           <button
-            onClick={() => reg.register({ label, tld, duration, totalCost, resolverAddr: ADDR_RESOLVER, reverseRecord })}
+            onClick={handleRegister}
             disabled={(reg.step !== "idle" && reg.step !== "failed") || !sufficient || isPriceLoading}
             className="w-full py-3.5 text-white rounded-xl font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90 text-sm"
             style={{ background: 'var(--color-accent-primary)' }}
@@ -476,10 +523,9 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           <span>✓</span>
           <div>
             <p className="font-medium">{reg.result.name}.{reg.result.tld} registered!</p>
-            {resolvedToWallet && address ? (
+            {reverseRecord && resolvedToWallet && address ? (
               <p className="text-xs mt-1" style={{ color: 'var(--color-success)' }}>
-                This name now resolves to{" "}
-                <span className="font-mono break-all">{address}</span>
+                This name is now active for receiving transfers.
               </p>
             ) : null}
             <button onClick={reg.reset} className="text-xs underline mt-1" style={{ color: 'var(--color-success)' }}>Register another</button>
