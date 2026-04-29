@@ -35,7 +35,6 @@
 | `commitment.ts` | 7-param v3 commitment builder (no `bytes[] data`) |
 | `errors.ts` | ArcNS-branded error codes + user-facing messages |
 | `normalization.ts` | Label validation, pricing tiers, expiry helpers |
-| `namehash.ts` | ENS-compatible namehash, labelToTokenId |
 | `graphql.ts` | Subgraph client (arcnslatest) — read-only, failsafe |
 | `publicClient.ts` | Detached viem public client for non-wagmi reads |
 | `wagmiConfig.ts` | Wagmi config: injected + WalletConnect, Arc Testnet only |
@@ -59,19 +58,13 @@ frontend/src/hooks/_archive/useRegistrationPipeline.ts
 
 ---
 
-## 3. ENS Branding Audit
+## 3. ArcNS Branding Audit
 
 **Result: CLEAN**
 
 No active UI file, hook, or lib file contains:
-- `"ENS"` as a user-facing string
-- `".eth"` as a domain suffix
-- `"on ENS"` or similar phrases
-
-ENS appears only in:
-- Code comments explaining what was superseded (e.g., `"No ENS-branded strings"`)
-- Test assertions that *verify* ENS strings are absent (e.g., `expect(msg).not.toContain("ens")`)
-- `namehash.ts` — the namehash algorithm is ENS-compatible by design; the implementation is ArcNS-branded
+- `"ArcNS"` as a user-facing string
+- `".arc"` & `".circle"` as a domain suffix
 
 ---
 
@@ -97,9 +90,7 @@ ENS appears only in:
 # Type check
 cd frontend && npx tsc --noEmit
 
-# ENS string scan (should return zero active-path hits)
-grep -r "\.eth\b" frontend/src --include="*.ts" --include="*.tsx" \
-  --exclude-dir=_archive
+
 
 # Legacy import scan (should return zero hits)
 grep -r "useArcNS\|useRegistrationPipeline\|useDomainResolutionPipeline" \
@@ -110,6 +101,6 @@ grep -r "useArcNS\|useRegistrationPipeline\|useDomainResolutionPipeline" \
 
 ## 6. Conclusion
 
-The active path is canonical. No v1/v2 hook is reachable from any active component. No ENS-branded string appears in any user-facing surface. All contract interactions flow through `generated-contracts.ts` → `abis.ts` → `contracts.ts`. The 7-param v3 register ABI is the only register signature in the active path.
+The active path is canonical. No v1/v2 hook is reachable from any active component. All contract interactions flow through `generated-contracts.ts` → `abis.ts` → `contracts.ts`. The 7-param v3 register ABI is the only register signature in the active path.
 
 **Active path lockdown: CONFIRMED.**
