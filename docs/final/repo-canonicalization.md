@@ -134,8 +134,6 @@ frontend/src/__tests__/ ← frontend unit tests (block1, block2, PBT)
 ## 3. Cleanup Applied in This Phase
 
 ### README.md
-- Removed `"ENS-parity"` from the opening description
-- Removed "Key Differences from ENS" comparison table
 - Removed RainbowKit reference (not used in v3)
 - Updated Project Structure to reflect v3 reality with canonical path markers
 
