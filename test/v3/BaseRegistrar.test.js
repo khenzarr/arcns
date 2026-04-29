@@ -257,6 +257,52 @@ describe("ArcNSBaseRegistrar (v3)", function () {
         registrar.connect(other).reclaim(id, other.address)
       ).to.be.revertedWithCustomError(registrar, "NotTokenOwner");
     });
+
+    // ── T2-07: NFT/registry ownership divergence — intentional design ─────────
+
+    it("T2-07: reclaim owner_ does not need to match NFT owner (divergence is intentional)", async function () {
+      // Alice owns the NFT. She reclaims registry ownership to bob (a different address).
+      // This is the documented divergence: NFT owner controls who holds registry ownership.
+      const id = labelhash("alice");
+      await registrar.connect(controller).register(id, alice.address, ONE_YEAR);
+
+      await registrar.connect(alice).reclaim(id, bob.address);
+
+      const subnode = ethers.keccak256(ethers.concat([ARC_NAMEHASH, ethers.zeroPadValue(ethers.toBeHex(id), 32)]));
+      // Registry owner is now bob — NFT owner is still alice
+      expect(await registry.owner(subnode)).to.equal(bob.address);
+      expect(await registrar.ownerOf(id)).to.equal(alice.address);
+    });
+
+    it("T2-07: NFT owner can reclaim registry ownership back to themselves after divergence", async function () {
+      const id = labelhash("alice");
+      await registrar.connect(controller).register(id, alice.address, ONE_YEAR);
+
+      // Diverge: set registry owner to bob
+      await registrar.connect(alice).reclaim(id, bob.address);
+
+      // Re-sync: reclaim back to alice
+      await registrar.connect(alice).reclaim(id, alice.address);
+
+      const subnode = ethers.keccak256(ethers.concat([ARC_NAMEHASH, ethers.zeroPadValue(ethers.toBeHex(id), 32)]));
+      expect(await registry.owner(subnode)).to.equal(alice.address);
+    });
+
+    it("T2-07: ERC-721 approved operator can also call reclaim", async function () {
+      const id = labelhash("alice");
+      await registrar.connect(controller).register(id, alice.address, ONE_YEAR);
+
+      // Alice approves bob as operator for this token
+      await registrar.connect(alice).approve(bob.address, id);
+
+      // Bob (as approved operator) can reclaim
+      await expect(
+        registrar.connect(bob).reclaim(id, bob.address)
+      ).to.not.be.reverted;
+
+      const subnode = ethers.keccak256(ethers.concat([ARC_NAMEHASH, ethers.zeroPadValue(ethers.toBeHex(id), 32)]));
+      expect(await registry.owner(subnode)).to.equal(bob.address);
+    });
   });
 
   // ─── tokenURI ─────────────────────────────────────────────────────────────

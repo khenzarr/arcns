@@ -84,6 +84,41 @@ describe("ArcNSReverseRegistrar (v3)", function () {
     it("ADDR_REVERSE_NODE is correct", async function () {
       expect(await reverseRegistrar.ADDR_REVERSE_NODE()).to.equal(ADDR_REVERSE_NODE);
     });
+
+    // ── T2-04: zero-address guards on constructor ──────────────────────────
+
+    it("T2-04: reverts ZeroRegistry when registry_ is zero address", async function () {
+      const ReverseRegistrar = await ethers.getContractFactory(
+        "contracts/v3/registrar/ArcNSReverseRegistrar.sol:ArcNSReverseRegistrar"
+      );
+      await expect(
+        ReverseRegistrar.deploy(ethers.ZeroAddress, await resolver.getAddress())
+      ).to.be.revertedWithCustomError(
+        await ethers.getContractFactory("contracts/v3/registrar/ArcNSReverseRegistrar.sol:ArcNSReverseRegistrar"),
+        "ZeroRegistry"
+      );
+    });
+
+    it("T2-04: reverts ZeroResolver when defaultResolver_ is zero address", async function () {
+      const ReverseRegistrar = await ethers.getContractFactory(
+        "contracts/v3/registrar/ArcNSReverseRegistrar.sol:ArcNSReverseRegistrar"
+      );
+      await expect(
+        ReverseRegistrar.deploy(await registry.getAddress(), ethers.ZeroAddress)
+      ).to.be.revertedWithCustomError(
+        await ethers.getContractFactory("contracts/v3/registrar/ArcNSReverseRegistrar.sol:ArcNSReverseRegistrar"),
+        "ZeroResolver"
+      );
+    });
+
+    it("T2-04: valid non-zero constructor args succeed", async function () {
+      const ReverseRegistrar = await ethers.getContractFactory(
+        "contracts/v3/registrar/ArcNSReverseRegistrar.sol:ArcNSReverseRegistrar"
+      );
+      await expect(
+        ReverseRegistrar.deploy(await registry.getAddress(), await resolver.getAddress())
+      ).to.not.be.reverted;
+    });
   });
 
   // ─── 2. node(addr) ────────────────────────────────────────────────────────
@@ -257,6 +292,61 @@ describe("ArcNSReverseRegistrar (v3)", function () {
       await expect(
         reverseRegistrar.connect(stranger).setDefaultResolver(await resolver2.getAddress())
       ).to.be.revertedWithCustomError(reverseRegistrar, "OwnableUnauthorizedAccount");
+    });
+
+    // ── T2-05: IArcNSResolver interface — setDefaultResolver accepts any IArcNSResolver ──
+
+    it("T2-05: setDefaultResolver accepts any IArcNSResolver-compatible address", async function () {
+      // The parameter type is now IArcNSResolver (interface), not ArcNSResolver (concrete).
+      // Any contract implementing IArcNSResolver is accepted. ArcNSResolver implements it.
+      const ResolverFactory = await ethers.getContractFactory(
+        "contracts/v3/resolver/ArcNSResolver.sol:ArcNSResolver"
+      );
+      const resolver2 = await upgrades.deployProxy(
+        ResolverFactory,
+        [await registry.getAddress(), deployer.address],
+        { kind: "uups", unsafeAllow: ["constructor"] }
+      );
+      await resolver2.waitForDeployment();
+
+      // Should succeed — ArcNSResolver implements IArcNSResolver
+      await expect(
+        reverseRegistrar.connect(deployer).setDefaultResolver(await resolver2.getAddress())
+      ).to.not.be.reverted;
+
+      expect(await reverseRegistrar.defaultResolver()).to.equal(await resolver2.getAddress());
+    });
+
+    it("T2-05: setDefaultResolver reverts ZeroResolver when given zero address", async function () {
+      await expect(
+        reverseRegistrar.connect(deployer).setDefaultResolver(ethers.ZeroAddress)
+      ).to.be.revertedWithCustomError(reverseRegistrar, "ZeroResolver");
+    });
+
+    it("T2-05: after setDefaultResolver, setName uses the new resolver", async function () {
+      // Deploy a second resolver and grant it CONTROLLER_ROLE
+      const ResolverFactory = await ethers.getContractFactory(
+        "contracts/v3/resolver/ArcNSResolver.sol:ArcNSResolver"
+      );
+      const resolver2 = await upgrades.deployProxy(
+        ResolverFactory,
+        [await registry.getAddress(), deployer.address],
+        { kind: "uups", unsafeAllow: ["constructor"] }
+      );
+      await resolver2.waitForDeployment();
+      await resolver2.connect(deployer).setController(await reverseRegistrar.getAddress(), true);
+
+      // Switch defaultResolver to resolver2
+      await reverseRegistrar.connect(deployer).setDefaultResolver(await resolver2.getAddress());
+
+      // setName should now write to resolver2
+      await reverseRegistrar.connect(alice).setName("alice.arc");
+      const rNode = reverseNode(alice.address);
+
+      // resolver2 should have the name record
+      expect(await resolver2.name(rNode)).to.equal("alice.arc");
+      // original resolver should NOT have it
+      expect(await resolver.name(rNode)).to.equal("");
     });
   });
 

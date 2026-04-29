@@ -735,4 +735,68 @@ describe("ArcNSController (v3)", function () {
     });
   });
 
+  // ─── T2-08: _validName underscore policy ──────────────────────────────────
+
+  describe("T2-08: _validName — underscore naming policy", function () {
+    // ArcNS intentionally allows underscores in names. This is a deliberate
+    // naming-policy choice that diverges from standard DNS and ENS.
+    // These tests lock the intended behavior so it cannot be accidentally changed.
+
+    let secret;
+
+    beforeEach(async function () {
+      secret = ethers.id("test-secret");
+    });
+
+    it("T2-08: underscore name is available (passes _validName)", async function () {
+      // available() calls _validName internally — if _validName rejects underscores,
+      // available() returns false even for unregistered names
+      expect(await controller.available("my_name")).to.be.true;
+    });
+
+    it("T2-08: underscore name can be registered end-to-end", async function () {
+      const name = "my_name";
+      await commitAndWait(controller, name, alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, alice);
+
+      await usdc.connect(alice).approve(await controller.getAddress(), ethers.MaxUint256);
+      await expect(
+        controller.connect(alice).register(name, alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ethers.MaxUint256)
+      ).to.not.be.reverted;
+
+      expect(await controller.available(name)).to.be.false;
+    });
+
+    it("T2-08: multiple underscores in a name are valid", async function () {
+      expect(await controller.available("my_cool_name")).to.be.true;
+    });
+
+    it("T2-08: underscore at start of name is valid (no leading-underscore restriction)", async function () {
+      expect(await controller.available("_name")).to.be.true;
+    });
+
+    it("T2-08: underscore at end of name is valid (no trailing-underscore restriction)", async function () {
+      expect(await controller.available("name_")).to.be.true;
+    });
+
+    it("T2-08: leading hyphen is still rejected (hyphen rule unchanged)", async function () {
+      expect(await controller.available("-name")).to.be.false;
+    });
+
+    it("T2-08: trailing hyphen is still rejected (hyphen rule unchanged)", async function () {
+      expect(await controller.available("name-")).to.be.false;
+    });
+
+    it("T2-08: double-hyphen at positions 2-3 is still rejected", async function () {
+      expect(await controller.available("ab--cd")).to.be.false;
+    });
+
+    it("T2-08: uppercase letters are still rejected", async function () {
+      expect(await controller.available("MyName")).to.be.false;
+    });
+
+    it("T2-08: empty name is still rejected", async function () {
+      expect(await controller.available("")).to.be.false;
+    });
+  });
+
 });

@@ -278,4 +278,60 @@ describe("ArcNSResolver (v3)", function () {
       expect(await upgraded.registry()).to.equal(await registry.getAddress());
     });
   });
+
+  // ─── 7. ERC-165 supportsInterface (T2-06) ────────────────────────────────
+
+  describe("supportsInterface (T2-06)", function () {
+    // Interface IDs for ENS resolver capabilities
+    // Computed as: bytes4(keccak256("functionSig(paramTypes)"))
+    const IERC165_ID          = "0x01ffc9a7"; // supportsInterface(bytes4)
+    const IADDR_RESOLVER_ID   = "0x3b3b57de"; // addr(bytes32)            — EIP-137 coin type 60
+    const INAME_RESOLVER_ID   = "0x691f3431"; // name(bytes32)            — EIP-181 reverse
+    // Unsupported in v1 — reserved for future upgrades
+    const ITEXT_RESOLVER_ID   = "0x59d1d43c"; // text(bytes32,string)
+    const ICONTENT_HASH_ID    = "0xbc1c58d1"; // contenthash(bytes32)
+    const IADDR_MULTICOIN_ID  = "0xf1cb7e06"; // addr(bytes32,uint256)    — multicoin
+
+    // ── Positive: interfaces that ARE supported ──────────────────────────────
+
+    it("T2-06: returns true for IERC165 (0x01ffc9a7)", async function () {
+      expect(await resolver.supportsInterface(IERC165_ID)).to.be.true;
+    });
+
+    it("T2-06: returns true for IAddrResolver (0x3b3b57de) — addr(bytes32)", async function () {
+      expect(await resolver.supportsInterface(IADDR_RESOLVER_ID)).to.be.true;
+    });
+
+    it("T2-06: returns true for INameResolver (0x691f3431) — name(bytes32)", async function () {
+      expect(await resolver.supportsInterface(INAME_RESOLVER_ID)).to.be.true;
+    });
+
+    // ── Negative: interfaces that are NOT supported in v1 ───────────────────
+
+    it("T2-06: returns false for ITextResolver (0x59d1d43c) — not implemented in v1", async function () {
+      expect(await resolver.supportsInterface(ITEXT_RESOLVER_ID)).to.be.false;
+    });
+
+    it("T2-06: returns false for IContentHashResolver (0xbc1c58d1) — not implemented in v1", async function () {
+      expect(await resolver.supportsInterface(ICONTENT_HASH_ID)).to.be.false;
+    });
+
+    it("T2-06: returns false for multicoin IAddressResolver (0xf1cb7e06) — not implemented in v1", async function () {
+      expect(await resolver.supportsInterface(IADDR_MULTICOIN_ID)).to.be.false;
+    });
+
+    it("T2-06: returns false for a random unknown interface ID", async function () {
+      expect(await resolver.supportsInterface("0xdeadbeef")).to.be.false;
+    });
+
+    it("T2-06: returns false for the zero interface ID (0x00000000)", async function () {
+      expect(await resolver.supportsInterface("0x00000000")).to.be.false;
+    });
+
+    it("T2-06: supportsInterface is pure — does not revert for any 4-byte input", async function () {
+      // Verify it handles the all-ones sentinel (0xffffffff) without reverting
+      // (ERC-165 spec: must return false for 0xffffffff)
+      expect(await resolver.supportsInterface("0xffffffff")).to.be.false;
+    });
+  });
 });

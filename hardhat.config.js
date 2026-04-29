@@ -20,13 +20,33 @@ module.exports = {
   networks: {
     hardhat: {
       chainId: 31337,
-    },
-    localhost: {
+      hardfork: "cancun",
+      // Fork Arc Testnet when ARC_FORK=1 is set
+      ...(process.env.ARC_FORK === "1" && {
+        forking: {
+          url: process.env.ARC_RPC_URL || "https://rpc.testnet.arc.network",
+          blockNumber: process.env.ARC_FORK_BLOCK ? parseInt(process.env.ARC_FORK_BLOCK) : undefined,
+        },
+      }),
+      // Tell Hardhat that Arc Testnet (5042002) uses cancun from block 0
+      chains: {
+        5042002: {
+          hardforkHistory: {
+            cancun: 0,
+          },
+        },
+      },    },
+    // Fork network — connects to a running `npx hardhat node --fork` instance.
+    // Used for dry-run execution against forked Arc Testnet state.
+    fork: {
+      url: "http://127.0.0.1:8545",
+      chainId: 31337,
+    },    localhost: {
       url: "http://127.0.0.1:8545",
       chainId: 31337,
     },
     arc_testnet: {
-      url: process.env.ARC_RPC_URL || "https://rpc.testnet.arc.network",
+      url: process.env.ARC_RPC_URL_2 || process.env.ARC_RPC_URL || "https://arc-testnet.drpc.org",
       chainId: 5042002,
       accounts: [PRIVATE_KEY],
       gasPrice: "auto",

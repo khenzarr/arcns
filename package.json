@@ -16,6 +16,7 @@
     "@openzeppelin/contracts": "^5.6.1",
     "@openzeppelin/contracts-upgradeable": "^5.6.1",
     "@openzeppelin/hardhat-upgrades": "^3.9.1",
+    "@safe-global/safe-deployments": "^1.37.55",
     "dotenv": "^17.4.2",
     "hardhat": "^2.28.6"
   },

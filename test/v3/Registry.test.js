@@ -275,4 +275,54 @@ describe("ArcNSRegistry (v3)", function () {
       expect(await registry.recordExists(node)).to.be.true;
     });
   });
+
+  // ─── T2-02: zero-address owner (burn behavior) ────────────────────────────
+
+  describe("T2-02: zero-address owner — intentional burn behavior", function () {
+    // ArcNS intentionally allows setting owner to address(0).
+    // This is the canonical ENS "burn" operation: it permanently locks a node.
+    // After burning:
+    //   - recordExists() returns false (owner == address(0))
+    //   - No further writes are possible (zero address cannot satisfy authorised())
+    //   - The node is permanently immutable
+    // There is no zero-address guard by design — this matches ENS mainnet behavior.
+
+    let arcNode;
+
+    beforeEach(async function () {
+      const label = labelhash("burntest");
+      arcNode = ethers.keccak256(ethers.concat([ethers.ZeroHash, label]));
+      await registry.setSubnodeOwner(ethers.ZeroHash, label, alice.address);
+    });
+
+    it("T2-02: setOwner to address(0) succeeds — burn is intentionally allowed", async function () {
+      await expect(
+        registry.connect(alice).setOwner(arcNode, ethers.ZeroAddress)
+      ).to.not.be.reverted;
+    });
+
+    it("T2-02: after burning, owner returns address(0)", async function () {
+      await registry.connect(alice).setOwner(arcNode, ethers.ZeroAddress);
+      expect(await registry.owner(arcNode)).to.equal(ethers.ZeroAddress);
+    });
+
+    it("T2-02: after burning, recordExists returns false", async function () {
+      await registry.connect(alice).setOwner(arcNode, ethers.ZeroAddress);
+      expect(await registry.recordExists(arcNode)).to.be.false;
+    });
+
+    it("T2-02: after burning, no further writes are possible (node is permanently locked)", async function () {
+      await registry.connect(alice).setOwner(arcNode, ethers.ZeroAddress);
+      // The zero address owns the node now. Neither alice nor anyone else can write to it.
+      await expect(
+        registry.connect(alice).setOwner(arcNode, alice.address)
+      ).to.be.revertedWithCustomError(registry, "NotAuthorised");
+    });
+
+    it("T2-02: Transfer event is emitted with address(0) as the new owner", async function () {
+      await expect(registry.connect(alice).setOwner(arcNode, ethers.ZeroAddress))
+        .to.emit(registry, "Transfer")
+        .withArgs(arcNode, ethers.ZeroAddress);
+    });
+  });
 });
