@@ -42,7 +42,6 @@ All of the following have been verified in live manual testing on Arc Testnet:
 - Primary name flow (reverse record set via ReverseRegistrar)
 - Wrong-network guard (blocks writes when wallet is not on Chain ID 5042002)
 - Owned-only primary name selection UX (dropdown sourced from owned domains)
-- Branding: no ENS strings in any user-facing surface
 
 ---
 
