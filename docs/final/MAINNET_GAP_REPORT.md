@@ -33,7 +33,6 @@ These items are working well and carry forward to mainnet without significant re
 - Wrong-network guard — blocks writes on incorrect chain ID
 - Subgraph-first with RPC fallback — resilient to subgraph downtime
 - Error taxonomy (ARC_ERR codes) — no raw Solidity strings shown to users
-- ArcNS branding — no ENS strings in any user-facing surface
 - `generated-contracts.ts` as single address source of truth — no manual env vars for addresses
 - Diagnostic logging before register/primary name submit — observable in browser console
 
