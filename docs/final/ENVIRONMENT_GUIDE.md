@@ -54,7 +54,7 @@ NEXT_PUBLIC_CHAIN_ID=5042002
 NEXT_PUBLIC_RPC_URL=https://arc-testnet.drpc.org
 NEXT_PUBLIC_RPC_URL_2=https://rpc.testnet.arc.network
 NEXT_PUBLIC_RPC_URL_3=https://rpc.quicknode.testnet.arc.network
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=b6d7afb94938b1fd9d9a72f7364fb905
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=[CENSORED]
 NEXT_PUBLIC_SUBGRAPH_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
 ```
 
