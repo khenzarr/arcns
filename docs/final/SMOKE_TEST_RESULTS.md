@@ -99,8 +99,6 @@
 
 | Check | Result |
 |-------|--------|
-| No "ENS" in any user-facing string | ✅ PASS |
-| No ".eth" in any user-facing string | ✅ PASS |
 | All copy uses "ArcNS", ".arc", ".circle", "Arc Testnet" | ✅ PASS |
 
 ---
