@@ -1,44 +1,60 @@
-# Graph CLI generated artifacts
-build/
-generated/
-
-# Dependency directories
+# ─── Dependency directories ───────────────────────────────────────────────────
 node_modules/
 jspm_packages/
 
-# Logs
-logs
+# ─── Environment / secrets ────────────────────────────────────────────────────
+# Never commit real .env files. Use .env.example / .env.local.example as templates.
+.env
+.env.local
+frontend/.env.local
+frontend/.env*.local
+
+# ─── Hardhat build outputs ────────────────────────────────────────────────────
+# Fully reproducible with: npx hardhat compile
+artifacts/
+cache/
+
+# ─── Graph CLI generated artifacts ───────────────────────────────────────────
+# Fully reproducible with: graph codegen && graph build
+build/
+generated/
+
+# ─── Local / test-only deployment files ──────────────────────────────────────
+# Hardhat local network deployments are not meaningful to public repo consumers.
+deployments/hardhat-*.json
+
+# ─── Safe contract artifacts (fetched, not authored) ─────────────────────────
+# Reproducible via: node scripts/v3/fetchSafeArtifacts.js
+# README.md in this directory explains the source and how to regenerate.
+scripts/v3/safe-artifacts/GnosisSafe.json
+scripts/v3/safe-artifacts/GnosisSafeProxyFactory.json
+scripts/v3/safe-artifacts/CompatibilityFallbackHandler.json
+
+# ─── IDE / tool-specific directories ─────────────────────────────────────────
+.kiro/
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# dotenv environment variables file
-.env
-
-# Local environment overrides (copy from frontend/.env.local.example)
-frontend/.env.local
-
-# Testing
-coverage
+# ─── Test coverage ────────────────────────────────────────────────────────────
+coverage/
 coverage.json
 
-# Typechain
-typechain
-typechain-types
+# ─── Typechain generated types ────────────────────────────────────────────────
+typechain/
+typechain-types/
 
-# Hardhat files
-cache
-
-# TypeScript build info
+# ─── TypeScript build info ────────────────────────────────────────────────────
 *.tsbuildinfo
 
-# Next.js build output
+# ─── Next.js build output ─────────────────────────────────────────────────────
 frontend/.next/
 frontend/out/
+
+# ─── Misc tooling caches ──────────────────────────────────────────────────────
+.npm
+.eslintcache

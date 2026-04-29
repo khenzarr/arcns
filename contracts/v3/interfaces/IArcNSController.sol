@@ -76,4 +76,10 @@ interface IArcNSController {
         bool matured,
         bool expired_
     );
+
+    /// @notice Updates the reverseRegistrar address (ADMIN_ROLE required)
+    /// @dev Required for clean migration when ArcNSReverseRegistrar is redeployed.
+    ///      Rejects address(0). Emits ReverseRegistrarUpdated.
+    /// @param newReverseRegistrar The new ArcNSReverseRegistrar contract address
+    function setReverseRegistrar(address newReverseRegistrar) external;
 }

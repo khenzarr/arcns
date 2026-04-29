@@ -102,8 +102,13 @@ contract ArcNSRegistry is IArcNSRegistry {
     }
 
     /// @notice Transfers ownership of a node
+    /// @dev Setting owner_ to address(0) is the canonical "burn" operation — it permanently
+    ///      locks the node. After burning: recordExists() returns false, the zero address
+    ///      cannot satisfy the authorised() modifier, and no further writes are possible.
+    ///      This matches ENS mainnet behavior and is intentional. There is no zero-address
+    ///      guard here by design.
     /// @param node The node to transfer
-    /// @param owner_ The new owner address
+    /// @param owner_ The new owner address (address(0) burns the node permanently)
     function setOwner(bytes32 node, address owner_) external override authorised(node) {
         _setOwner(node, owner_);
     }
@@ -165,6 +170,10 @@ contract ArcNSRegistry is IArcNSRegistry {
     // ─── Internal ─────────────────────────────────────────────────────────────
 
     function _setOwner(bytes32 node, address owner_) internal {
+        // NOTE: owner_ == address(0) is intentionally allowed — it is the canonical
+        // "burn" operation that permanently locks a node. This matches ENS mainnet
+        // behavior. recordExists() returns false for burned nodes, and the zero address
+        // cannot satisfy the authorised() modifier, making the node permanently immutable.
         _records[node].owner = owner_;
         emit Transfer(node, owner_);
     }

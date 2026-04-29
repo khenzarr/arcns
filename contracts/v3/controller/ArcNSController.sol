@@ -90,6 +90,9 @@ contract ArcNSController is
     /// @notice Emitted when the price oracle is updated
     event NewPriceOracle(address indexed oracle);
 
+    /// @notice Emitted when the reverseRegistrar address is updated
+    event ReverseRegistrarUpdated(address indexed oldReverseRegistrar, address indexed newReverseRegistrar);
+
     // ─── Roles ────────────────────────────────────────────────────────────────
 
     /// @notice Admin role — set treasury, approve resolvers, general admin
@@ -211,7 +214,14 @@ contract ArcNSController is
         address                treasury_,
         address                admin_
     ) external initializer {
-        if (treasury_ == address(0)) revert ZeroAddress();
+        if (address(base_)             == address(0)) revert ZeroAddress();
+        if (address(priceOracle_)      == address(0)) revert ZeroAddress();
+        if (address(usdc_)             == address(0)) revert ZeroAddress();
+        if (address(registry_)         == address(0)) revert ZeroAddress();
+        if (address(resolver_)         == address(0)) revert ZeroAddress();
+        if (address(reverseRegistrar_) == address(0)) revert ZeroAddress();
+        if (treasury_                  == address(0)) revert ZeroAddress();
+        if (admin_                     == address(0)) revert ZeroAddress();
 
         __AccessControl_init();
         __Pausable_init();
@@ -437,6 +447,19 @@ contract ArcNSController is
         emit TreasuryUpdated(old, treasury_);
     }
 
+    /// @notice Updates the reverseRegistrar address
+    /// @dev Writes to the existing reverseRegistrar slot (Slot N+6). No new storage slot is consumed.
+    ///      Required for clean migration when ArcNSReverseRegistrar is redeployed (e.g. security fix).
+    ///      After calling this on both proxies, all subsequent register(..., reverseRecord=true) calls
+    ///      will target the new ReverseRegistrar.
+    /// @param newReverseRegistrar The new ArcNSReverseRegistrar contract address
+    function setReverseRegistrar(address newReverseRegistrar) external onlyRole(ADMIN_ROLE) {
+        if (newReverseRegistrar == address(0)) revert ZeroAddress();
+        address old = address(reverseRegistrar);
+        reverseRegistrar = IArcNSReverseRegistrar(newReverseRegistrar);
+        emit ReverseRegistrarUpdated(old, newReverseRegistrar);
+    }
+
     /// @notice Approves or revokes a resolver address
     /// @param resolverAddr The resolver address to approve or revoke
     /// @param approved Whether to approve (true) or revoke (false)
@@ -474,11 +497,39 @@ contract ArcNSController is
     }
 
     /// @dev Validates a label string for on-chain registration.
-    ///      Rules:
-    ///      - At least 1 byte long
-    ///      - All bytes must be lowercase a-z, 0-9, hyphen, or underscore
-    ///      - Cannot start or end with a hyphen
-    ///      - Characters at index 2 and 3 (0-indexed) cannot both be hyphen (double-hyphen rule)
+    ///
+    ///      ArcNS NAMING POLICY — allowed character set (intentional choices):
+    ///
+    ///      Allowed:
+    ///        - Lowercase ASCII letters: a–z  (0x61–0x7A)
+    ///        - Decimal digits:          0–9  (0x30–0x39)
+    ///        - Hyphen:                  -    (0x2D)
+    ///        - Underscore:              _    (0x5F)  ← intentional ArcNS extension
+    ///
+    ///      Structural rules:
+    ///        - Minimum length: 1 byte
+    ///        - Cannot start or end with a hyphen
+    ///        - Characters at index 2 and 3 (0-indexed) cannot both be hyphen
+    ///          (partial IDNA/UTS46 double-hyphen rule — blocks "xn--" ACE prefix
+    ///           and similar patterns, but does not block all double-hyphen positions)
+    ///
+    ///      UNDERSCORE POLICY:
+    ///        Underscore is intentionally permitted. This is an ArcNS naming-policy
+    ///        choice that diverges from standard DNS and ENS. Rationale:
+    ///          - Underscores are common in usernames and handles (e.g. "my_name.arc")
+    ///          - ArcNS is not a DNS replacement — DNS compatibility is not a goal
+    ///          - Underscore names resolve correctly on-chain via namehash
+    ///        Implication: names like "my_name.arc" are valid and registerable.
+    ///        Standard DNS resolvers and ENS tooling will not resolve these names,
+    ///        but ArcNS-native tooling handles them correctly.
+    ///        This policy is documented here and is not a bug.
+    ///
+    ///      DOUBLE-HYPHEN RULE SCOPE:
+    ///        The double-hyphen check only applies at positions 2–3 (0-indexed).
+    ///        Names like "a--b.arc" (double-hyphen at positions 1–2) are valid.
+    ///        This is a partial IDNA guard, not full IDNA compliance.
+    ///        The specific rule enforced is: b[2] == '-' && b[3] == '-' is rejected.
+    ///
     ///      Returns bool — does NOT revert internally.
     function _validName(string memory name_) internal pure returns (bool) {
         bytes memory b = bytes(name_);

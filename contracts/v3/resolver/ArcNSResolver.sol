@@ -4,6 +4,7 @@ pragma solidity ^0.8.26;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "../interfaces/IArcNSRegistry.sol";
 import "../interfaces/IArcNSResolver.sol";
 
@@ -12,6 +13,12 @@ import "../interfaces/IArcNSResolver.sol";
 /// @dev UUPS upgradeable proxy. v1 active interface: setAddr / addr only.
 ///      setName exists for ReverseRegistrar use via CONTROLLER_ROLE but is not a general v1 feature.
 ///      Storage slots for text, contenthash, and multicoin records are reserved for future upgrades.
+///
+///      ERC-165 support:
+///        - 0x01ffc9a7  IERC165
+///        - 0x3b3b57de  IAddrResolver  (addr(bytes32) — EIP-137 coin type 60)
+///        - 0x691f3431  INameResolver  (name(bytes32) — EIP-181 reverse resolution)
+///      All other ENS resolver interface IDs (text, contenthash, multicoin) return false.
 ///
 ///      DEPLOYMENT NOTE: After deploying ReverseRegistrar, grant it CONTROLLER_ROLE via setController().
 contract ArcNSResolver is
@@ -172,6 +179,32 @@ contract ArcNSResolver is
         } else {
             _revokeRole(CONTROLLER_ROLE, controller);
         }
+    }
+
+    // ─── ERC-165 ──────────────────────────────────────────────────────────────
+
+    /// @notice Returns true for interface IDs this resolver genuinely supports
+    /// @dev Advertises only the interfaces that are fully implemented in v1:
+    ///        0x01ffc9a7 — IERC165
+    ///        0x3b3b57de — IAddrResolver  (addr(bytes32) — EIP-137 coin type 60)
+    ///        0x691f3431 — INameResolver  (name(bytes32) — EIP-181 reverse resolution)
+    ///      All other ENS resolver interface IDs (ITextResolver, IContentHashResolver,
+    ///      IAddressResolver multicoin, etc.) intentionally return false — those record
+    ///      types are reserved for future upgrades and are not yet implemented.
+    ///      Overrides AccessControlUpgradeable.supportsInterface to replace the inherited
+    ///      implementation with ArcNS-specific resolver capability advertisement.
+    /// @param interfaceId The ERC-165 interface identifier to query
+    /// @return True if the interface is supported
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(AccessControlUpgradeable)
+        returns (bool)
+    {
+        return
+            interfaceId == type(IERC165).interfaceId    ||  // 0x01ffc9a7
+            interfaceId == 0x3b3b57de                   ||  // IAddrResolver: addr(bytes32)
+            interfaceId == 0x691f3431;                      // INameResolver: name(bytes32)
     }
 
     // ─── UUPS ─────────────────────────────────────────────────────────────────

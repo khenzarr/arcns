@@ -18,7 +18,12 @@
     "arcControllerImpl": "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB",
     "circleController": "0x4CB0650847459d9BbDd5823cc6D320C900D883dA",
     "circleControllerImpl": "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB",
-    "treasury": "0xbbDF5bC7D63B1b7223556d4899905d56589A682d"
+    "treasury": "0xbbDF5bC7D63B1b7223556d4899905d56589A682d",
+    "safe": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+    "safeSingleton": "0x69f4D1788e39c87893C980c06EdF4b7f686e2938",
+    "safeProxyFactory": "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
+    "safeFallbackHandler": "0x017062a1dE2FE6b99BE3d9d37841FeD19F573804",
+    "timelock": "0x0f9d898D74f29c69cAD1a66918b41891E73e08f0"
   },
   "namehashes": {
     "arc": "0x9a7ad1c5d8b1c60ef156c6723dbf462681d6462768a9e60c53665d7fc1337bae",
@@ -48,5 +53,241 @@
         "step9_circleSetReverseRegistrar": "0x2dff4d27ce0ec53a5fd9ff55e45a73ffdba1a1fbbb8a5a778b94fe7b48b32dc1"
       }
     }
-  ]
+  ],
+  "multisig": {
+    "safe": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+    "owners": [
+      "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D",
+      "0xB2F6CfD0960A1fCC532DE1BF2Aafcc3077B4c396",
+      "0x1e19c1c829A387c2246567c0df264D81310d7775"
+    ],
+    "threshold": 2,
+    "saltNonce": "0",
+    "deployedAt": "2026-04-29T16:26:56.898Z",
+    "deployedBy": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D",
+    "rolesGranted": true,
+    "deployerRevoked": true,
+    "infrastructure": {
+      "singleton": "0x69f4D1788e39c87893C980c06EdF4b7f686e2938",
+      "proxyFactory": "0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC",
+      "fallbackHandler": "0x017062a1dE2FE6b99BE3d9d37841FeD19F573804",
+      "source": "safe-global/safe-deployments v1.3.0 eip155"
+    },
+    "revokePhase": {
+      "executedAt": "2026-04-29T18:15:54.353Z",
+      "revoked": [
+        {
+          "surface": "arcController",
+          "role": "ADMIN_ROLE",
+          "txHash": "0x58adf5675db1ea7caa216bd65acc68b30d0700142192dd289b595ad270a08c5a"
+        },
+        {
+          "surface": "arcController",
+          "role": "UPGRADER_ROLE",
+          "txHash": "0x32a2583b54eb64ee35dfde5b8eb6c69253e49fa47350cfabbff34dbd80fd198b"
+        },
+        {
+          "surface": "arcController",
+          "role": "PAUSER_ROLE",
+          "txHash": "0x04be5082b31dc6b1e7ba46e82374314d2236b0e6c5a9e6f7a354256f2563c2a6"
+        },
+        {
+          "surface": "circleController",
+          "role": "ADMIN_ROLE",
+          "txHash": "0xe969b0fac1461288f1e09209a0a5e7894541b643c5125fef886094ffc80315b0"
+        },
+        {
+          "surface": "circleController",
+          "role": "UPGRADER_ROLE",
+          "txHash": "0x8d2546223c7a4dad8fbcdd77e152e007617e98d3f1891c716fdcd79011443cb4"
+        },
+        {
+          "surface": "circleController",
+          "role": "PAUSER_ROLE",
+          "txHash": "0x696583c576a7089080516241d4d0b706bb37b624be7259f67ead6bfaaee69eda"
+        }
+      ],
+      "deferred": [
+        {
+          "surface": "arcRegistrar (Ownable)",
+          "role": "owner()",
+          "reason": "ArcNSBaseRegistrar.transferOwnership() requires Safe to call acceptOwnership or direct transfer. Deferring: ownership transfer needs a Safe multisig tx, not a deployer EOA tx. Current owner: 0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D"
+        },
+        {
+          "surface": "circleRegistrar (Ownable)",
+          "role": "owner()",
+          "reason": "ArcNSBaseRegistrar.transferOwnership() requires Safe to call acceptOwnership or direct transfer. Deferring: ownership transfer needs a Safe multisig tx, not a deployer EOA tx. Current owner: 0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D"
+        },
+        {
+          "surface": "registry (root node)",
+          "role": "registry.owner(bytes32(0))",
+          "reason": "Registry root node ownership is a critical surface. Transferring requires registry.setOwner(bytes32(0), Safe) from deployer. Deferring: root node transfer is a separate deliberate step, not part of role revocation. Current owner: 0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D"
+        }
+      ],
+      "notReady": [
+        {
+          "surface": "arcController",
+          "role": "DEFAULT_ADMIN_ROLE",
+          "reason": "Safe does NOT hold DEFAULT_ADMIN_ROLE -- must grant first"
+        },
+        {
+          "surface": "arcController",
+          "role": "ORACLE_ROLE",
+          "reason": "Safe does NOT hold ORACLE_ROLE -- must grant first"
+        },
+        {
+          "surface": "circleController",
+          "role": "DEFAULT_ADMIN_ROLE",
+          "reason": "Safe does NOT hold DEFAULT_ADMIN_ROLE -- must grant first"
+        },
+        {
+          "surface": "circleController",
+          "role": "ORACLE_ROLE",
+          "reason": "Safe does NOT hold ORACLE_ROLE -- must grant first"
+        },
+        {
+          "surface": "resolver",
+          "role": "DEFAULT_ADMIN_ROLE",
+          "reason": "Safe does NOT hold DEFAULT_ADMIN_ROLE -- must grant first"
+        },
+        {
+          "surface": "resolver",
+          "role": "ADMIN_ROLE",
+          "reason": "Safe does NOT hold ADMIN_ROLE -- must grant first"
+        },
+        {
+          "surface": "resolver",
+          "role": "UPGRADER_ROLE",
+          "reason": "Safe does NOT hold UPGRADER_ROLE -- must grant first"
+        }
+      ]
+    },
+    "fullMigrationPhase": {
+      "executedAt": "2026-04-29T18:47:17.253Z",
+      "granted": [],
+      "revoked": [
+        {
+          "surface": "circleController",
+          "role": "ORACLE_ROLE",
+          "txHash": "0x241e801caaa41f84440f01bbc3f6ff42b9f397080ab061a9309e58a704e005b6"
+        },
+        {
+          "surface": "resolver",
+          "role": "ADMIN_ROLE",
+          "txHash": "0xc5f5943b616f0527c515a319fd4e29c60cc6ecf457ce19914741eea11ebce5c1"
+        },
+        {
+          "surface": "resolver",
+          "role": "UPGRADER_ROLE",
+          "txHash": "0xcd8e9a84647315c5e1e19029954af2a6d567b5950f458c4f83a9e58dd1baf65e"
+        },
+        {
+          "surface": "circleController",
+          "role": "DEFAULT_ADMIN_ROLE",
+          "txHash": "0xd1e18d598936e75550a9b5652d3e1d12d435b2ccc7166371fce91a84bc0013b9"
+        },
+        {
+          "surface": "resolver",
+          "role": "DEFAULT_ADMIN_ROLE",
+          "txHash": "0x33c7bc6ab3f2f5020fea73f6eba6a1d2c482ffea4b3bbc4ba525de4a56d51495"
+        }
+      ],
+      "ownershipTransferred": [
+        {
+          "surface": "arcRegistrar",
+          "txHash": "0x33615bd6c9c5e021689a12a123eabaa98bf29df5083daac2832980b5556eb771"
+        },
+        {
+          "surface": "circleRegistrar",
+          "txHash": "0xa5fdca2f1838b928fe3af0c97006576dc930ab1d5a9f18af6c1df122cf7d73c7"
+        },
+        {
+          "surface": "reverseRegistrar",
+          "txHash": "0xf422bd7d31c1282fbfa08602f4ee4109e37578ba4ec66118ecb8f43850c0bf5e"
+        },
+        {
+          "surface": "priceOracle",
+          "txHash": "0x861a80fea0e2ecab14df3f60ba206aa4651a2eeff1db09f5c4fbe53f16805eda"
+        }
+      ],
+      "registryRootMigrated": true,
+      "registryRootTxHash": "0x58ac0169ff5d39e3bd902f2fd4d9f55a4fa22290322681326cee96c8e25bab8e",
+      "deferred": [
+        {
+          "surface": "treasury / all roles",
+          "reason": "Treasury migration is out of scope for this pass. No timelock deployed yet."
+        }
+      ],
+      "requiresSafeMultisig": [
+        {
+          "surface": "arcController",
+          "role": "ORACLE_ROLE",
+          "reason": "Deployer lost DEFAULT_ADMIN_ROLE before revoking this role. Safe must call revokeRole(ORACLE_ROLE, deployer)."
+        }
+      ]
+    },
+    "oracleRoleRevoke": {
+      "executedAt": "2026-04-29T19:48:25.175Z",
+      "surface": "arcController",
+      "role": "ORACLE_ROLE",
+      "account": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D",
+      "txHash": "0x0a4db0c23efb9372bce6b11dacf0019f8f21973a4fbdbfefc05de3295ce5de4f",
+      "status": "REVOKED",
+      "executedViaSafe": true,
+      "multisigComplete": true
+    }
+  },
+  "governance": {
+    "timelock": {
+      "address": "0x0f9d898D74f29c69cAD1a66918b41891E73e08f0",
+      "delay": "172800",
+      "proposer": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+      "executor": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+      "canceller": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+      "admin": "address(0)",
+      "deployedAt": "2026-04-29T20:25:59.780Z",
+      "deployedBy": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D"
+    },
+    "timelockMigration": {
+      "executedAt": "2026-04-29T20:26:13.865Z",
+      "granted": [
+        {
+          "surface": "arcController",
+          "txHash": "0xeef03c3fe05d65c7542a8cdc6dbc9e5ec391370f9c8d7c9efd1ce39f36aa493d"
+        },
+        {
+          "surface": "circleController",
+          "txHash": "0x09514d3999f7a1e19cc3411b83d3b455fa6b8af5538b5d0f6e698a4f119d839b"
+        },
+        {
+          "surface": "resolver",
+          "txHash": "0x588c09010d2cc5f3da869d03566348bfb09d27ba21987f0af47fc685dc2a97ea"
+        }
+      ],
+      "revoked": [
+        {
+          "surface": "arcController",
+          "txHash": "0x4fc3ca179b19b23996a6ed3b75e443ca00e56ecb13e153655bc05c1e4fb6d1c2"
+        },
+        {
+          "surface": "circleController",
+          "txHash": "0x5dc8b70cbc0e35b02707ee7698e5a2083f140b7d2cd49f16c6afdb9f35e470a8"
+        },
+        {
+          "surface": "resolver",
+          "txHash": "0x58a9d05b3657c6d143c2a45148d38dc91e01e38534989a9647cd0ee146c68580"
+        }
+      ],
+      "upgraderRoleOnTimelock": [
+        "arcController",
+        "circleController",
+        "resolver"
+      ],
+      "upgraderRoleRevokedFromSafe": [
+        "arcController",
+        "circleController",
+        "resolver"
+      ]
+    }
+  }
 }

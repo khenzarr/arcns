@@ -3,8 +3,8 @@ pragma solidity ^0.8.26;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../interfaces/IArcNSRegistry.sol";
+import "../interfaces/IArcNSResolver.sol";
 import "../interfaces/IArcNSReverseRegistrar.sol";
-import "../resolver/ArcNSResolver.sol";
 
 /// @title ArcNSReverseRegistrar
 /// @notice Manages the addr.reverse TLD — maps addresses to primary names
@@ -23,6 +23,9 @@ contract ArcNSReverseRegistrar is Ownable, IArcNSReverseRegistrar {
     /// @notice Thrown when the caller is not authorised to claim a reverse node
     error NotAuthorised();
 
+    /// @notice Thrown when a zero address is provided for the registry
+    error ZeroRegistry();
+
     /// @notice Thrown when a zero address is provided for the resolver
     error ZeroResolver();
 
@@ -38,7 +41,7 @@ contract ArcNSReverseRegistrar is Ownable, IArcNSReverseRegistrar {
     IArcNSRegistry public immutable registry;
 
     /// @notice The default resolver used for reverse records
-    ArcNSResolver public defaultResolver;
+    IArcNSResolver public defaultResolver;
 
     // ─── Events ───────────────────────────────────────────────────────────────
 
@@ -53,7 +56,8 @@ contract ArcNSReverseRegistrar is Ownable, IArcNSReverseRegistrar {
     /// @notice Deploys the reverse registrar
     /// @param registry_ The ArcNS registry contract
     /// @param defaultResolver_ The default resolver for reverse records
-    constructor(IArcNSRegistry registry_, ArcNSResolver defaultResolver_) Ownable(msg.sender) {
+    constructor(IArcNSRegistry registry_, IArcNSResolver defaultResolver_) Ownable(msg.sender) {
+        if (address(registry_)        == address(0)) revert ZeroRegistry();
         if (address(defaultResolver_) == address(0)) revert ZeroResolver();
         registry = registry_;
         defaultResolver = defaultResolver_;
@@ -92,7 +96,9 @@ contract ArcNSReverseRegistrar is Ownable, IArcNSReverseRegistrar {
 
     /// @notice Claims the reverse node for an address with a specific resolver
     /// @dev Sets the owner and resolver for the reverse node in the registry.
-    ///      The caller must be the address itself, or the owner of the reverse node.
+    ///      The caller must be the address itself, or the current owner of the reverse node
+    ///      in the registry. This prevents arbitrary third parties from hijacking reverse
+    ///      node ownership for addresses they do not control.
     /// @param addr_ The address to claim the reverse node for
     /// @param owner_ The owner to assign to the reverse node
     /// @param resolver_ The resolver to assign to the reverse node
@@ -102,6 +108,9 @@ contract ArcNSReverseRegistrar is Ownable, IArcNSReverseRegistrar {
         address owner_,
         address resolver_
     ) external override returns (bytes32) {
+        if (msg.sender != addr_ && msg.sender != registry.owner(node(addr_))) {
+            revert NotAuthorised();
+        }
         return _claimWithResolver(addr_, owner_, resolver_);
     }
 
@@ -115,7 +124,7 @@ contract ArcNSReverseRegistrar is Ownable, IArcNSReverseRegistrar {
     /// @notice Updates the default resolver
     /// @dev Only callable by the contract owner
     /// @param resolver_ The new default resolver address
-    function setDefaultResolver(ArcNSResolver resolver_) external onlyOwner {
+    function setDefaultResolver(IArcNSResolver resolver_) external onlyOwner {
         if (address(resolver_) == address(0)) revert ZeroResolver();
         defaultResolver = resolver_;
         emit DefaultResolverChanged(address(resolver_));

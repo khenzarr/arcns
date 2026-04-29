@@ -187,8 +187,35 @@ contract ArcNSBaseRegistrar is ERC721, Ownable, IArcNSBaseRegistrar {
     // ─── Registry reclaim ─────────────────────────────────────────────────────
 
     /// @notice Allows the NFT owner to reclaim registry ownership of their name
-    /// @param id The token ID (labelhash)
-    /// @param owner_ The address to set as registry owner
+    /// @dev DESIGN NOTE — NFT ownership vs. registry ownership divergence:
+    ///
+    ///      ArcNS maintains two independent ownership surfaces for each domain:
+    ///
+    ///      1. NFT ownership (ERC-721): tracked by this contract via `_ownerOf`.
+    ///         Represents the right to control the domain — renew, transfer, reclaim.
+    ///
+    ///      2. Registry ownership (ArcNSRegistry): tracked by the registry contract.
+    ///         Controls which resolver is used and who can write records for the node.
+    ///
+    ///      These two surfaces can diverge. For example:
+    ///        - A user transfers the NFT to a new wallet. The registry node still points
+    ///          to the old wallet until `reclaim` is called.
+    ///        - A user calls `reclaim(id, someContract)` to delegate registry control
+    ///          to a smart contract (e.g. a multisig or a resolver manager) while
+    ///          retaining NFT ownership in their EOA.
+    ///        - A user calls `reclaim(id, address(0))` to burn registry ownership
+    ///          (permanently locks the node) while keeping the NFT.
+    ///
+    ///      This divergence is intentional and matches ENS mainnet behavior. It enables
+    ///      advanced use cases like delegated resolver management. Auditors should note
+    ///      that `owner_` is not required to equal `_ownerOf(id)` — this is by design.
+    ///
+    ///      The caller must be the NFT owner or an ERC-721 approved operator for the token.
+    ///      The `live` modifier ensures this registrar still owns the TLD base node.
+    ///
+    /// @param id The token ID (labelhash of the second-level label)
+    /// @param owner_ The address to set as registry owner for the domain node.
+    ///               Does not need to match the NFT owner — see design note above.
     function reclaim(uint256 id, address owner_) external override live {
         if (!_isAuthorized(_ownerOf(id), msg.sender, id)) revert NotTokenOwner();
         registry.setSubnodeOwner(baseNode, bytes32(id), owner_);
