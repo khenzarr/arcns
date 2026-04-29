@@ -12,11 +12,12 @@
     "priceOracle": "0xde9b95B560f5e803f5Cc045f27285F0226913548",
     "arcRegistrar": "0xD600B8D80e921ec48845fC1769c292601e5e90C4",
     "circleRegistrar": "0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a",
-    "reverseRegistrar": "0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57",
+    "reverseRegistrar": "0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304",
+    "oldReverseRegistrar": "0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57",
     "arcController": "0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46",
-    "arcControllerImpl": "0x64b7494A0f1E9000ee1F2c28183dB314c9b7eeA6",
+    "arcControllerImpl": "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB",
     "circleController": "0x4CB0650847459d9BbDd5823cc6D320C900D883dA",
-    "circleControllerImpl": "0x64b7494A0f1E9000ee1F2c28183dB314c9b7eeA6",
+    "circleControllerImpl": "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB",
     "treasury": "0xbbDF5bC7D63B1b7223556d4899905d56589A682d"
   },
   "namehashes": {
@@ -24,5 +25,28 @@
     "circle": "0xb3f3947bd9b363b1955fa597e342731ea6bde24d057527feb2cdfdeb807c2084",
     "addrReverse": "0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2"
   },
-  "upgrades": []
+  "upgrades": [
+    {
+      "at": "2026-04-29T00:00:00.000Z",
+      "type": "security-migration-v1",
+      "network": "arc_testnet",
+      "deployer": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D",
+      "changes": [
+        "ArcNSReverseRegistrar: redeployed at 0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304 (claimWithResolver NotAuthorised fix)",
+        "ArcNSController: upgraded to new impl 0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB (initialize zero-address fix + setReverseRegistrar)",
+        "addr.reverse node: 0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57 → 0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304",
+        "Resolver CONTROLLER_ROLE granted to: 0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304",
+        "Resolver CONTROLLER_ROLE revoked from: 0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57",
+        "arcController.reverseRegistrar: 0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57 → 0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304",
+        "circleController.reverseRegistrar: 0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57 → 0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304"
+      ],
+      "txHashes": {
+        "step5_addrReverseTransfer": "0xa37f33ccf8bcfa9f3a9a634c7722d0cc94629519e17c9ce2e1373daf5274d3356",
+        "step6_grantControllerRole": "0xf2ea80c667610807d116508d38153b70aaf0ea2893f139822665c43e9772ea36a",
+        "step7_revokeControllerRole": "0x60f63dd9d73c9a5e23612fac342bf5a85782f9f55b4640dbeeb72d5ea545860ce",
+        "step8_arcSetReverseRegistrar": "0xb9f01ac127ecbce3d734dfe39a4e89b84f6ac1b189b2bb0ae263376d1ae214ad4",
+        "step9_circleSetReverseRegistrar": "0x2dff4d27ce0ec53a5fd9ff55e45a73ffdba1a1fbbb8a5a778b94fe7b48b32dc1"
+      }
+    }
+  ]
 }

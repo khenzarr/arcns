@@ -26,12 +26,12 @@ export const ADDR_RESOLVER_IMPL      = "0x19Df0277A47da2CCa244a3702f3fC2B52F97A4
 export const ADDR_PRICE_ORACLE       = "0xde9b95B560f5e803f5Cc045f27285F0226913548"        as `0x${string}`;
 export const ADDR_ARC_REGISTRAR      = "0xD600B8D80e921ec48845fC1769c292601e5e90C4"       as `0x${string}`;
 export const ADDR_CIRCLE_REGISTRAR   = "0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a"    as `0x${string}`;
-export const ADDR_REVERSE_REGISTRAR  = "0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57"   as `0x${string}`;
+export const ADDR_REVERSE_REGISTRAR  = "0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304"   as `0x${string}`;
 export const ADDR_TREASURY           = "0xbbDF5bC7D63B1b7223556d4899905d56589A682d"           as `0x${string}`;
 export const ADDR_ARC_CONTROLLER     = "0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46"      as `0x${string}`;
-export const ADDR_ARC_CTRL_IMPL      = "0x64b7494A0f1E9000ee1F2c28183dB314c9b7eeA6"  as `0x${string}`;
+export const ADDR_ARC_CTRL_IMPL      = "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB"  as `0x${string}`;
 export const ADDR_CIRCLE_CONTROLLER  = "0x4CB0650847459d9BbDd5823cc6D320C900D883dA"   as `0x${string}`;
-export const ADDR_CIRCLE_CTRL_IMPL   = "0x64b7494A0f1E9000ee1F2c28183dB314c9b7eeA6" as `0x${string}`;
+export const ADDR_CIRCLE_CTRL_IMPL   = "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB" as `0x${string}`;
 
 // ─── Canonical namehashes ─────────────────────────────────────────────────────
 

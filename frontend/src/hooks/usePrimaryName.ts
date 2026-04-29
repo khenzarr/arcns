@@ -206,24 +206,32 @@ export function usePrimaryName(address?: `0x${string}`): PrimaryNameState {
             await publicClient.waitForTransactionReceipt({ hash: addrTxHash });
             setAddrSynced(true);
             setAddrSyncStep("synced");
-
-            // ── Best-effort: clear previous primary name's addr ────────────
-            // Shared utility handles owner check and non-fatal failure.
-            // UI copy must not imply the old name was deactivated.
-            if (prevPrimary) {
-              await clearPrevPrimaryAddr(prevPrimary, fullName, addr as `0x${string}`, writeContractAsync);
-            }
           } catch (addrErr: unknown) {
             const { toUserMessage } = await import("../lib/errors");
             setAddrSyncStep("partial-success");
             setAddrSyncError(toUserMessage(addrErr));
           }
         }
-        // addr already matches connected wallet — skip (no transaction needed)
+        // addr already matches connected wallet — no setAddr tx needed
+
+        // ── Best-effort: clear previous primary name's addr ───────────────
+        // Must run regardless of whether the new name needed an addr sync,
+        // because the old primary's addr must be cleared in all cases.
+        // Shared utility handles owner check and non-fatal failure.
+        // UI copy must not imply the old name was deactivated.
+        if (prevPrimary) {
+          await clearPrevPrimaryAddr(prevPrimary, fullName, addr as `0x${string}`, writeContractAsync);
+        }
       } catch {
         // Addr read failed — skip sync silently, setName still succeeded
       }
 
+      // Final authoritative refetch — covers all addr-sync exit paths:
+      // synced, skipped (addr already matched), and partial-success.
+      // The early refetch above (after setName receipt) remains as an
+      // optimistic update; this one ensures the cache reflects the fully
+      // settled on-chain state after all subsequent transactions complete.
+      await refetchPrimaryName();
       setSetStep("success");
     } catch (e: unknown) {
       const { code } = classifyRawError(e);
