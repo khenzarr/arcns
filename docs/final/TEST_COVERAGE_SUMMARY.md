@@ -96,7 +96,7 @@
 
 | File | Coverage |
 |------|---------|
-| `frontend/src/__tests__/block1.test.ts` | Error taxonomy (ARC_ERR codes), user-facing messages (no ENS wording), retryable vs non-retryable classification |
+| `frontend/src/__tests__/block1.test.ts` | Error taxonomy (ARC_ERR codes), user-facing messages, retryable vs non-retryable classification |
 | `frontend/src/__tests__/block2.test.ts` | `makeCommitment` (7-param, no data[]), `buildRegisterArgs` (7-element tuple), `reverseNodeFor`, `maxCostWithSlippage`, error message branding |
 | `frontend/src/__tests__/identityConsistency.test.ts` | Commitment hash consistency, arg shape consistency |
 | `frontend/src/__tests__/preservationTests.test.ts` | **FAILING** — references archived hooks (`useArcNS.ts`, `useDomainResolutionPipeline.ts`). Pre-existing failure, no production impact. |
