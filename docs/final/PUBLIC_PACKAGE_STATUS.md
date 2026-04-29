@@ -23,8 +23,6 @@ The previous README had three factual errors and several presentation gaps:
 | No roadmap | Added honest pre-mainnet roadmap |
 | No collaboration/audit/integration entry points | Added |
 
-The new README is factually consistent with `FINAL_STATUS.md`, `deployments/arc_testnet-v3.json`, and `docs/final/RELEASE_SUMMARY.md`. No ENS comparison framing. No overclaiming.
-
 ### docs/README.md — new documentation index
 
 Created a single-page documentation index at `docs/README.md` that groups all documents by purpose:
