@@ -45,6 +45,7 @@ export const ARC_ERR = {
   NAME_NOT_AVAILABLE:             "NAME_NOT_AVAILABLE",
   REGISTER_SIMULATION_FAILED:     "REGISTER_SIMULATION_FAILED",
   UNAUTHORIZED_NODE_OWNER:        "UNAUTHORIZED_NODE_OWNER",
+  NOT_NAME_OWNER:                 "NOT_NAME_OWNER",
 
   // ── User rejection (return to idle) ─────────────────────────────────────────
   USER_REJECTED:                  "USER_REJECTED",
@@ -273,6 +274,9 @@ export function userFacingMessage(code: ArcErrorCode): string {
 
     case ARC_ERR.UNAUTHORIZED_NODE_OWNER:
       return "You are not the owner of this name. Only the owner can update the receiving address.";
+
+    case ARC_ERR.NOT_NAME_OWNER:
+      return "This name is owned by another wallet — only the owner can renew.";
 
     default:
       return "Something went wrong. Please refresh and try again.";

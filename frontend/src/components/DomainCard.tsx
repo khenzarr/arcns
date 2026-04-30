@@ -227,6 +227,29 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
   const expiryState = getExpiryState(expiryTs);
   const badge       = expiryBadge(expiryState);
 
+  // ── Ownership check (for TAKEN names, connected wallet only) ──────────────
+  const reg3 = registrarFor(tld);
+  const {
+    data: ownerData,
+    isLoading: isOwnerLoading,
+  } = useReadContract({
+    ...reg3,
+    functionName: "ownerOf",
+    args:         [tokenId],
+    query: {
+      enabled: nameState === "TAKEN"
+               && isConnected
+               && !isWrongNetwork
+               && (expiryState === "active" || expiryState === "expiring-soon" || expiryState === "grace"),
+      staleTime: 0,
+      refetchOnWindowFocus: false,
+    },
+  });
+  const isOwner =
+    !!address &&
+    !!ownerData &&
+    (ownerData as string).toLowerCase() === address.toLowerCase();
+
   // Refetch expiry after successful renewal
   useEffect(() => {
     if (renew.step === "success") {
@@ -476,6 +499,23 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           ) : isWrongNetwork ? (
             <div className="text-center py-3 text-sm rounded-xl font-medium" style={{ background: 'var(--color-error-surface)', color: 'var(--color-error)' }}>
               ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to renew
+            </div>
+          ) : isOwnerLoading ? (
+            <button
+              disabled
+              className="w-full py-3.5 text-white rounded-xl font-semibold opacity-50 cursor-not-allowed text-sm"
+              style={{ background: 'var(--color-warning)' }}
+            >
+              Checking ownership…
+            </button>
+          ) : !isOwner ? (
+            <div
+              role="button"
+              aria-disabled="true"
+              className="w-full py-3 text-center text-sm rounded-xl cursor-not-allowed"
+              style={{ background: 'var(--color-surface-elevated)', color: 'var(--color-text-secondary)' }}
+            >
+              This name is owned by another wallet — only the owner can renew.
             </div>
           ) : (
             <button
