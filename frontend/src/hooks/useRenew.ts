@@ -72,6 +72,46 @@ export function useRenew(): RenewState {
     setError(null);
     setTxHash(null);
 
+    // ── Pre-flight: ownership guard ────────────────────────────────────────
+    // The v3 controller.renew() is permissionless by protocol design.
+    // Product policy requires owner-only renewal. Abort before any tx if the
+    // connected wallet is not the current ownerOf(tokenId) on the base registrar.
+    try {
+      const { labelToTokenId } = await import("../lib/namehash");
+      const { registrarFor }   = await import("../lib/contracts");
+      const { publicClient }   = await import("../lib/publicClient");
+      const { REGISTRAR_ABI }  = await import("../lib/abis");
+
+      const tokenId   = labelToTokenId(normalizedName);
+      const registrar = registrarFor(tld);
+
+      let tokenOwner: string;
+      try {
+        tokenOwner = await publicClient.readContract({
+          address:      registrar.address,
+          abi:          REGISTRAR_ABI,
+          functionName: "ownerOf",
+          args:         [tokenId],
+        }) as string;
+      } catch {
+        // ownerOf reverts if the token does not exist (name not registered / fully expired).
+        // Treat as non-owner — the name is not in a renewable state.
+        setError(userFacingMessage(ARC_ERR.NOT_NAME_OWNER));
+        setStep("failed");
+        return;
+      }
+
+      if (tokenOwner.toLowerCase() !== address.toLowerCase()) {
+        setError(userFacingMessage(ARC_ERR.NOT_NAME_OWNER));
+        setStep("failed");
+        return;
+      }
+    } catch (importErr: unknown) {
+      // Dynamic import failure — treat as infra error and fall through to the
+      // main try/catch which will classify and surface it.
+      throw importErr;
+    }
+
     try {
       // ── Step 1: Approve USDC ───────────────────────────────────────────────
       setStep("approving");
