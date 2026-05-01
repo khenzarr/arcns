@@ -28,7 +28,7 @@ Both subgraphs index the same contracts. They are independent and can run in par
 | CircleBaseRegistrar | `0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a` | Transfer (ERC-721) |
 | ArcNSRegistry | `0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A` | Transfer, NewResolver |
 | ArcNSResolver | `0x4c3a2D4245346732CE498937fEAD6343e77Eb097` | AddrChanged, NameChanged |
-| ArcNSReverseRegistrar | `0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57` | ReverseClaimed |
+| ArcNSReverseRegistrar | `0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304` | ReverseClaimed |
 
 Start block: `38856377`
 
@@ -100,7 +100,7 @@ are indexed in a single subgraph. The `native_token_contract` differs per TLD
 
 1. **Deploy to graph-node** — a self-hosted graph-node instance connected to Arc Testnet RPC
 2. **Configure BENS server** — add the protocol entries above to `bens-server` config
-3. **ArcScan operator** — set `MICROSERVICE_BENS_ENABLED=true` and `MICROSERVICE_BENS_URL`
+3. **ArcScan operator** — set `MICROSERVICE_BENS_ENABLED=true` and `MICROSERVICE_BENS_URL` on the Blockscout backend; confirm the correct frontend env variable name for name-service integration against your specific Blockscout frontend version (commonly `NEXT_PUBLIC_NAME_SERVICE_URL` or `NEXT_PUBLIC_BENS_URL` depending on version)
 4. **Optional upstream PR** — submit subgraph + config to `blockscout/blockscout-rs` for hosted BENS
 
 See `docs/integration/arcscan-integration-package.md` for the full integration spec.
