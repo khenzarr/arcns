@@ -1,0 +1,15 @@
+{
+  "name": "arcns-bens-subgraph",
+  "version": "1.0.0",
+  "description": "ArcNS BENS-compatible subgraph — ENS-like schema for Blockscout/BENS integration",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "deploy:studio": "graph deploy arcns-bens",
+    "deploy:node": "graph deploy --node http://localhost:8020/ arcns-bens"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "^0.71.0",
+    "@graphprotocol/graph-ts": "^0.35.1"
+  }
+}
