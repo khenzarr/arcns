@@ -186,12 +186,12 @@ dataSources:
 
   # ── Reverse Registrar ───────────────────────────────────────────────────────
   # Handles reverse node claims (addr.reverse subdomain creation).
-  # v3 live address — deployed block 38856377
+  # v3 live address — redeployed 2026-04-29 (security migration, claimWithResolver fix)
   - kind: ethereum
     name: ReverseRegistrar
     network: arc-testnet
     source:
-      address: "0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57"
+      address: "0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304"
       abi: ReverseRegistrar
       startBlock: 38856377
     mapping:
