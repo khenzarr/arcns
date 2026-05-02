@@ -53,13 +53,19 @@ npm run deploy:studio
 
 ## BENS server config
 
-After deploying to graph-node, add this protocol entry to the BENS server config:
+Both `.arc` and `.circle` TLDs are indexed in a **single subgraph** and must be
+served by a **single BENS protocol** (`arcns`). Do **not** configure two separate
+active protocols pointing at the same subgraph — BENS does not filter results by
+TLD per protocol, so a second protocol would cause `.arc` names to appear under
+`arcns-circle` and `.circle` names to appear under `arcns`.
+
+Add this single protocol entry to the BENS server config for network `5042002`:
 
 ```json
 "arcns": {
-  "tld_list": ["arc"],
+  "tld_list": ["arc", "circle"],
   "network_id": 5042002,
-  "subgraph_name": "arcns-bens",
+  "subgraph_name": "arcns-subgraph",
   "address_resolve_technique": "reverse_registry",
   "specific": {
     "type": "ens_like",
@@ -72,35 +78,103 @@ After deploying to graph-node, add this protocol entry to the BENS server config
     "description": "ArcNS maps .arc and .circle names to EVM addresses on Arc Testnet.",
     "docs_url": "https://docs.arcns.xyz"
   }
-},
-"arcns-circle": {
-  "tld_list": ["circle"],
-  "network_id": 5042002,
-  "subgraph_name": "arcns-bens",
-  "address_resolve_technique": "reverse_registry",
-  "specific": {
-    "type": "ens_like",
-    "native_token_contract": "0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a",
-    "registry_contract": "0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A"
-  },
-  "meta": {
-    "short_name": "ArcNS",
-    "title": "Arc Name Service (.circle)",
-    "description": "ArcNS maps .arc and .circle names to EVM addresses on Arc Testnet.",
-    "docs_url": "https://docs.arcns.xyz"
-  }
 }
 ```
 
-Note: Both protocol entries point to the same `subgraph_name` because both TLDs
-are indexed in a single subgraph. The `native_token_contract` differs per TLD
-(ArcBaseRegistrar for `.arc`, CircleBaseRegistrar for `.circle`).
+And set the network's `use_protocols` to `["arcns"]` only:
+
+```json
+"5042002": {
+  "use_protocols": ["arcns"]
+}
+```
+
+## Reverse resolution — important note
+
+The `handleNameChanged` handler in `src/resolver.ts` intentionally does **not**
+overwrite `Domain.name` on the reverse node. The reverse domain's `name` field
+must remain `<address>.addr.reverse` (set by `handleReverseClaimed`).
+
+BENS resolves primary names by joining `name_changed.resolver` → reverse
+`domain.resolver`, then joining `name_changed.name` against the forward domain
+table. If `Domain.name` on the reverse node is overwritten with the primary name,
+BENS produces duplicate `reversed_domain_id` rows and fails the unique index
+creation for `addr_reverse_names`.
+
+### Local validation — materialized view refresh
+
+After subgraph catch-up or a local redeploy, the `addr_reverse_names` materialized
+view may need a manual refresh before the primary reverse endpoint returns results:
+
+```sql
+REFRESH MATERIALIZED VIEW sgdX.addr_reverse_names;
+```
+
+Replace `sgdX` with the actual schema name for your subgraph deployment (visible
+in the graph-node PostgreSQL database). Then retest:
+
+```
+GET /api/v1/5042002/addresses/0x0b943fe9f1f8135e0751ba8b43dc0cd688ad209d?protocol_id=arcns
+```
+
+Expected: `"primary_domain": "flowpay.arc"`
+
+## Expected BENS API behaviour
+
+### Protocols
+
+```
+GET /api/v1/5042002/protocols
+```
+
+Expected: only `arcns` with `tld_list: ["arc", "circle"]`
+
+### Forward resolution
+
+```
+GET /api/v1/5042002/domains/flowpay.arc?protocol_id=arcns
+```
+Expected resolved address: `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D`
+
+```
+GET /api/v1/5042002/domains/dnyelfy.circle?protocol_id=arcns
+```
+Expected resolved address: `0x15DC3C8131a351F307Ca5eB04d227EA0Fe01ac71`
+
+### Address lookup
+
+```
+GET /api/v1/5042002/addresses:lookup?address=0x0b943fe9f1f8135e0751ba8b43dc0cd688ad209d&resolved_to=true&owned_by=true&only_active=true&protocols=arcns
+```
+
+Expected: `.arc` and `.circle` records all under protocol `arcns`. No `arcns-circle` protocol in returned items.
+
+### Primary reverse
+
+```
+GET /api/v1/5042002/addresses/0x0b943fe9f1f8135e0751ba8b43dc0cd688ad209d?protocol_id=arcns
+```
+
+Expected primary domain: `flowpay.arc`
+
+If this returns `domain: null`, inspect the raw tables:
+
+```sql
+SELECT * FROM sgdX.addr_reverse_names WHERE address = '0x0b943fe9f1f8135e0751ba8b43dc0cd688ad209d';
+SELECT * FROM sgdX.name_changed WHERE resolver IN (SELECT id FROM sgdX.resolver WHERE domain IN (SELECT id FROM sgdX.domain WHERE name LIKE '%addr.reverse'));
+```
+
+If the raw join is correct but `addr_reverse_names` is empty, run:
+
+```sql
+REFRESH MATERIALIZED VIEW sgdX.addr_reverse_names;
+```
 
 ## Remaining work for full explorer integration
 
-1. **Deploy to graph-node** — a self-hosted graph-node instance connected to Arc Testnet RPC
-2. **Configure BENS server** — add the protocol entries above to `bens-server` config
-3. **ArcScan operator** — set `MICROSERVICE_BENS_ENABLED=true` and `MICROSERVICE_BENS_URL` on the Blockscout backend; confirm the correct frontend env variable name for name-service integration against your specific Blockscout frontend version (commonly `NEXT_PUBLIC_NAME_SERVICE_URL` or `NEXT_PUBLIC_BENS_URL` depending on version)
+1. **Deploy to graph-node** — a self-hosted graph-node instance connected to Arc Testnet RPC (`https://rpc.testnet.arc.network`)
+2. **Configure BENS server** — add the single `arcns` protocol entry above to `bens-server` config
+3. **ArcScan operator** — set `MICROSERVICE_BENS_ENABLED=true` and `MICROSERVICE_BENS_URL` on the Blockscout backend
 4. **Optional upstream PR** — submit subgraph + config to `blockscout/blockscout-rs` for hosted BENS
 
 See `docs/integration/arcscan-integration-package.md` for the full integration spec.
