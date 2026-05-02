@@ -46,7 +46,7 @@ Users who have registered ArcNS names expect those names to appear wherever thei
 |----------|---------|------|
 | ArcNSRegistry | `0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A` | Maps namehash → (owner, resolver, TTL). Non-upgradeable. |
 | ArcNSResolver (proxy) | `0x4c3a2D4245346732CE498937fEAD6343e77Eb097` | Stores `addr` records (forward) and `name` records (reverse). UUPS proxy. |
-| ArcNSReverseRegistrar | `0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57` | Manages `addr.reverse` TLD. Non-upgradeable. |
+| ArcNSReverseRegistrar | `0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304` | Manages `addr.reverse` TLD. Non-upgradeable. |
 | ArcBaseRegistrar (ERC-721) | `0xD600B8D80e921ec48845fC1769c292601e5e90C4` | `.arc` name NFTs. Non-upgradeable. |
 | CircleBaseRegistrar (ERC-721) | `0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a` | `.circle` name NFTs. Non-upgradeable. |
 | ArcController | `0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46` | Registration/renewal for `.arc`. UUPS proxy. |
