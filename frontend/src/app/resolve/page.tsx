@@ -2,7 +2,19 @@
 /**
  * resolve/page.tsx — ArcNS name resolution page.
  *
- * Wired exclusively to v3 hooks and lib.
+ * Phase 8 visual redesign: ArcNS brandkit applied.
+ *
+ * LOGIC IS UNCHANGED:
+ *   - useResolveAddress hook (publicClient, useEffect, cancel pattern) untouched
+ *   - useAccount, useReadContract calls untouched
+ *   - domain/queried state untouched
+ *   - handleResolve handler untouched
+ *   - parts/label/tld/registrar/tokenId derivation untouched
+ *   - expiryTs/expiryState/badge derivation untouched
+ *   - hasResult/hasAddr/isUnregistered/isOwner derivation untouched
+ *   - namehash/node derivation untouched
+ *   - ArcScan links untouched
+ *
  * No v1/v2 imports. No ENS-branded strings.
  */
 
@@ -25,8 +37,11 @@ import {
 } from "../../lib/contracts";
 import { isValidLabel } from "../../lib/domain";
 import Link from "next/link";
+import { PageHeader }      from "../../components/ui/PageHeader";
+import { CopyButton }      from "../../components/ui/CopyButton";
+import { TldBadge }        from "../../components/ui/TldBadge";
 
-// ─── Forward resolution via publicClient ──────────────────────────────────────
+// ─── Forward resolution via publicClient — UNCHANGED ─────────────────────────
 
 function useResolveAddress(domain: string) {
   const node    = namehash(domain);
@@ -54,20 +69,33 @@ function useResolveAddress(domain: string) {
   return { data, isLoading };
 }
 
+// ─── Expiry badge style helper ────────────────────────────────────────────────
+function expiryStyle(state: string): React.CSSProperties {
+  if (state === "expiring-soon" || state === "grace") {
+    return { background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.28)", color: "var(--arcns-warning)" };
+  }
+  if (state === "expired") {
+    return { background: "rgba(255,92,122,0.12)", border: "1px solid rgba(255,92,122,0.28)", color: "var(--arcns-danger)" };
+  }
+  return { background: "rgba(20,241,149,0.10)", border: "1px solid rgba(20,241,149,0.24)", color: "var(--arcns-green)" };
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ResolvePage() {
+  // ── State — UNCHANGED ──────────────────────────────────────────────────────
   const [domain,  setDomain]  = useState("");
   const [queried, setQueried] = useState("");
 
+  // ── Hooks — UNCHANGED ──────────────────────────────────────────────────────
   const { address: connectedAddress } = useAccount();
-
   const { data: resolvedAddr, isLoading } = useResolveAddress(queried);
 
-  const parts     = queried.split(".");
-  const label     = parts[0] ?? "";
-  const rawTld    = parts[1] ?? "";
-  const tld       = (rawTld === "arc" || rawTld === "circle") ? rawTld as SupportedTLD : null;
+  // ── Derived values — UNCHANGED ─────────────────────────────────────────────
+  const parts    = queried.split(".");
+  const label    = parts[0] ?? "";
+  const rawTld   = parts[1] ?? "";
+  const tld      = (rawTld === "arc" || rawTld === "circle") ? rawTld as SupportedTLD : null;
   const registrar = tld === "circle" ? ADDR_CIRCLE_REGISTRAR : ADDR_ARC_REGISTRAR;
   const tokenId  = label ? labelToTokenId(label) : 0n;
 
@@ -83,6 +111,7 @@ export default function ResolvePage() {
   const expiryState = getExpiryState(expiryTs);
   const badge       = expiryBadge(expiryState);
 
+  // ── Handler — UNCHANGED ────────────────────────────────────────────────────
   const handleResolve = () => setQueried(domain.trim().toLowerCase());
   const nodeBytes     = queried ? namehash(queried) as `0x${string}` : undefined;
   const node          = queried ? namehash(queried) : "";
@@ -91,7 +120,7 @@ export default function ResolvePage() {
   const hasAddr       = addr && addr !== "0x0000000000000000000000000000000000000000";
   const isUnregistered = hasResult && !isLoading && expiryTs === 0n;
 
-  // ── Registry owner read (enabled only when queried and wallet connected) ──
+  // ── Registry owner read — UNCHANGED ───────────────────────────────────────
   const { data: ownerData } = useReadContract({
     ...REGISTRY_CONTRACT,
     functionName: "owner",
@@ -108,138 +137,232 @@ export default function ResolvePage() {
     (ownerData as string).toLowerCase() === connectedAddress.toLowerCase();
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>Resolve</h1>
-        <p className="mt-1" style={{ color: 'var(--color-text-secondary)' }}>Look up any ArcNS name</p>
-      </div>
+    <div className="max-w-2xl mx-auto space-y-8">
 
+      {/* ── Page header ───────────────────────────────────────────────────── */}
+      <PageHeader
+        title="Resolve"
+        subtitle="Inspect any ArcNS name and its on-chain identity records."
+      />
+
+      {/* ── Search module ─────────────────────────────────────────────────── */}
       <div
-        className="rounded-2xl border p-6 space-y-4"
-        style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}
+        className="arcns-glass rounded-[var(--arcns-radius-xl)] p-6 space-y-5"
       >
+        {/* Input + button — handlers UNCHANGED */}
         <div className="flex gap-2 flex-wrap">
           <input
             type="text"
             value={domain}
             onChange={e => setDomain(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleResolve()}
-            placeholder="alice.arc"
-            className="flex-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm min-w-0"
-            style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
+            placeholder="Enter a name, e.g. flowpay.arc"
+            className="flex-1 px-4 py-3 rounded-[var(--arcns-radius-lg)] border focus:outline-none focus:ring-2 focus:ring-[var(--arcns-cyan)] text-sm min-w-0 transition-all duration-150"
+            style={{
+              background: "var(--arcns-bg-elevated)",
+              borderColor: "var(--arcns-border-default)",
+              color: "var(--arcns-text-primary)",
+            }}
+            aria-label="Enter an ArcNS name to resolve"
           />
           <button
             onClick={handleResolve}
-            className="px-6 py-3 text-white rounded-xl font-semibold transition-opacity hover:opacity-90 text-sm"
-            style={{ background: 'var(--color-accent-primary)' }}
+            className="px-6 py-3 text-white rounded-[var(--arcns-radius-lg)] font-semibold text-sm transition-all duration-150 hover:opacity-90 active:scale-[0.98]"
+            style={{ background: "var(--arcns-gradient-primary)" }}
           >
             Resolve
           </button>
         </div>
 
+        {/* ── Results — hasResult logic UNCHANGED ───────────────────────── */}
         {hasResult && (
           <div className="space-y-3">
-            {/* Resolved address */}
+
+            {/* ── Result overview card ──────────────────────────────────── */}
             <div
-              className="rounded-xl p-4"
-              style={{ background: 'var(--color-surface-elevated)' }}
+              className="rounded-[var(--arcns-radius-lg)] p-5 space-y-4"
+              style={{
+                background: "var(--arcns-bg-elevated)",
+                border: "1px solid var(--arcns-border-default)",
+              }}
             >
-              <p
-                className="text-xs font-semibold uppercase tracking-wide mb-1.5"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >
-                Resolved Address
-              </p>
-              {isLoading ? (
-                <div className="h-5 rounded animate-pulse w-3/4" style={{ background: 'var(--color-surface-overlay)' }} />
-              ) : hasAddr ? (
-                <div className="flex items-center gap-2">
-                  <p className="font-mono text-sm break-all" style={{ color: 'var(--color-text-primary)' }}>{addr}</p>
-                  <a
-                    href={`https://testnet.arcscan.app/address/${addr}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs shrink-0 hover:underline"
-                    style={{ color: 'var(--color-text-accent)' }}
-                  >↗</a>
-                </div>
-              ) : isUnregistered ? (
-                <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>Name not registered</p>
-              ) : (
-                <div>
-                  <p className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>No receiving address set</p>
-                  {isOwner && (
-                    <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }}>
-                      Set this name as your Primary Name to activate it for receiving transfers.{" "}
-                      <Link href="/my-domains" className="underline" style={{ color: 'var(--color-text-accent)' }}>
-                        Go to My Domains →
-                      </Link>
-                    </div>
-                  )}
+              {/* Domain name + TLD badge */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <h2
+                  className="text-xl font-bold tracking-tight"
+                  style={{
+                    color: "var(--arcns-text-primary)",
+                    fontFamily: "var(--arcns-font-display)",
+                  }}
+                >
+                  {queried}
+                </h2>
+                {tld && <TldBadge tld={tld} />}
+                {/* Expiry status badge — inline with name */}
+                {expiryTs > 0n && (
+                  <span
+                    className="px-2.5 py-0.5 rounded-[var(--arcns-radius-pill)] text-xs font-semibold"
+                    style={expiryStyle(expiryState)}
+                  >
+                    {badge.label}
+                  </span>
+                )}
+              </div>
+
+              {/* ── Resolved address row ──────────────────────────────── */}
+              <div>
+                <p
+                  className="text-xs font-semibold uppercase tracking-wide mb-1.5"
+                  style={{ color: "var(--arcns-text-muted)" }}
+                >
+                  Resolved Address
+                </p>
+                {isLoading ? (
+                  <div
+                    className="h-5 rounded animate-pulse w-3/4"
+                    style={{ background: "rgba(120,160,255,0.08)" }}
+                  />
+                ) : hasAddr ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p
+                      className="font-mono text-sm break-all"
+                      style={{ color: "var(--arcns-text-primary)" }}
+                    >
+                      {addr}
+                    </p>
+                    {/* Copy button — uses CopyButton component */}
+                    <CopyButton
+                      value={addr!}
+                      aria-label={`Copy resolved address ${addr}`}
+                    />
+                    {/* ArcScan explorer link — UNCHANGED */}
+                    <a
+                      href={`https://testnet.arcscan.app/address/${addr}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs shrink-0 transition-opacity hover:opacity-80"
+                      style={{ color: "var(--arcns-cyan)" }}
+                      aria-label="View address on ArcScan"
+                    >
+                      ↗
+                    </a>
+                  </div>
+                ) : isUnregistered ? (
+                  <p className="text-sm" style={{ color: "var(--arcns-text-muted)" }}>
+                    Name not registered
+                  </p>
+                ) : (
+                  <div>
+                    <p className="text-sm" style={{ color: "var(--arcns-text-muted)" }}>
+                      No receiving address set
+                    </p>
+                    {/* isOwner hint — UNCHANGED logic */}
+                    {isOwner && (
+                      <div
+                        className="mt-2 rounded-[var(--arcns-radius-sm)] px-3 py-2 text-xs"
+                        style={{
+                          background: "rgba(37,99,255,0.08)",
+                          border: "1px solid rgba(37,99,255,0.18)",
+                          color: "var(--arcns-text-secondary)",
+                        }}
+                      >
+                        Set this name as your Primary Name to activate it for receiving transfers.{" "}
+                        <Link
+                          href="/my-domains"
+                          className="underline"
+                          style={{ color: "var(--arcns-cyan)" }}
+                        >
+                          Go to My Domains →
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Expiry row — expiryTs logic UNCHANGED ─────────────── */}
+              {expiryTs > 0n && (
+                <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "var(--arcns-divider)" }}>
+                  <div>
+                    <p
+                      className="text-xs font-semibold uppercase tracking-wide mb-0.5"
+                      style={{ color: "var(--arcns-text-muted)" }}
+                    >
+                      Expires
+                    </p>
+                    <p className="text-sm" style={{ color: "var(--arcns-text-primary)" }}>
+                      {formatExpiry(expiryTs)}
+                    </p>
+                  </div>
+                  <span
+                    className="px-3 py-1 rounded-[var(--arcns-radius-pill)] text-xs font-semibold"
+                    style={expiryStyle(expiryState)}
+                  >
+                    {badge.label}
+                  </span>
                 </div>
               )}
             </div>
 
-            {/* Expiry + status */}
-            {expiryTs > 0n && (
-              <div
-                className="rounded-xl p-4 flex items-center justify-between"
-                style={{ background: 'var(--color-surface-elevated)' }}
-              >
-                <div>
-                  <p
-                    className="text-xs font-semibold uppercase tracking-wide mb-1"
-                    style={{ color: 'var(--color-text-tertiary)' }}
-                  >Expiry</p>
-                  <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}>{formatExpiry(expiryTs)}</p>
-                </div>
-                <span
-                  className="px-3 py-1 rounded-full text-xs font-semibold"
-                  style={{
-                    background: expiryState === 'expiring-soon' || expiryState === 'grace'
-                      ? 'var(--color-warning-surface)'
-                      : expiryState === 'expired'
-                        ? 'var(--color-error-surface)'
-                        : 'rgba(16,185,129,0.15)',
-                    color: expiryState === 'expiring-soon' || expiryState === 'grace'
-                      ? 'var(--color-warning)'
-                      : expiryState === 'expired'
-                        ? 'var(--color-error)'
-                        : '#10b981',
-                  }}
-                >
-                  {badge.label}
-                </span>
-              </div>
-            )}
-
-            {/* Namehash */}
+            {/* ── Namehash card ─────────────────────────────────────────── */}
             <div
-              className="rounded-xl p-4"
-              style={{ background: 'var(--color-surface-elevated)' }}
+              className="rounded-[var(--arcns-radius-lg)] p-4"
+              style={{
+                background: "var(--arcns-bg-elevated)",
+                border: "1px solid var(--arcns-border-default)",
+              }}
             >
+              <div className="flex items-center justify-between mb-1.5">
+                <p
+                  className="text-xs font-semibold uppercase tracking-wide"
+                  style={{ color: "var(--arcns-text-muted)" }}
+                >
+                  Namehash
+                </p>
+                <CopyButton
+                  value={node}
+                  aria-label="Copy namehash"
+                />
+              </div>
               <p
-                className="text-xs font-semibold uppercase tracking-wide mb-1.5"
-                style={{ color: 'var(--color-text-tertiary)' }}
-              >Namehash</p>
-              <p className="font-mono text-xs break-all" style={{ color: 'var(--color-text-secondary)' }}>{node}</p>
+                className="font-mono text-xs break-all"
+                style={{ color: "var(--arcns-text-secondary)" }}
+              >
+                {node}
+              </p>
             </div>
 
-            {/* ArcScan link */}
+            {/* ── ArcScan NFT link — UNCHANGED ──────────────────────────── */}
             {hasAddr && (
               <a
                 href={`https://testnet.arcscan.app/token/${registrar}?a=${tokenId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block text-center text-sm py-2 hover:opacity-80 transition-opacity"
-                style={{ color: 'var(--color-text-accent)' }}
+                className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[var(--arcns-radius-lg)] text-sm font-medium transition-all duration-150 hover:opacity-80"
+                style={{
+                  background: "rgba(0,212,255,0.06)",
+                  border: "1px solid rgba(0,212,255,0.18)",
+                  color: "var(--arcns-cyan)",
+                }}
               >
                 View NFT on ArcScan ↗
               </a>
             )}
+
+          </div>
+        )}
+
+        {/* ── Initial / empty state ─────────────────────────────────────── */}
+        {!hasResult && (
+          <div className="text-center py-8">
+            <p className="text-sm" style={{ color: "var(--arcns-text-muted)" }}>
+              Enter a <strong style={{ color: "var(--arcns-cyan)" }}>.arc</strong> or{" "}
+              <strong style={{ color: "var(--arcns-teal)" }}>.circle</strong> name above to inspect its on-chain identity records.
+            </p>
           </div>
         )}
       </div>
+
     </div>
   );
 }
