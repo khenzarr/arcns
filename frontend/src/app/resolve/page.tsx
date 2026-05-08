@@ -149,6 +149,8 @@ export default function ResolvePage() {
       <div
         className="arcns-glass rounded-[var(--arcns-radius-xl)] p-6 space-y-5"
       >
+        {/* Small label above input */}
+        <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "var(--arcns-text-muted)" }}>Resolve a name</p>
         {/* Input + button — handlers UNCHANGED */}
         <div className="flex gap-2 flex-wrap">
           <input
@@ -184,6 +186,11 @@ export default function ResolvePage() {
               style={{
                 background: "var(--arcns-bg-elevated)",
                 border: "1px solid var(--arcns-border-default)",
+                borderLeft: hasAddr
+                  ? "3px solid var(--arcns-green)"
+                  : !isUnregistered
+                    ? "3px solid var(--arcns-border-default)"
+                    : "1px solid var(--arcns-border-default)",
               }}
             >
               {/* Domain name + TLD badge */}
@@ -330,6 +337,9 @@ export default function ResolvePage() {
               >
                 {node}
               </p>
+              <p className="text-xs mt-1" style={{ color: "var(--arcns-text-muted)" }}>
+                On-chain identifier
+              </p>
             </div>
 
             {/* ── ArcScan NFT link — UNCHANGED ──────────────────────────── */}
@@ -338,14 +348,14 @@ export default function ResolvePage() {
                 href={`https://testnet.arcscan.app/token/${registrar}?a=${tokenId}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-[var(--arcns-radius-lg)] text-sm font-medium transition-all duration-150 hover:opacity-80"
+                className="flex items-center justify-center gap-1.5 w-full py-3 rounded-[var(--arcns-radius-lg)] text-sm font-medium transition-all duration-150 hover:opacity-80"
                 style={{
                   background: "rgba(0,212,255,0.06)",
                   border: "1px solid rgba(0,212,255,0.18)",
                   color: "var(--arcns-cyan)",
                 }}
               >
-                View NFT on ArcScan ↗
+                View NFT on ArcScan <span className="text-base" aria-hidden="true">↗</span>
               </a>
             )}
 
@@ -354,11 +364,73 @@ export default function ResolvePage() {
 
         {/* ── Initial / empty state ─────────────────────────────────────── */}
         {!hasResult && (
-          <div className="text-center py-8">
+          <div className="text-center py-10 space-y-4">
+            {/* ArcNS logo mark */}
+            <div className="flex justify-center">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 28 28"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="14" cy="14" r="11"
+                  stroke="url(#resolve-logo-gradient)"
+                  strokeWidth="1.75"
+                  fill="none"
+                />
+                <path
+                  d="M 14 3 A 11 11 0 0 1 25 14"
+                  stroke="url(#resolve-logo-gradient)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+                <circle cx="14" cy="14" r="2.5" fill="var(--arcns-cyan)" />
+                <defs>
+                  <linearGradient id="resolve-logo-gradient" x1="3" y1="3" x2="25" y2="25" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#2563FF" />
+                    <stop offset="100%" stopColor="#00D4FF" />
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            {/* Heading */}
+            <h2
+              className="text-lg font-bold"
+              style={{ color: "var(--arcns-text-primary)", fontFamily: "var(--arcns-font-display)" }}
+            >
+              Identity Inspector
+            </h2>
+            {/* Subtext */}
             <p className="text-sm" style={{ color: "var(--arcns-text-muted)" }}>
-              Enter a <strong style={{ color: "var(--arcns-cyan)" }}>.arc</strong> or{" "}
-              <strong style={{ color: "var(--arcns-teal)" }}>.circle</strong> name above to inspect its on-chain identity records.
+              Enter a .arc or .circle name to inspect its on-chain records.
             </p>
+            {/* Supported namespaces pills */}
+            <div className="flex items-center justify-center gap-2">
+              <span
+                className="px-3 py-1 rounded-[var(--arcns-radius-pill)] text-xs font-semibold"
+                style={{
+                  background: "rgba(37,99,255,0.12)",
+                  border: "1px solid rgba(37,99,255,0.28)",
+                  color: "var(--arcns-cyan)",
+                }}
+              >
+                .arc
+              </span>
+              <span
+                className="px-3 py-1 rounded-[var(--arcns-radius-pill)] text-xs font-semibold"
+                style={{
+                  background: "rgba(0,230,194,0.10)",
+                  border: "1px solid rgba(0,230,194,0.24)",
+                  color: "var(--arcns-teal)",
+                }}
+              >
+                .circle
+              </span>
+            </div>
           </div>
         )}
       </div>

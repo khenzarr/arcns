@@ -129,7 +129,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
       {/* Active underline indicator */}
       {isActive && (
         <span
-          className="absolute -bottom-[17px] left-0 right-0 h-[2px] rounded-full"
+          className="absolute -bottom-[18px] left-0 right-0 h-[2px] rounded-full"
           style={{ background: "var(--arcns-gradient-primary)" }}
           aria-hidden="true"
         />
@@ -142,6 +142,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname() ?? "";
 
   return (
     <header
@@ -261,19 +262,35 @@ export default function Header() {
             { href: "/",           label: "Search" },
             { href: "/my-domains", label: "My Domains" },
             { href: "/resolve",    label: "Resolve" },
-          ].map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setMobileMenuOpen(false)}
-              className="px-3 py-2.5 rounded-[var(--arcns-radius-md)] text-sm font-medium transition-all duration-150"
-              style={{ color: "var(--arcns-text-secondary)" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(37,99,255,0.08)"; (e.currentTarget as HTMLElement).style.color = "var(--arcns-text-primary)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--arcns-text-secondary)"; }}
-            >
-              {label}
-            </Link>
-          ))}
+          ].map(({ href, label }) => {
+            const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="px-3 py-2.5 rounded-[var(--arcns-radius-md)] text-sm font-medium transition-all duration-150"
+                style={{
+                  color: isActive ? "var(--arcns-cyan)" : "var(--arcns-text-secondary)",
+                  background: isActive ? "rgba(37,99,255,0.08)" : "transparent",
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) {
+                    (e.currentTarget as HTMLElement).style.background = "rgba(37,99,255,0.08)";
+                    (e.currentTarget as HTMLElement).style.color = "var(--arcns-text-primary)";
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) {
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                    (e.currentTarget as HTMLElement).style.color = "var(--arcns-text-secondary)";
+                  }
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
         </nav>
       )}
     </header>

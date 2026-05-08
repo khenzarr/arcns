@@ -161,10 +161,10 @@ export default function Portfolio() {
         return (
           <div
             key={key}
-            className="arcns-glass rounded-[var(--arcns-radius-xl)] p-4 flex items-center gap-4"
+            className="arcns-glass rounded-[var(--arcns-radius-xl)] p-5 flex items-center gap-4"
           >
             <div
-              className="w-10 h-10 rounded-[var(--arcns-radius-md)] flex items-center justify-center text-xs font-bold font-mono flex-shrink-0"
+              className="w-12 h-12 rounded-[var(--arcns-radius-md)] flex items-center justify-center text-sm font-bold font-mono flex-shrink-0"
               style={{
                 background: d.tld === "arc" ? "rgba(37,99,255,0.12)" : "rgba(0,230,194,0.10)",
                 border: d.tld === "arc" ? "1px solid rgba(37,99,255,0.28)" : "1px solid rgba(0,230,194,0.24)",
@@ -174,8 +174,13 @@ export default function Portfolio() {
               .{d.tld}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-sm truncate" style={{ color: "var(--arcns-text-primary)" }}>{displayName}</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-bold text-base truncate" style={{ color: "var(--arcns-text-primary)" }}>
+                  {d.tokenId
+                    ? `${("0x" + d.tokenId.toString(16).padStart(64, "0")).slice(0, 10)}…`
+                    : "unknown"}
+                </span>
+                <span className="arcns-gradient-text font-bold text-base">.{d.tld}</span>
                 <span className="text-xs shrink-0" style={{ color: "var(--arcns-text-muted)" }}>RPC</span>
               </div>
               <p className="text-xs mt-0.5" style={{ color: "var(--arcns-text-muted)" }}>
@@ -304,10 +309,10 @@ function DomainRowWithAddr({
       className="arcns-glass rounded-[var(--arcns-radius-xl)]"
       style={isPrimary ? { borderColor: "rgba(37,99,255,0.36)", boxShadow: "var(--arcns-shadow-glow-soft)" } : {}}
     >
-      <div className="p-4 flex items-center gap-4">
-        {/* TLD badge */}
+      <div className="p-5 flex items-center gap-4">
+        {/* TLD badge — larger, more prominent */}
         <div
-          className="w-10 h-10 rounded-[var(--arcns-radius-md)] flex items-center justify-center text-xs font-bold font-mono flex-shrink-0"
+          className="w-12 h-12 rounded-[var(--arcns-radius-md)] flex items-center justify-center text-sm font-bold font-mono flex-shrink-0"
           style={{
             background: d.tld === "arc" ? "rgba(37,99,255,0.12)" : "rgba(0,230,194,0.10)",
             border: d.tld === "arc" ? "1px solid rgba(37,99,255,0.28)" : "1px solid rgba(0,230,194,0.24)",
@@ -320,9 +325,11 @@ function DomainRowWithAddr({
         {/* Name + metadata */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-sm truncate" style={{ color: "var(--arcns-text-primary)" }}>
-              {displayName}
+            {/* Split label and TLD visually */}
+            <span className="font-bold text-base truncate" style={{ color: "var(--arcns-text-primary)" }}>
+              {d.labelName}
             </span>
+            <span className="arcns-gradient-text font-bold text-base">.{d.tld}</span>
             {isPrimary && (
               <span
                 className="text-xs px-2 py-0.5 rounded-[var(--arcns-radius-pill)] font-medium flex-shrink-0"
@@ -336,6 +343,7 @@ function DomainRowWithAddr({
               </span>
             )}
           </div>
+          {/* Expiry date as separate line */}
           <p className="text-xs mt-0.5" style={{ color: "var(--arcns-text-muted)" }}>
             {d.expiryState === "expired"
               ? `Expired ${formatExpiry(d.expiry)}`
@@ -343,8 +351,11 @@ function DomainRowWithAddr({
             {d.expiryState === "expiring-soon" ? ` · ${daysLeft}d left` : ""}
           </p>
 
+          {/* Subtle divider */}
+          <div className="mt-2 mb-2" style={{ height: "1px", background: "var(--arcns-divider)" }} />
+
           {/* Read-only receiving address indicator — addrState logic UNCHANGED */}
-          <div className="mt-1">
+          <div>
             {addrState === "loading" && (
               <span
                 className="inline-block w-16 h-3 animate-pulse rounded"
@@ -352,8 +363,15 @@ function DomainRowWithAddr({
               />
             )}
             {addrState === "set" && !isStale && receivingAddress && (
-              <span className="flex items-center gap-1 text-xs" style={{ color: "var(--arcns-green)" }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-current inline-block" aria-hidden="true" />
+              <span
+                className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-[var(--arcns-radius-pill)]"
+                style={{
+                  background: "rgba(20,241,149,0.10)",
+                  border: "1px solid rgba(20,241,149,0.20)",
+                  color: "var(--arcns-green)",
+                }}
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-current inline-block flex-shrink-0" aria-hidden="true" />
                 {receivingAddress.slice(0, 6)}…{receivingAddress.slice(-4)}
               </span>
             )}
@@ -363,8 +381,15 @@ function DomainRowWithAddr({
               </span>
             )}
             {addrState === "missing" && (
-              <span className="text-xs" style={{ color: "var(--arcns-text-muted)" }}>
-                No receiving address set
+              <span
+                className="inline-flex items-center gap-1.5 text-xs px-2 py-0.5 rounded-[var(--arcns-radius-pill)]"
+                style={{
+                  background: "rgba(100,112,132,0.10)",
+                  border: "1px solid rgba(100,112,132,0.18)",
+                  color: "var(--arcns-text-muted)",
+                }}
+              >
+                No Address
               </span>
             )}
           </div>

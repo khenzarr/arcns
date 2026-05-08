@@ -16,6 +16,7 @@ import TransactionHistory from "../../components/TransactionHistory";
 import PrimaryName from "../../components/PrimaryName";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { NetworkBadge } from "../../components/ui/NetworkBadge";
+import { DashboardStats } from "../../components/ui/DashboardStats";
 
 // ── Tab type — UNCHANGED ───────────────────────────────────────────────────────
 type Tab = "portfolio" | "history";
@@ -33,6 +34,9 @@ export default function MyDomainsPage() {
         subtitle="Manage your ArcNS identity portfolio."
         badge={<NetworkBadge variant="testnet" label="Testnet" />}
       />
+
+      {/* ── Dashboard stat strip ──────────────────────────────────────────── */}
+      <DashboardStats />
 
       {/* ── Primary name module — always visible — UNCHANGED ─────────────── */}
       <PrimaryName />

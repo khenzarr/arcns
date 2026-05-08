@@ -168,11 +168,10 @@ export default function PrimaryName() {
               const val = e.target.value;
               setSelectedDomain(val && ownedNameSet.has(val) ? val : null);
             }}
-            className="flex-1 px-3 py-2.5 text-sm rounded-[var(--arcns-radius-lg)] border focus:outline-none focus:ring-2 focus:ring-[var(--arcns-cyan)]"
+            className="arcns-select flex-1 px-3 py-2.5 text-sm rounded-[var(--arcns-radius-lg)]"
             style={{
-              background: "var(--arcns-bg-elevated)",
-              borderColor: "var(--arcns-border-default)",
-              color: "var(--arcns-text-primary)",
+              paddingRight: "36px",
+              borderRadius: "var(--arcns-radius-lg)",
             }}
           >
             <option value="">— choose a domain —</option>

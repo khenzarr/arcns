@@ -145,6 +145,40 @@ body {
     var(--arcns-bg-primary);
 }
 
+/* ── Custom select — fully dark, no native white artifacts ─────────────────── */
+select.arcns-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--arcns-bg-elevated);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1L6 7L11 1' stroke='%23647084' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  color: var(--arcns-text-primary);
+  border: 1px solid var(--arcns-border-default);
+  cursor: pointer;
+}
+select.arcns-select:focus {
+  outline: none;
+  border-color: var(--arcns-cyan);
+  box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.18);
+}
+select.arcns-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+select.arcns-select option {
+  background-color: var(--arcns-bg-elevated);
+  color: var(--arcns-text-primary);
+}
+
+/* ── Hero radial glow enhancement ──────────────────────────────────────────── */
+.arcns-hero-glow {
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 0%, rgba(37, 99, 255, 0.22) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 40% at 80% 100%, rgba(0, 212, 255, 0.14) 0%, transparent 55%);
+}
+
 /* ── Reduced motion — respect user preference ────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   /* Disable pulse animations */

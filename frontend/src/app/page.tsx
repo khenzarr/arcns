@@ -47,9 +47,23 @@ export default function HomePage() {
     <div className="space-y-16">
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative text-center pt-16 pb-8 space-y-6 overflow-hidden">
-        {/* Orbit background motif */}
+      <section
+        className="relative text-center pt-16 pb-8 space-y-6 overflow-hidden arcns-hero-glow"
+        style={{
+          minHeight: "280px",
+          background: "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(37,99,255,0.22) 0%, transparent 65%)",
+        }}
+      >
+        {/* Orbit background motif — increased opacity for hero variant */}
         <OrbitBackground variant="hero" className="rounded-3xl" />
+        {/* Additional radial glow layer */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none rounded-3xl"
+          style={{
+            background: "radial-gradient(ellipse 70% 60% at 50% 0%, rgba(37,99,255,0.22) 0%, transparent 65%)",
+          }}
+        />
 
         {/* Live badge */}
         <div className="relative inline-flex items-center gap-2 px-4 py-2 rounded-[var(--arcns-radius-pill)] text-sm font-medium"
@@ -111,22 +125,31 @@ export default function HomePage() {
 
       {/* ── Trust strip — hidden once user starts searching ───────────────── */}
       {!display ? (
-        <section className="max-w-4xl mx-auto">
+        <section className="max-w-4xl mx-auto" style={{ padding: "1.5rem 0" }}>
           <div
             className="grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-[var(--arcns-radius-xl)]"
             style={{ border: "1px solid var(--arcns-border-default)" }}
           >
             {[
-              { label: "Arc Testnet", sub: "Chain ID 5042002" },
-              { label: "Pay with USDC", sub: "Secure. Stable. On-chain." },
-              { label: "NFT Ownership", sub: "Your names. Your identity." },
-              { label: "Reverse Resolution", sub: "Link names to any address." },
+              { label: "Arc Testnet",        sub: "Chain ID 5042002",           icon: "◈" },
+              { label: "Pay with USDC",       sub: "Secure. Stable. On-chain.", icon: "◎" },
+              { label: "NFT Ownership",       sub: "Your names. Your identity.", icon: "⬡" },
+              { label: "Reverse Resolution",  sub: "Link names to any address.", icon: "⟳" },
             ].map((item, i) => (
               <div
                 key={i}
-                className="px-5 py-4 text-center"
-                style={{ background: "var(--arcns-bg-surface)" }}
+                className="px-6 py-5 text-center transition-all duration-150"
+                style={{ background: "var(--arcns-bg-surface)", borderLeft: "2px solid transparent" }}
+                onMouseEnter={e => {
+                  (e.currentTarget as HTMLElement).style.borderLeft = "2px solid var(--arcns-cyan)";
+                }}
+                onMouseLeave={e => {
+                  (e.currentTarget as HTMLElement).style.borderLeft = "2px solid transparent";
+                }}
               >
+                <p className="text-lg mb-1" style={{ color: "var(--arcns-cyan)" }} aria-hidden="true">
+                  {item.icon}
+                </p>
                 <p className="text-sm font-semibold" style={{ color: "var(--arcns-text-primary)" }}>
                   {item.label}
                 </p>
@@ -164,8 +187,22 @@ export default function HomePage() {
           ].map(f => (
             <div
               key={f.title}
-              className="arcns-glass rounded-[var(--arcns-radius-xl)] p-6 transition-all duration-200 hover:shadow-[var(--arcns-shadow-glow-soft)]"
+              className="arcns-glass rounded-[var(--arcns-radius-xl)] p-7 transition-all duration-200 hover:shadow-[var(--arcns-shadow-glow-soft)]"
+              style={{ borderTop: "none" }}
             >
+              {/* Top gradient accent line */}
+              <div
+                style={{
+                  height: "2px",
+                  background: "var(--arcns-gradient-primary)",
+                  borderRadius: "2px 2px 0 0",
+                  marginBottom: "1rem",
+                  marginLeft: "-1.75rem",
+                  marginRight: "-1.75rem",
+                  marginTop: "-1.75rem",
+                }}
+                aria-hidden="true"
+              />
               <div
                 className="w-10 h-10 rounded-[var(--arcns-radius-md)] flex items-center justify-center text-xl mb-4"
                 style={{
@@ -197,7 +234,7 @@ export default function HomePage() {
       {/* ── Pricing section — hidden once user starts searching ───────────── */}
       {/* PRICING_TABLE data source UNCHANGED */}
       {!display ? (
-        <section className="max-w-2xl mx-auto">
+        <section className="max-w-2xl mx-auto" style={{ background: "rgba(37,99,255,0.04)", borderRadius: "var(--arcns-radius-xl)", padding: "1.5rem" }}>
           <div className="text-center mb-6">
             <h2
               className="text-2xl font-bold"
