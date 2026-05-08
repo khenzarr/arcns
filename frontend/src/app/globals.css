@@ -2,49 +2,145 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   ArcNS Design Tokens — Brandkit v2.1
+   Deep navy / ink navy palette · Electric cyan + Arc blue accents
+   ───────────────────────────────────────────────────────────────────────────── */
+
 :root {
-  /* Surface layers */
-  --color-surface-base:     #0d1117;
-  --color-surface-card:     #161b22;
-  --color-surface-elevated: #1c2128;
-  --color-surface-overlay:  #21262d;
+  /* ── ArcNS brand tokens ──────────────────────────────────────────────────── */
 
-  /* Borders */
-  --color-border-subtle:    rgba(48, 54, 61, 1);
-  --color-border-accent:    rgba(37, 99, 235, 0.4);
-
-  /* Accent palette */
-  --color-accent-primary:       #2563eb;
-  --color-accent-primary-hover: #1d4ed8;
-  --color-accent-secondary:     #6366f1;
-  --color-accent-cyan:          #06b6d4;
-
-  /* Semantic states */
-  --color-success:         #10b981;
-  --color-success-surface: rgba(16, 185, 129, 0.1);
-  --color-success-border:  rgba(16, 185, 129, 0.2);
-  --color-warning:         #f59e0b;
-  --color-warning-surface: rgba(245, 158, 11, 0.1);
-  --color-error:           #ef4444;
-  --color-error-surface:   rgba(239, 68, 68, 0.1);
-  --color-error-border:    rgba(239, 68, 68, 0.2);
+  /* Backgrounds */
+  --arcns-bg-primary:   #050A18;
+  --arcns-bg-secondary: #080E1F;
+  --arcns-bg-surface:   #0B1224;
+  --arcns-bg-elevated:  #101827;
 
   /* Text */
-  --color-text-primary:   #e6edf3;
-  --color-text-secondary: #8b949e;
-  --color-text-tertiary:  #484f58;
-  --color-text-accent:    #58a6ff;
+  --arcns-text-primary:   #F6F8FF;
+  --arcns-text-secondary: #A8B3C7;
+  --arcns-text-muted:     #647084;
+  --arcns-text-disabled:  #3E4858;
 
-  /* Legacy tokens (updated) */
-  --foreground-rgb: 230, 237, 243;
-  --background-rgb: 13, 17, 23;
+  /* Borders */
+  --arcns-border-default: rgba(120, 160, 255, 0.16);
+  --arcns-border-strong:  rgba(0, 212, 255, 0.42);
+  --arcns-border-active:  rgba(0, 212, 255, 0.62);
+  --arcns-divider:        rgba(255, 255, 255, 0.08);
+
+  /* Brand accent colors */
+  --arcns-blue:        #2563FF;
+  --arcns-cyan:        #00D4FF;
+  --arcns-signal-cyan: #00E6FF;
+  --arcns-teal:        #00E6C2;
+  --arcns-green:       #14F195;
+  --arcns-warning:     #FBBF24;
+  --arcns-danger:      #FF5C7A;
+
+  /* Gradients */
+  --arcns-gradient-primary: linear-gradient(135deg, #2563FF 0%, #00D4FF 100%);
+  --arcns-gradient-emblem:  linear-gradient(135deg, #150A7A 0%, #2563FF 48%, #00E6FF 100%);
+  --arcns-gradient-surface: radial-gradient(circle at 80% 100%, rgba(0, 230, 255, 0.18), transparent 34%), #0A0F2C;
+
+  /* Typography */
+  --arcns-font-display: "Space Grotesk", Inter, system-ui, sans-serif;
+  --arcns-font-ui:      Inter, system-ui, sans-serif;
+
+  /* Border radius */
+  --arcns-radius-xs:   8px;
+  --arcns-radius-sm:   12px;
+  --arcns-radius-md:   16px;
+  --arcns-radius-lg:   20px;
+  --arcns-radius-xl:   24px;
+  --arcns-radius-pill: 999px;
+
+  /* Shadows */
+  --arcns-shadow-card:        0 20px 60px rgba(0, 0, 0, 0.28);
+  --arcns-shadow-glow-soft:   0 0 32px rgba(0, 212, 255, 0.16);
+  --arcns-shadow-glow-active: 0 0 44px rgba(0, 212, 255, 0.28);
+
+  /* ── Semantic component tokens (mapped to ArcNS brand) ───────────────────── */
+
+  /* Surface layers — updated to ArcNS navy palette */
+  --color-surface-base:     var(--arcns-bg-primary);
+  --color-surface-card:     var(--arcns-bg-surface);
+  --color-surface-elevated: var(--arcns-bg-elevated);
+  --color-surface-overlay:  #131C30;
+
+  /* Borders — updated to ArcNS border system */
+  --color-border-subtle: var(--arcns-border-default);
+  --color-border-accent: rgba(37, 99, 255, 0.42);
+
+  /* Accent palette — updated to ArcNS brand colors */
+  --color-accent-primary:       var(--arcns-blue);
+  --color-accent-primary-hover: #1A4FE0;
+  --color-accent-secondary:     #6366f1;
+  --color-accent-cyan:          var(--arcns-cyan);
+
+  /* Semantic states — updated to ArcNS palette */
+  --color-success:         var(--arcns-green);
+  --color-success-surface: rgba(20, 241, 149, 0.10);
+  --color-success-border:  rgba(20, 241, 149, 0.24);
+  --color-warning:         var(--arcns-warning);
+  --color-warning-surface: rgba(251, 191, 36, 0.10);
+  --color-error:           var(--arcns-danger);
+  --color-error-surface:   rgba(255, 92, 122, 0.10);
+  --color-error-border:    rgba(255, 92, 122, 0.24);
+
+  /* Text — updated to ArcNS text palette */
+  --color-text-primary:   var(--arcns-text-primary);
+  --color-text-secondary: var(--arcns-text-secondary);
+  --color-text-tertiary:  var(--arcns-text-muted);
+  --color-text-accent:    var(--arcns-cyan);
+
+  /* Legacy RGB tokens — updated to ArcNS base */
+  --foreground-rgb: 246, 248, 255;
+  --background-rgb: 5, 10, 24;
+
+  /* Font variables */
+  --font-space-grotesk: "Space Grotesk", Inter, system-ui, sans-serif;
 }
+
+/* ── Base styles ─────────────────────────────────────────────────────────────── */
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  background: var(--arcns-bg-primary);
+  font-family: var(--arcns-font-ui);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* ── ArcNS utility classes ───────────────────────────────────────────────────── */
+
+/* Glass card surface — frosted navy with border glow */
+.arcns-glass {
+  background: rgba(11, 18, 36, 0.72);
+  border: 1px solid var(--arcns-border-default);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* Gradient text — blue to cyan */
+.arcns-gradient-text {
+  background: var(--arcns-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Focus ring — accessible cyan outline */
+.arcns-focus-ring:focus-visible {
+  outline: 2px solid var(--arcns-cyan);
+  outline-offset: 2px;
+}
+
+/* Subtle orbit background — pure CSS radial glow, no SVG required */
+.arcns-orbit-bg {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(37, 99, 255, 0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(0, 212, 255, 0.12) 0%, transparent 55%),
+    var(--arcns-bg-primary);
 }
