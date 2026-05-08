@@ -2,7 +2,7 @@
 /**
  * Header.tsx — ArcNS global navigation.
  *
- * Phase 5 visual polish: ArcNS design system applied.
+ * Phase 5 visual polish + Phase 9 responsive/a11y polish.
  *
  * WALLET LOGIC IS UNCHANGED:
  *   - useAccount, useConnect, useDisconnect hooks untouched
@@ -11,9 +11,14 @@
  *   - connector lookup (injected / walletConnect) untouched
  *   - isPending / isConnected / address state untouched
  *
- * Only JSX structure and visual classes were updated.
+ * Phase 9 additions (visual only):
+ *   - Mobile nav menu (hamburger toggle) for < md viewports
+ *   - aria-expanded on mobile menu button
+ *   - aria-label on disconnect button
+ *   - aria-label on connect buttons
  */
 
+import { useState } from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -53,6 +58,7 @@ function WalletButton() {
         {/* Disconnect button — handler UNCHANGED */}
         <button
           onClick={() => disconnect()}
+          aria-label="Disconnect wallet"
           className="px-3 py-1.5 text-xs font-medium rounded-[var(--arcns-radius-sm)] border transition-all duration-150 hover:border-[var(--arcns-border-strong)] hover:text-[var(--arcns-text-primary)]"
           style={{
             background: "transparent",
@@ -77,6 +83,7 @@ function WalletButton() {
         <button
           onClick={() => connect({ connector: injectedConnector })}
           disabled={isPending}
+          aria-label={isPending ? "Connecting wallet…" : "Connect with MetaMask"}
           className="px-4 py-2 text-sm font-semibold text-white rounded-[var(--arcns-radius-md)] disabled:opacity-40 transition-all duration-150 hover:opacity-90 active:scale-[0.98]"
           style={{ background: "var(--arcns-gradient-primary)" }}
         >
@@ -88,6 +95,7 @@ function WalletButton() {
         <button
           onClick={() => connect({ connector: wcConnector })}
           disabled={isPending}
+          aria-label={isPending ? "Connecting wallet…" : "Connect with WalletConnect"}
           className="px-4 py-2 text-sm font-semibold rounded-[var(--arcns-radius-md)] border disabled:opacity-40 transition-all duration-150 hover:border-[var(--arcns-border-strong)] hover:text-[var(--arcns-text-primary)]"
           style={{
             background: "transparent",
@@ -133,6 +141,8 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
 // ─── Header ───────────────────────────────────────────────────────────────────
 
 export default function Header() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <header
       className="sticky top-0 z-50 border-b"
@@ -146,7 +156,7 @@ export default function Header() {
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
 
         {/* ── Left: Logo + Testnet badge ─────────────────────────────────── */}
-        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
+        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group" onClick={() => setMobileMenuOpen(false)}>
           {/* ArcNS emblem — SVG, brand-aligned */}
           <svg
             width="28"
@@ -193,7 +203,7 @@ export default function Header() {
           <NetworkBadge variant="testnet" label="Testnet" />
         </Link>
 
-        {/* ── Center: Navigation links ───────────────────────────────────── */}
+        {/* ── Center: Navigation links (desktop) ────────────────────────── */}
         <nav
           className="hidden md:flex items-center gap-6"
           aria-label="Main navigation"
@@ -203,12 +213,69 @@ export default function Header() {
           <NavLink href="/resolve">Resolve</NavLink>
         </nav>
 
-        {/* ── Right: Wallet ──────────────────────────────────────────────── */}
-        <div className="flex-shrink-0">
+        {/* ── Right: Wallet + mobile menu toggle ────────────────────────── */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <WalletButton />
+
+          {/* Mobile hamburger — visible only on < md */}
+          <button
+            className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-[var(--arcns-radius-sm)] border transition-all duration-150"
+            style={{
+              background: "transparent",
+              borderColor: mobileMenuOpen ? "var(--arcns-border-strong)" : "var(--arcns-border-default)",
+              color: "var(--arcns-text-secondary)",
+            }}
+            onClick={() => setMobileMenuOpen(prev => !prev)}
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav"
+          >
+            {mobileMenuOpen ? (
+              /* X icon */
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              </svg>
+            ) : (
+              /* Hamburger icon */
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M2 4H14M2 8H14M2 12H14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              </svg>
+            )}
+          </button>
         </div>
 
       </div>
+
+      {/* ── Mobile nav dropdown ───────────────────────────────────────────── */}
+      {mobileMenuOpen && (
+        <nav
+          id="mobile-nav"
+          className="md:hidden border-t px-4 py-3 flex flex-col gap-1"
+          style={{
+            background: "rgba(5, 10, 24, 0.96)",
+            borderColor: "var(--arcns-border-default)",
+          }}
+          aria-label="Mobile navigation"
+        >
+          {[
+            { href: "/",           label: "Search" },
+            { href: "/my-domains", label: "My Domains" },
+            { href: "/resolve",    label: "Resolve" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2.5 rounded-[var(--arcns-radius-md)] text-sm font-medium transition-all duration-150"
+              style={{ color: "var(--arcns-text-secondary)" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(37,99,255,0.08)"; (e.currentTarget as HTMLElement).style.color = "var(--arcns-text-primary)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "var(--arcns-text-secondary)"; }}
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }

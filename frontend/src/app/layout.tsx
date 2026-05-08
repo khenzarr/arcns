@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="max-w-5xl mx-auto px-4 py-8">
             {children}
           </main>
-          <footer className="border-t mt-16 py-8 text-center text-sm" style={{ borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-tertiary)' }}>
+          <footer className="border-t mt-16 py-8 text-center text-sm" style={{ borderColor: 'var(--arcns-border-default)', color: 'var(--arcns-text-muted)' }}>
             ArcNS — Arc Name Service on Arc Testnet (Chain ID: 5042002) · Powered by USDC
           </footer>
         </Providers>

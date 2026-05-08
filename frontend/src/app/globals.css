@@ -144,3 +144,20 @@ body {
     radial-gradient(ellipse 60% 40% at 80% 110%, rgba(0, 212, 255, 0.12) 0%, transparent 55%),
     var(--arcns-bg-primary);
 }
+
+/* ── Reduced motion — respect user preference ────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  /* Disable pulse animations */
+  .animate-pulse {
+    animation: none !important;
+  }
+  /* Disable spin animations (loading spinners) */
+  .animate-spin {
+    animation: none !important;
+  }
+  /* Disable all transitions */
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
