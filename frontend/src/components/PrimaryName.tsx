@@ -2,10 +2,15 @@
 /**
  * PrimaryName.tsx — v3 primary name UI.
  *
- * Selection is owned-domain-only. No free-form text entry.
- * Source of truth for the owned list: useMyDomains.
- * Write path: usePrimaryName (unchanged).
+ * Phase 7 visual redesign: ArcNS brandkit applied.
  *
+ * LOGIC IS UNCHANGED:
+ *   - useAccount, usePrimaryName, useMyDomains hooks untouched
+ *   - selectableDomains, ownedNameSet, canSubmit logic untouched
+ *   - handleSet handler untouched
+ *   - All state transitions (setStep, addrSyncStep) untouched
+ *
+ * Selection is owned-domain-only. No free-form text entry.
  * No ENS-branded strings.
  */
 
@@ -15,6 +20,7 @@ import { usePrimaryName } from "../hooks/usePrimaryName";
 import { useMyDomains }   from "../hooks/useMyDomains";
 
 export default function PrimaryName() {
+  // ── Hooks — UNCHANGED ──────────────────────────────────────────────────────
   const { address, isConnected } = useAccount();
   const [selectedDomain, setSelectedDomain] = useState<string | null>(null);
 
@@ -33,19 +39,17 @@ export default function PrimaryName() {
 
   const { domains, isLoading: domainsLoading } = useMyDomains();
 
-  // Only non-expired, label-resolved domains are selectable.
+  // ── Derived state — UNCHANGED ──────────────────────────────────────────────
   const selectableDomains = useMemo(
     () => domains.filter(d => d.labelName !== null && d.expiryState !== "expired"),
     [domains],
   );
 
-  // Build owned-name set for membership validation.
   const ownedNameSet = useMemo(
     () => new Set(selectableDomains.map(d => `${d.labelName}.${d.tld}`)),
     [selectableDomains],
   );
 
-  // Invalidate stale selection when the owned list changes.
   useMemo(() => {
     if (selectedDomain && !ownedNameSet.has(selectedDomain)) {
       setSelectedDomain(null);
@@ -58,6 +62,7 @@ export default function PrimaryName() {
   const isLoading        = primaryLoading || domainsLoading;
   const canSubmit        = isOwnedSelection && !isAlreadyPrimary && setStep !== "setting" && !isLoading;
 
+  // ── handleSet — UNCHANGED ──────────────────────────────────────────────────
   const handleSet = async () => {
     if (!isOwnedSelection || !selectedDomain) return;
 
@@ -75,49 +80,87 @@ export default function PrimaryName() {
   if (!isConnected) return null;
 
   return (
-    <div className="rounded-2xl border p-5" style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">⭐</span>
-          <div>
-            <h3 className="font-semibold text-sm" style={{ color: 'var(--color-text-primary)' }}>Primary Name</h3>
-            <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>Your wallet&apos;s human-readable identity</p>
-          </div>
+    <div
+      className="arcns-glass rounded-[var(--arcns-radius-xl)] p-5"
+    >
+      {/* ── Header row ──────────────────────────────────────────────────── */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3
+            className="font-semibold text-sm"
+            style={{ color: "var(--arcns-text-primary)", fontFamily: "var(--arcns-font-display)" }}
+          >
+            Primary Name
+          </h3>
+          <p className="text-xs mt-0.5" style={{ color: "var(--arcns-text-muted)" }}>
+            This name represents your wallet across ArcNS and supported apps.
+          </p>
         </div>
+
+        {/* Current primary name chip */}
         {primaryName ? (
-          <span className="text-sm font-semibold px-3 py-1 rounded-full flex items-center gap-1.5" style={{ background: 'rgba(37,99,235,0.15)', color: 'var(--color-text-accent)' }}>
+          <span
+            className="text-sm font-semibold px-3 py-1 rounded-[var(--arcns-radius-pill)] flex items-center gap-1.5 flex-shrink-0 ml-3"
+            style={{
+              background: "rgba(37, 99, 255, 0.14)",
+              border: "1px solid rgba(37, 99, 255, 0.32)",
+              color: "#8FB3FF",
+            }}
+          >
             {primaryName}
             {status === "verified" ? (
-              <span className="text-xs" style={{ color: 'var(--color-success)' }}>✓</span>
+              <span className="text-xs" style={{ color: "var(--arcns-green)" }}>✓</span>
             ) : status === "stale" ? (
-              <span className="text-xs" style={{ color: 'var(--color-warning)' }}>⚠</span>
+              <span className="text-xs" style={{ color: "var(--arcns-warning)" }}>⚠</span>
             ) : null}
           </span>
         ) : null}
       </div>
 
+      {/* ── Success state — UNCHANGED logic ─────────────────────────────── */}
       {setStep === "success" ? (
         <div>
-          <div className="rounded-xl p-3 text-sm font-medium text-center border" style={{ background: 'var(--color-success-surface)', borderColor: 'var(--color-success-border)', color: 'var(--color-success)' }}>
+          <div
+            className="rounded-[var(--arcns-radius-lg)] p-3 text-sm font-medium text-center border"
+            style={{
+              background: "rgba(20, 241, 149, 0.08)",
+              borderColor: "rgba(20, 241, 149, 0.24)",
+              color: "var(--arcns-green)",
+            }}
+          >
             ✓ Primary name updated
-            <button onClick={resetSet} className="ml-2 text-xs underline" style={{ color: 'var(--color-success)' }}>Dismiss</button>
+            <button
+              onClick={resetSet}
+              className="ml-2 text-xs underline"
+              style={{ color: "var(--arcns-green)" }}
+            >
+              Dismiss
+            </button>
           </div>
 
           {addrSyncStep === "syncing" ? (
-            <p className="mt-2 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+            <p className="mt-2 text-xs" style={{ color: "var(--arcns-text-muted)" }}>
               Syncing receiving address…
             </p>
           ) : addrSyncStep === "synced" && addrSynced ? (
-            <p className="mt-2 text-xs rounded-lg px-3 py-2" style={{ background: 'var(--color-success-surface)', color: 'var(--color-success)' }}>
+            <p
+              className="mt-2 text-xs rounded-[var(--arcns-radius-sm)] px-3 py-2"
+              style={{ background: "rgba(20,241,149,0.08)", color: "var(--arcns-green)" }}
+            >
               ✓ Receiving address updated for this name.
             </p>
           ) : addrSyncStep === "partial-success" ? (
-            <div className="mt-2 rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }}>
+            <div
+              className="mt-2 rounded-[var(--arcns-radius-sm)] px-3 py-2 text-xs"
+              style={{ background: "rgba(251,191,36,0.08)", color: "var(--arcns-warning)" }}
+            >
               <p>Primary Name set, but receiving address could not be synced.{addrSyncError ? ` ${addrSyncError}` : ""}</p>
             </div>
           ) : null}
         </div>
+
       ) : selectableDomains.length > 0 ? (
+        /* ── Domain selector + action — UNCHANGED logic ─────────────────── */
         <div className="flex gap-2">
           <select
             value={selectedDomain ?? ""}
@@ -125,8 +168,12 @@ export default function PrimaryName() {
               const val = e.target.value;
               setSelectedDomain(val && ownedNameSet.has(val) ? val : null);
             }}
-            className="flex-1 px-3 py-2.5 text-sm rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500"
-            style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)', color: 'var(--color-text-primary)' }}
+            className="flex-1 px-3 py-2.5 text-sm rounded-[var(--arcns-radius-lg)] border focus:outline-none focus:ring-2 focus:ring-[var(--arcns-cyan)]"
+            style={{
+              background: "var(--arcns-bg-elevated)",
+              borderColor: "var(--arcns-border-default)",
+              color: "var(--arcns-text-primary)",
+            }}
           >
             <option value="">— choose a domain —</option>
             {selectableDomains.map(d => {
@@ -141,32 +188,48 @@ export default function PrimaryName() {
           <button
             onClick={handleSet}
             disabled={!canSubmit}
-            className="px-4 py-2.5 text-white text-sm rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-opacity hover:opacity-90 whitespace-nowrap"
-            style={{ background: 'var(--color-accent-primary)' }}
+            className="px-4 py-2.5 text-white text-sm rounded-[var(--arcns-radius-lg)] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 hover:opacity-90 active:scale-[0.98] whitespace-nowrap"
+            style={{ background: "var(--arcns-gradient-primary)" }}
           >
             {setStep === "setting" ? "Updating…" : primaryName ? "Update Primary Name" : "Set as Primary"}
           </button>
         </div>
+
       ) : isLoading ? (
-        <div className="h-10 rounded-xl animate-pulse" style={{ background: 'var(--color-surface-overlay)' }} />
+        <div
+          className="h-10 rounded-[var(--arcns-radius-lg)] animate-pulse"
+          style={{ background: "rgba(120,160,255,0.06)" }}
+        />
       ) : (
-        <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+        <p className="text-xs" style={{ color: "var(--arcns-text-muted)" }}>
           {domains.length === 0
             ? "No domains found. Register a .arc or .circle name first."
             : "Domain names are not yet resolved. Primary name selection will be available once the subgraph is indexed."}
         </p>
       )}
 
+      {/* ── Error — UNCHANGED logic ──────────────────────────────────────── */}
       {setError ? (
-        <p className="mt-2 text-xs rounded-lg px-3 py-2" style={{ background: 'var(--color-error-surface)', color: 'var(--color-error)' }}>{setError}</p>
+        <p
+          className="mt-2 text-xs rounded-[var(--arcns-radius-sm)] px-3 py-2"
+          style={{ background: "rgba(255,92,122,0.08)", color: "var(--arcns-danger)" }}
+        >
+          {setError}
+        </p>
       ) : null}
 
       {isAlreadyPrimary && selectedDomain ? (
-        <p className="mt-2 text-xs" style={{ color: 'var(--color-text-tertiary)' }}>{selectedDomain} is already your primary name.</p>
+        <p className="mt-2 text-xs" style={{ color: "var(--arcns-text-muted)" }}>
+          {selectedDomain} is already your primary name.
+        </p>
       ) : null}
 
+      {/* ── Stale warning — UNCHANGED logic ─────────────────────────────── */}
       {status === "stale" && primaryName ? (
-        <p className="mt-2 text-xs rounded-lg px-3 py-2" style={{ background: 'var(--color-warning-surface)', color: 'var(--color-warning)' }}>
+        <p
+          className="mt-2 text-xs rounded-[var(--arcns-radius-sm)] px-3 py-2"
+          style={{ background: "rgba(251,191,36,0.08)", color: "var(--arcns-warning)" }}
+        >
           ⚠ This name no longer resolves to your address. Select a different domain to update it.
         </p>
       ) : null}
