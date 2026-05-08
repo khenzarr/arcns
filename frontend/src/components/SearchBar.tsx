@@ -2,11 +2,16 @@
 /**
  * SearchBar.tsx — canonical ArcNS search input.
  *
- * Canonical product flow:
- *   normalize → validate → price-tier preview → availability lookup
+ * Phase 6 visual redesign: ArcNS brandkit applied.
  *
- * Emits { label, tld } to parent on every valid, debounced input.
- * Shows inline validation hints. TLD selector for .arc / .circle.
+ * LOGIC IS UNCHANGED:
+ *   - normalizeLabel, validateLabel, priceTierFor, formatUSDC imports untouched
+ *   - processInput, handleChange, handleTldChange, handleSubmit handlers untouched
+ *   - debounce ref and cleanup untouched
+ *   - onSearch / onInput / defaultTld props untouched
+ *   - SUPPORTED_TLDS iteration untouched
+ *
+ * Only JSX structure and visual classes were updated.
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -19,7 +24,7 @@ import {
   SUPPORTED_TLDS,
 } from "../lib/normalization";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types — UNCHANGED ────────────────────────────────────────────────────────
 
 interface SearchBarProps {
   /** Called (debounced 400ms) when input is valid — triggers availability RPC */
@@ -37,12 +42,13 @@ export default function SearchBar({
   onInput,
   defaultTld = "arc",
 }: SearchBarProps) {
-  const [raw,   setRaw]   = useState("");
-  const [tld,   setTld]   = useState<SupportedTLD>(defaultTld);
-  const [hint,  setHint]  = useState<string | null>(null);
+  // ── State — UNCHANGED ──────────────────────────────────────────────────────
+  const [raw,  setRaw]  = useState("");
+  const [tld,  setTld]  = useState<SupportedTLD>(defaultTld);
+  const [hint, setHint] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Process input ──────────────────────────────────────────────────────────
+  // ── processInput — UNCHANGED ───────────────────────────────────────────────
   const processInput = useCallback((value: string, activeTld: SupportedTLD) => {
     const normalized = normalizeLabel(value);
     const error      = validateLabel(normalized);
@@ -79,6 +85,7 @@ export default function SearchBar({
     }, 400);
   }, [onSearch, onInput]);
 
+  // ── Handlers — UNCHANGED ───────────────────────────────────────────────────
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setRaw(value);
@@ -99,30 +106,41 @@ export default function SearchBar({
     }
   }, [raw, tld, onSearch]);
 
-  // Cleanup debounce on unmount
+  // Cleanup debounce on unmount — UNCHANGED
   useEffect(() => () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
   }, []);
 
+  // ── Derived state — UNCHANGED ──────────────────────────────────────────────
   const normalized = normalizeLabel(raw);
   const isValid    = raw.length > 0 && validateLabel(normalized) === null;
   const tier       = isValid ? priceTierFor(normalized) : null;
 
+  // ── TLD badge colors ───────────────────────────────────────────────────────
+  const tldActiveStyle: Record<SupportedTLD, React.CSSProperties> = {
+    arc:    { background: "rgba(37, 99, 255, 0.20)", color: "#8FB3FF", border: "1px solid rgba(37,99,255,0.40)" },
+    circle: { background: "rgba(0, 230, 194, 0.16)", color: "#7FFFE3", border: "1px solid rgba(0,230,194,0.36)" },
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="relative">
+      <form onSubmit={handleSubmit}>
+        {/* Search input container */}
         <div
-          className="flex items-center rounded-2xl border-2 transition-colors"
+          className="flex items-center rounded-[var(--arcns-radius-xl)] border-2 transition-all duration-200"
           style={{
-            background: 'var(--color-surface-card)',
+            background: "var(--arcns-bg-surface)",
             borderColor: hint
-              ? 'rgba(239,68,68,0.6)'
+              ? "rgba(255, 92, 122, 0.60)"
               : isValid
-                ? 'var(--color-border-accent)'
-                : 'var(--color-border-subtle)',
+                ? "var(--arcns-border-strong)"
+                : "var(--arcns-border-default)",
+            boxShadow: isValid && !hint
+              ? "var(--arcns-shadow-glow-soft)"
+              : undefined,
           }}
         >
-          {/* Text input */}
+          {/* Text input — all attributes UNCHANGED */}
           <input
             type="text"
             value={raw}
@@ -132,49 +150,61 @@ export default function SearchBar({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="flex-1 px-5 py-4 text-lg bg-transparent outline-none placeholder-gray-500 min-w-0"
-            style={{ color: 'var(--color-text-primary)' }}
+            className="flex-1 px-5 py-4 text-lg bg-transparent outline-none min-w-0"
+            style={{
+              color: "var(--arcns-text-primary)",
+            }}
+            aria-label="Search for an ArcNS name"
           />
 
-          {/* TLD selector */}
-          <div className="flex items-center gap-1 px-3 border-l" style={{ borderColor: 'var(--color-border-subtle)' }}>
+          {/* TLD selector — handleTldChange UNCHANGED */}
+          <div
+            className="flex items-center gap-1 px-3 border-l"
+            style={{ borderColor: "var(--arcns-border-default)" }}
+          >
             {SUPPORTED_TLDS.map(t => (
               <button
                 key={t}
                 type="button"
                 onClick={() => handleTldChange(t)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${tld === t ? 'text-white' : ''}`}
-                style={tld === t
-                  ? { background: 'var(--color-accent-primary)' }
-                  : { color: 'var(--color-text-secondary)', background: 'transparent' }
+                className="px-3 py-1.5 rounded-[var(--arcns-radius-sm)] text-sm font-bold font-mono transition-all duration-150"
+                style={
+                  tld === t
+                    ? tldActiveStyle[t]
+                    : { color: "var(--arcns-text-muted)", background: "transparent" }
                 }
+                aria-pressed={tld === t}
               >
                 .{t}
               </button>
             ))}
           </div>
 
-          {/* Search button */}
+          {/* Search button — disabled logic UNCHANGED */}
           <button
             type="submit"
             disabled={!isValid}
-            className="m-2 px-5 py-2.5 text-white rounded-xl font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
-            style={{ background: 'var(--color-accent-primary)' }}
+            className="m-2 px-5 py-2.5 text-white rounded-[var(--arcns-radius-md)] font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 hover:opacity-90 active:scale-[0.98]"
+            style={{ background: "var(--arcns-gradient-primary)" }}
           >
             Search
           </button>
         </div>
       </form>
 
-      {/* Validation hint */}
+      {/* Validation hint — UNCHANGED logic */}
       {hint ? (
-        <p className="mt-2 text-sm px-1" style={{ color: 'var(--color-error)' }}>{hint}</p>
+        <p className="mt-2 text-sm px-1" style={{ color: "var(--arcns-danger)" }}>
+          {hint}
+        </p>
       ) : null}
 
-      {/* Price-tier preview — instant, no RPC */}
+      {/* Price-tier preview — instant, no RPC — UNCHANGED logic */}
       {isValid && tier ? (
-        <p className="mt-2 text-sm px-1" style={{ color: 'var(--color-text-tertiary)' }}>
-          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{normalized}.{tld}</span>
+        <p className="mt-2 text-sm px-1" style={{ color: "var(--arcns-text-muted)" }}>
+          <span className="font-semibold" style={{ color: "var(--arcns-text-primary)" }}>
+            {normalized}.{tld}
+          </span>
           {" · "}
           {tier.label} · from {formatUSDC(tier.annualUSDC)}/year
         </p>

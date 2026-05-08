@@ -2,26 +2,37 @@
 /**
  * page.tsx — ArcNS home / search page.
  *
- * ArcNS product language throughout. Zero ENS leakage.
- * Wired to v3 hooks via SearchBar + DomainCard.
- * Canonical flow: normalize → validate → price preview → availability → register/renew.
+ * Phase 6 visual redesign: ArcNS brandkit applied.
+ *
+ * LOGIC IS UNCHANGED:
+ *   - useState, useCallback hooks untouched
+ *   - handleSearch, handleInput handlers untouched
+ *   - display = pending ?? committed logic untouched
+ *   - SearchBar / DomainCard props untouched
+ *   - PRICING_TABLE import untouched
+ *   - isValidLabel import untouched
+ *
+ * Only JSX structure and visual classes were updated.
  */
 
 import { useState, useCallback } from "react";
 import SearchBar  from "../components/SearchBar";
 import DomainCard from "../components/DomainCard";
 import { isValidLabel, PRICING_TABLE, type SupportedTLD } from "../lib/normalization";
+import { OrbitBackground } from "../components/ui/OrbitBackground";
+import { FooterIdentityLine } from "../components/ui/FooterIdentityLine";
 
 export default function HomePage() {
+  // ── State — UNCHANGED ──────────────────────────────────────────────────────
   const [pending,   setPending]   = useState<{ label: string; tld: SupportedTLD } | null>(null);
   const [committed, setCommitted] = useState<{ label: string; tld: SupportedTLD } | null>(null);
 
-  // Called (debounced) when input is valid — triggers availability RPC
+  // Called (debounced) when input is valid — triggers availability RPC — UNCHANGED
   const handleSearch = useCallback((label: string, tld: SupportedTLD) => {
     setCommitted({ label, tld });
   }, []);
 
-  // Called immediately on every valid keystroke — shows card before RPC fires
+  // Called immediately on every valid keystroke — shows card before RPC fires — UNCHANGED
   const handleInput = useCallback((label: string, tld: SupportedTLD) => {
     if (isValidLabel(label)) {
       setPending({ label, tld });
@@ -33,38 +44,59 @@ export default function HomePage() {
   const display = pending ?? committed;
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-16">
 
-      {/* Hero */}
-      <section className="text-center py-10 space-y-4">
-        <div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
-          style={{ background: 'var(--color-surface-overlay)', color: 'var(--color-text-secondary)' }}
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="relative text-center pt-16 pb-8 space-y-6 overflow-hidden">
+        {/* Orbit background motif */}
+        <OrbitBackground variant="hero" className="rounded-3xl" />
+
+        {/* Live badge */}
+        <div className="relative inline-flex items-center gap-2 px-4 py-2 rounded-[var(--arcns-radius-pill)] text-sm font-medium"
+          style={{
+            background: "rgba(37, 99, 255, 0.10)",
+            border: "1px solid rgba(37, 99, 255, 0.24)",
+            color: "var(--arcns-text-secondary)",
+          }}
         >
-          <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" aria-hidden="true" />
           Live on Arc Testnet · Chain ID 5042002
         </div>
+
+        {/* Headline */}
         <h1
-          className="text-4xl md:text-5xl font-extrabold tracking-tight"
-          style={{ color: 'var(--color-text-primary)' }}
+          className="relative text-5xl md:text-6xl font-bold tracking-tight"
+          style={{
+            color: "var(--arcns-text-primary)",
+            fontFamily: "var(--arcns-font-display)",
+          }}
         >
-          Your name on Arc
+          Your identity{" "}
+          <span className="arcns-gradient-text">on Arc</span>
         </h1>
+
+        {/* Subtitle */}
         <p
-          className="text-xl max-w-lg mx-auto leading-relaxed"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="relative text-lg md:text-xl max-w-xl mx-auto leading-relaxed"
+          style={{ color: "var(--arcns-text-secondary)" }}
         >
-          Register <strong style={{ color: 'var(--color-text-accent)' }}>.arc</strong> and <strong style={{ color: 'var(--color-text-accent)' }}>.circle</strong> domains.
-          Pay with USDC. Own your on-chain identity as an NFT.
+          Register{" "}
+          <strong style={{ color: "var(--arcns-cyan)" }}>.arc</strong>
+          {" "}and{" "}
+          <strong style={{ color: "var(--arcns-teal)" }}>.circle</strong>
+          {" "}names. Pay with USDC.{" "}
+          Own your on-chain identity as an NFT.
         </p>
       </section>
 
-      {/* Search */}
+      {/* ── Search module ─────────────────────────────────────────────────── */}
+      {/* SearchBar props and behavior UNCHANGED */}
       <section>
         <SearchBar onSearch={handleSearch} onInput={handleInput} />
       </section>
 
-      {/* Domain card — appears instantly when input is valid */}
+      {/* ── Domain card — appears instantly when input is valid ───────────── */}
+      {/* DomainCard props UNCHANGED */}
       {display ? (
         <section className="max-w-2xl mx-auto">
           <DomainCard
@@ -77,47 +109,84 @@ export default function HomePage() {
         </section>
       ) : null}
 
-      {/* Feature highlights — hidden once user starts searching */}
+      {/* ── Trust strip — hidden once user starts searching ───────────────── */}
+      {!display ? (
+        <section className="max-w-4xl mx-auto">
+          <div
+            className="grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-[var(--arcns-radius-xl)]"
+            style={{ border: "1px solid var(--arcns-border-default)" }}
+          >
+            {[
+              { label: "Arc Testnet", sub: "Chain ID 5042002" },
+              { label: "Pay with USDC", sub: "Secure. Stable. On-chain." },
+              { label: "NFT Ownership", sub: "Your names. Your identity." },
+              { label: "Reverse Resolution", sub: "Link names to any address." },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="px-5 py-4 text-center"
+                style={{ background: "var(--arcns-bg-surface)" }}
+              >
+                <p className="text-sm font-semibold" style={{ color: "var(--arcns-text-primary)" }}>
+                  {item.label}
+                </p>
+                <p className="text-xs mt-0.5" style={{ color: "var(--arcns-text-muted)" }}>
+                  {item.sub}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {/* ── Feature cards — hidden once user starts searching ─────────────── */}
       {!display ? (
         <section className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-4xl mx-auto">
           {[
             {
-              icon: "🔑",
+              icon: "◈",
+              iconColor: "var(--arcns-cyan)",
               title: "NFT Ownership",
-              desc: "Each domain is an ERC-721 NFT. Transfer, sell, or hold forever.",
+              desc: "Each name is an ERC-721 NFT. Transfer, sell, or hold forever.",
             },
             {
-              icon: "💵",
+              icon: "◎",
+              iconColor: "var(--arcns-green)",
               title: "Pay with USDC",
               desc: "Stable, predictable pricing. No gas volatility. From $2.00/yr.",
             },
             {
-              icon: "🔄",
+              icon: "⟳",
+              iconColor: "var(--arcns-teal)",
               title: "Reverse Resolution",
               desc: "Set your primary name — map your wallet to a human-readable identity.",
             },
           ].map(f => (
             <div
               key={f.title}
-              className="rounded-2xl border p-6 transition-colors"
-              style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}
+              className="arcns-glass rounded-[var(--arcns-radius-xl)] p-6 transition-all duration-200 hover:shadow-[var(--arcns-shadow-glow-soft)]"
             >
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-xl mb-3"
-                style={{ background: 'var(--color-surface-elevated)' }}
+                className="w-10 h-10 rounded-[var(--arcns-radius-md)] flex items-center justify-center text-xl mb-4"
+                style={{
+                  background: "rgba(37, 99, 255, 0.10)",
+                  border: "1px solid rgba(37, 99, 255, 0.20)",
+                  color: f.iconColor,
+                }}
+                aria-hidden="true"
               >
                 {f.icon}
               </div>
               <h3
-                className="font-semibold mb-1"
-                style={{ color: 'var(--color-text-primary)' }}
+                className="font-semibold mb-2"
+                style={{
+                  color: "var(--arcns-text-primary)",
+                  fontFamily: "var(--arcns-font-display)",
+                }}
               >
                 {f.title}
               </h3>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
+              <p className="text-sm leading-relaxed" style={{ color: "var(--arcns-text-secondary)" }}>
                 {f.desc}
               </p>
             </div>
@@ -125,52 +194,63 @@ export default function HomePage() {
         </section>
       ) : null}
 
-      {/* Pricing table */}
+      {/* ── Pricing section — hidden once user starts searching ───────────── */}
+      {/* PRICING_TABLE data source UNCHANGED */}
       {!display ? (
         <section className="max-w-2xl mx-auto">
-          <h2
-            className="text-2xl font-bold mb-4 text-center"
-            style={{ color: 'var(--color-text-primary)' }}
-          >
-            Pricing
-          </h2>
+          <div className="text-center mb-6">
+            <h2
+              className="text-2xl font-bold"
+              style={{
+                color: "var(--arcns-text-primary)",
+                fontFamily: "var(--arcns-font-display)",
+              }}
+            >
+              Simple, transparent pricing
+            </h2>
+            <p className="text-sm mt-1" style={{ color: "var(--arcns-text-secondary)" }}>
+              All prices in USDC · Pro-rated for multi-year registrations
+            </p>
+          </div>
+
           <div
-            className="rounded-2xl border overflow-hidden"
-            style={{ background: 'var(--color-surface-card)', borderColor: 'var(--color-border-subtle)' }}
+            className="arcns-glass rounded-[var(--arcns-radius-xl)] overflow-hidden"
           >
             <table className="w-full text-sm">
               <thead
                 className="border-b"
-                style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)' }}
+                style={{ borderColor: "var(--arcns-border-default)" }}
               >
                 <tr>
                   <th
-                    className="text-left px-6 py-3 font-semibold"
-                    style={{ color: 'var(--color-text-secondary)' }}
+                    className="text-left px-6 py-3.5 font-semibold text-xs uppercase tracking-wide"
+                    style={{ color: "var(--arcns-text-muted)" }}
                   >
                     Name length
                   </th>
                   <th
-                    className="text-right px-6 py-3 font-semibold"
-                    style={{ color: 'var(--color-text-secondary)' }}
+                    className="text-right px-6 py-3.5 font-semibold text-xs uppercase tracking-wide"
+                    style={{ color: "var(--arcns-text-muted)" }}
                   >
                     Annual price
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[rgba(48,54,61,1)]">
-                {PRICING_TABLE.map(row => (
-                  <tr key={row.len} className="hover:bg-[#1c2128] transition-colors">
-                    <td
-                      className="px-6 py-4"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
+              <tbody>
+                {PRICING_TABLE.map((row, i) => (
+                  <tr
+                    key={row.len}
+                    className="transition-colors"
+                    style={{
+                      borderTop: i > 0 ? "1px solid var(--arcns-divider)" : undefined,
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(37,99,255,0.04)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  >
+                    <td className="px-6 py-4" style={{ color: "var(--arcns-text-secondary)" }}>
                       {row.len}
                     </td>
-                    <td
-                      className="px-6 py-4 text-right font-bold"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
+                    <td className="px-6 py-4 text-right font-bold" style={{ color: "var(--arcns-text-primary)" }}>
                       {row.price}
                     </td>
                   </tr>
@@ -178,19 +258,19 @@ export default function HomePage() {
               </tbody>
             </table>
             <div
-              className="px-6 py-3 border-t flex items-center justify-between flex-wrap gap-2"
-              style={{ background: 'var(--color-surface-elevated)', borderColor: 'var(--color-border-subtle)' }}
+              className="px-6 py-3 border-t"
+              style={{ borderColor: "var(--arcns-border-default)" }}
             >
-              <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                All prices in USDC · Pro-rated for multi-year registrations
-              </p>
-              <p className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-                +$100 premium for recently expired names (decays over 28 days)
+              <p className="text-xs" style={{ color: "var(--arcns-text-muted)" }}>
+                Recently expired names may include a $100 premium that decays over 28 days.
               </p>
             </div>
           </div>
         </section>
       ) : null}
+
+      {/* ── Footer identity line ──────────────────────────────────────────── */}
+      <FooterIdentityLine className="mt-8" />
 
     </div>
   );
