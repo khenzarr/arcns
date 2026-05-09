@@ -2,7 +2,8 @@
 /**
  * Header.tsx — ArcNS global navigation.
  *
- * Phase 5 visual polish + Phase 9 responsive/a11y polish.
+ * Uses the real ArcNS emblem asset from /public/arcns/arcns-emblem.svg
+ * and a crisp text wordmark for reliable header rendering.
  *
  * WALLET LOGIC IS UNCHANGED:
  *   - useAccount, useConnect, useDisconnect hooks untouched
@@ -10,40 +11,28 @@
  *   - disconnect() call untouched
  *   - connector lookup (injected / walletConnect) untouched
  *   - isPending / isConnected / address state untouched
- *
- * Phase 9 additions (visual only):
- *   - Mobile nav menu (hamburger toggle) for < md viewports
- *   - aria-expanded on mobile menu button
- *   - aria-label on disconnect button
- *   - aria-label on connect buttons
  */
 
 import { useState } from "react";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NetworkBadge } from "./ui/NetworkBadge";
 
-// ─── WalletButton ─────────────────────────────────────────────────────────────
-// All hook calls and handlers are identical to the original.
-// Only the visual wrapper JSX has changed.
-
 function WalletButton() {
-  // ── Hooks — UNCHANGED ──────────────────────────────────────────────────────
   const { address, isConnected } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
 
-  // ── Connected state ────────────────────────────────────────────────────────
   if (isConnected && address) {
     return (
       <div className="flex items-center gap-2">
-        {/* Connected indicator dot */}
         <span
           className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0 hidden sm:block"
           aria-hidden="true"
         />
-        {/* Truncated address pill */}
+
         <span
           className="hidden sm:block text-xs font-mono px-3 py-1.5 rounded-[var(--arcns-radius-sm)] border"
           style={{
@@ -55,7 +44,7 @@ function WalletButton() {
         >
           {address.slice(0, 6)}…{address.slice(-4)}
         </span>
-        {/* Disconnect button — handler UNCHANGED */}
+
         <button
           onClick={() => disconnect()}
           aria-label="Disconnect wallet"
@@ -72,13 +61,11 @@ function WalletButton() {
     );
   }
 
-  // ── Disconnected state — connector lookup UNCHANGED ────────────────────────
   const injectedConnector = connectors.find(c => c.id === "injected");
-  const wcConnector       = connectors.find(c => c.id === "walletConnect");
+  const wcConnector = connectors.find(c => c.id === "walletConnect");
 
   return (
     <div className="flex items-center gap-2">
-      {/* MetaMask / injected — connect handler UNCHANGED */}
       {injectedConnector ? (
         <button
           onClick={() => connect({ connector: injectedConnector })}
@@ -90,7 +77,7 @@ function WalletButton() {
           {isPending ? "Connecting…" : "Connect Wallet"}
         </button>
       ) : null}
-      {/* WalletConnect — connect handler UNCHANGED */}
+
       {wcConnector && !injectedConnector ? (
         <button
           onClick={() => connect({ connector: wcConnector })}
@@ -110,35 +97,36 @@ function WalletButton() {
   );
 }
 
-// ─── NavLink ──────────────────────────────────────────────────────────────────
-// Active state detection via usePathname — no new state, no new hooks beyond
-// the standard Next.js navigation hook.
-
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({
+  href,
+  children,
+}: {
+  href: string;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname() ?? "";
-  // Exact match for "/" (home), prefix match for sub-routes
   const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
     <Link
       href={href}
       className="relative text-sm font-medium transition-colors duration-150 px-1 py-0.5"
-      style={{ color: isActive ? "var(--arcns-cyan)" : "var(--arcns-text-secondary)" }}
+      style={{
+        color: isActive ? "var(--arcns-cyan)" : "var(--arcns-text-secondary)",
+      }}
     >
       {children}
-      {/* Active underline indicator */}
-      {isActive && (
+
+      {isActive ? (
         <span
           className="absolute -bottom-[18px] left-0 right-0 h-[2px] rounded-full"
           style={{ background: "var(--arcns-gradient-primary)" }}
           aria-hidden="true"
         />
-      )}
+      ) : null}
     </Link>
   );
 }
-
-// ─── Header ───────────────────────────────────────────────────────────────────
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -154,59 +142,55 @@ export default function Header() {
         WebkitBackdropFilter: "blur(20px)",
       }}
     >
-      <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-
-        {/* ── Left: Logo + Testnet badge ─────────────────────────────────── */}
-        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group" onClick={() => setMobileMenuOpen(false)}>
-          {/* ArcNS emblem — SVG, brand-aligned */}
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 28 28"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+      <div className="w-full px-8 lg:px-16 h-16 flex items-center justify-between gap-4">
+        <Link
+          href="/"
+          className="flex items-center gap-3 flex-shrink-0 group"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-label="ArcNS home"
+        >
+          <span
+            className="relative flex h-10 w-10 items-center justify-center rounded-2xl border"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 40%, rgba(0,212,255,0.16), rgba(37,99,255,0.08) 46%, rgba(11,18,36,0.72) 100%)",
+              borderColor: "rgba(0, 212, 255, 0.28)",
+              boxShadow:
+                "0 0 24px rgba(0, 212, 255, 0.14), inset 0 0 18px rgba(37, 99, 255, 0.10)",
+            }}
             aria-hidden="true"
           >
-            <circle
-              cx="14" cy="14" r="11"
-              stroke="url(#logo-gradient)"
-              strokeWidth="1.75"
-              fill="none"
+            <Image
+              src="/arcns/arcns-emblem.svg"
+              alt=""
+              width={28}
+              height={28}
+              priority
+              className="h-7 w-7 select-none"
+              style={{
+                objectFit: "contain",
+                filter:
+                  "drop-shadow(0 0 10px rgba(0, 212, 255, 0.45)) drop-shadow(0 0 16px rgba(37, 99, 255, 0.28))",
+              }}
             />
-            <path
-              d="M 14 3 A 11 11 0 0 1 25 14"
-              stroke="url(#logo-gradient)"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              fill="none"
-            />
-            <circle cx="14" cy="14" r="2.5" fill="var(--arcns-cyan)" />
-            <defs>
-              <linearGradient id="logo-gradient" x1="3" y1="3" x2="25" y2="25" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stopColor="#2563FF" />
-                <stop offset="100%" stopColor="#00D4FF" />
-              </linearGradient>
-            </defs>
-          </svg>
+          </span>
 
-          {/* Wordmark */}
           <span
-            className="font-bold text-xl tracking-tight"
+            className="font-bold text-2xl tracking-[-0.04em]"
             style={{
               color: "var(--arcns-text-primary)",
               fontFamily: "var(--arcns-font-display)",
+              textShadow: "0 0 18px rgba(0, 212, 255, 0.08)",
             }}
           >
             ArcNS
           </span>
 
-          {/* Testnet badge */}
           <NetworkBadge variant="testnet" label="Testnet" />
         </Link>
 
-        {/* ── Center: Navigation links (desktop) ────────────────────────── */}
         <nav
-          className="hidden md:flex items-center gap-6"
+          className="hidden md:flex items-center gap-7"
           aria-label="Main navigation"
         >
           <NavLink href="/">Search</NavLink>
@@ -214,16 +198,16 @@ export default function Header() {
           <NavLink href="/resolve">Resolve</NavLink>
         </nav>
 
-        {/* ── Right: Wallet + mobile menu toggle ────────────────────────── */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <WalletButton />
 
-          {/* Mobile hamburger — visible only on < md */}
           <button
             className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-[var(--arcns-radius-sm)] border transition-all duration-150"
             style={{
               background: "transparent",
-              borderColor: mobileMenuOpen ? "var(--arcns-border-strong)" : "var(--arcns-border-default)",
+              borderColor: mobileMenuOpen
+                ? "var(--arcns-border-strong)"
+                : "var(--arcns-border-default)",
               color: "var(--arcns-text-secondary)",
             }}
             onClick={() => setMobileMenuOpen(prev => !prev)}
@@ -232,23 +216,41 @@ export default function Header() {
             aria-controls="mobile-nav"
           >
             {mobileMenuOpen ? (
-              /* X icon */
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 3L13 13M13 3L3 13"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                />
               </svg>
             ) : (
-              /* Hamburger icon */
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M2 4H14M2 8H14M2 12H14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M2 4H14M2 8H14M2 12H14"
+                  stroke="currentColor"
+                  strokeWidth="1.75"
+                  strokeLinecap="round"
+                />
               </svg>
             )}
           </button>
         </div>
-
       </div>
 
-      {/* ── Mobile nav dropdown ───────────────────────────────────────────── */}
-      {mobileMenuOpen && (
+      {mobileMenuOpen ? (
         <nav
           id="mobile-nav"
           className="md:hidden border-t px-4 py-3 flex flex-col gap-1"
@@ -259,11 +261,13 @@ export default function Header() {
           aria-label="Mobile navigation"
         >
           {[
-            { href: "/",           label: "Search" },
+            { href: "/", label: "Search" },
             { href: "/my-domains", label: "My Domains" },
-            { href: "/resolve",    label: "Resolve" },
+            { href: "/resolve", label: "Resolve" },
           ].map(({ href, label }) => {
-            const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+            const isActive =
+              href === "/" ? pathname === "/" : pathname.startsWith(href);
+
             return (
               <Link
                 key={href}
@@ -271,19 +275,23 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="px-3 py-2.5 rounded-[var(--arcns-radius-md)] text-sm font-medium transition-all duration-150"
                 style={{
-                  color: isActive ? "var(--arcns-cyan)" : "var(--arcns-text-secondary)",
-                  background: isActive ? "rgba(37,99,255,0.08)" : "transparent",
+                  color: isActive
+                    ? "var(--arcns-cyan)"
+                    : "var(--arcns-text-secondary)",
+                  background: isActive
+                    ? "rgba(37,99,255,0.08)"
+                    : "transparent",
                 }}
                 onMouseEnter={e => {
                   if (!isActive) {
-                    (e.currentTarget as HTMLElement).style.background = "rgba(37,99,255,0.08)";
-                    (e.currentTarget as HTMLElement).style.color = "var(--arcns-text-primary)";
+                    e.currentTarget.style.background = "rgba(37,99,255,0.08)";
+                    e.currentTarget.style.color = "var(--arcns-text-primary)";
                   }
                 }}
                 onMouseLeave={e => {
                   if (!isActive) {
-                    (e.currentTarget as HTMLElement).style.background = "transparent";
-                    (e.currentTarget as HTMLElement).style.color = "var(--arcns-text-secondary)";
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "var(--arcns-text-secondary)";
                   }
                 }}
               >
@@ -292,7 +300,7 @@ export default function Header() {
             );
           })}
         </nav>
-      )}
+      ) : null}
     </header>
   );
 }

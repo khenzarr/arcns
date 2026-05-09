@@ -122,57 +122,56 @@ export default function SearchBar({
     circle: { background: "rgba(0, 230, 194, 0.16)", color: "#7FFFE3", border: "1px solid rgba(0,230,194,0.36)" },
   };
 
-  return (
-    <div className="max-w-2xl mx-auto">
+    return (
+    <div className="w-full">
       <form onSubmit={handleSubmit}>
-        {/* Search input container */}
         <div
-          className="flex items-center rounded-[var(--arcns-radius-xl)] border-2 transition-all duration-200"
-          style={{
-            background: "var(--arcns-bg-surface)",
-            borderColor: hint
-              ? "rgba(255, 92, 122, 0.60)"
-              : isValid
-                ? "var(--arcns-border-strong)"
-                : "var(--arcns-border-default)",
-            boxShadow: isValid && !hint
-              ? "var(--arcns-shadow-glow-soft)"
-              : undefined,
-          }}
+          className="arcns-searchbar-shell"
+          data-valid={isValid && !hint ? "true" : "false"}
+          data-error={hint ? "true" : "false"}
         >
-          {/* Text input — all attributes UNCHANGED */}
+          <div className="arcns-searchbar-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <circle
+                cx="10.5"
+                cy="10.5"
+                r="6.5"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="M15.5 15.5L21 21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
           <input
             type="text"
             value={raw}
             onChange={handleChange}
-            placeholder="Search for a name…"
+            placeholder="Search for a name..."
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="flex-1 px-5 py-4 text-lg bg-transparent outline-none min-w-0"
-            style={{
-              color: "var(--arcns-text-primary)",
-            }}
+            className="arcns-searchbar-input"
             aria-label="Search for an ArcNS name"
           />
 
-          {/* TLD selector — handleTldChange UNCHANGED */}
-          <div
-            className="flex items-center gap-1 px-3 border-l"
-            style={{ borderColor: "var(--arcns-border-default)" }}
-          >
+          <div className="arcns-searchbar-divider" aria-hidden="true" />
+
+          <div className="arcns-searchbar-tlds">
             {SUPPORTED_TLDS.map(t => (
               <button
                 key={t}
                 type="button"
                 onClick={() => handleTldChange(t)}
-                className="px-3 py-1.5 rounded-[var(--arcns-radius-sm)] text-sm font-bold font-mono transition-all duration-150"
-                style={
-                  tld === t
-                    ? tldActiveStyle[t]
-                    : { color: "var(--arcns-text-muted)", background: "transparent" }
-                }
+                className="arcns-searchbar-tld"
+                data-active={tld === t ? "true" : "false"}
+                data-tld={t}
                 aria-pressed={tld === t}
               >
                 .{t}
@@ -180,28 +179,24 @@ export default function SearchBar({
             ))}
           </div>
 
-          {/* Search button — disabled logic UNCHANGED */}
           <button
             type="submit"
             disabled={!isValid}
-            className="m-2 px-5 py-2.5 text-white rounded-[var(--arcns-radius-md)] font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 hover:opacity-90 active:scale-[0.98]"
-            style={{ background: "var(--arcns-gradient-primary)" }}
+            className="arcns-searchbar-button"
           >
             Search
           </button>
         </div>
       </form>
 
-      {/* Validation hint — UNCHANGED logic */}
       {hint ? (
-        <p className="mt-2 text-sm px-1" style={{ color: "var(--arcns-danger)" }}>
+        <p className="mt-3 text-sm px-1" style={{ color: "var(--arcns-danger)" }}>
           {hint}
         </p>
       ) : null}
 
-      {/* Price-tier preview — instant, no RPC — UNCHANGED logic */}
       {isValid && tier ? (
-        <p className="mt-2 text-sm px-1" style={{ color: "var(--arcns-text-muted)" }}>
+        <p className="mt-3 text-sm px-1" style={{ color: "var(--arcns-text-muted)" }}>
           <span className="font-semibold" style={{ color: "var(--arcns-text-primary)" }}>
             {normalized}.{tld}
           </span>
