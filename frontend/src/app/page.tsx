@@ -106,7 +106,7 @@ export default function HomePage() {
         <div className="arcns-landing-inner">
           <div className="arcns-left-emblem" aria-hidden="true">
   <Image
-  src="/arcns/arcns-emblem-glow.png"
+  src="/arcns/arcns-emblem.svg"
   alt=""
   width={520}
   height={520}

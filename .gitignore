@@ -58,3 +58,6 @@ frontend/out/
 # ─── Misc tooling caches ──────────────────────────────────────────────────────
 .npm
 .eslintcache
+
+.vercel
+.env*.local
