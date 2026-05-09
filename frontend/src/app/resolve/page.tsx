@@ -411,7 +411,7 @@ export default function ResolvePage() {
   const registrar = tld === "circle" ? ADDR_CIRCLE_REGISTRAR : ADDR_ARC_REGISTRAR;
   const tokenId = label ? labelToTokenId(label) : 0n;
 
-  const { data: expiry } = useReadContract({
+  const { data: expiry, isPending: expiryLoading } = useReadContract({
     address: registrar as `0x${string}`,
     abi: REGISTRAR_ABI,
     functionName: "nameExpires",
@@ -433,30 +433,81 @@ export default function ResolvePage() {
   const node = queried ? namehash(queried) : "";
   const hasResult = !!queried && queried.includes(".");
   const addr = resolvedAddr as string | undefined;
-  const hasAddr = !!addr && addr !== "0x0000000000000000000000000000000000000000";
-  const isUnregistered = hasResult && !isLoading && expiryTs === 0n;
 
-  const { data: ownerData } = useReadContract({
+  // Forward resolution: only true when a valid non-zero address is returned.
+  const normalizedResolvedAddress =
+    !!addr && addr !== "0x0000000000000000000000000000000000000000" ? addr : undefined;
+  const hasAddr = !!normalizedResolvedAddress;
+
+  const { data: ownerData, isPending: ownerLoading } = useReadContract({
     ...REGISTRY_CONTRACT,
     functionName: "owner",
     args: nodeBytes ? [nodeBytes] : undefined,
     query: {
-      enabled: !!queried && queried.includes(".") && !!connectedAddress,
+      // Public read — no wallet required. Enable whenever a valid domain is queried.
+      enabled: !!queried && queried.includes("."),
       staleTime: 30_000,
       refetchOnWindowFocus: false,
     },
   });
 
-  const ownerAddress =
-    typeof ownerData === "string" &&
-    ownerData !== "0x0000000000000000000000000000000000000000"
-      ? ownerData
+  // registry.owner(node) returns the registrar contract address for registered
+  // second-level names — not the user's wallet. The actual NFT holder is
+  // tracked by registrar.ownerOf(tokenId). We read both and prefer ownerOf.
+  const { data: registrarOwnerData, isPending: registrarOwnerLoading } = useReadContract({
+    address: registrar as `0x${string}`,
+    abi: REGISTRAR_ABI,
+    functionName: "ownerOf",
+    args: [tokenId],
+    query: {
+      // ownerOf reverts for non-existent/expired tokens — wagmi returns undefined on revert.
+      enabled: !!tld && isValidLabel(label) && tokenId > 0n,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+      retry: false, // don't retry reverts
+    },
+  });
+
+  // Prefer registrar.ownerOf (canonical NFT owner) over registry.owner (which
+  // returns the registrar contract address for managed names, not the user).
+  const ZERO_ADDR = "0x0000000000000000000000000000000000000000";
+
+  const registrarOwnerAddress =
+    typeof registrarOwnerData === "string" && registrarOwnerData !== ZERO_ADDR
+      ? registrarOwnerData
       : undefined;
+
+  const registryOwnerRaw =
+    typeof ownerData === "string" && ownerData !== ZERO_ADDR ? ownerData : undefined;
+
+  // Use registrar ownerOf if available; fall back to registry owner only if it
+  // is NOT the registrar contract itself (i.e. a direct registry-level owner).
+  const ownerAddress =
+    registrarOwnerAddress ??
+    (registryOwnerRaw !== ADDR_ARC_REGISTRAR && registryOwnerRaw !== ADDR_CIRCLE_REGISTRAR
+      ? registryOwnerRaw
+      : undefined);
 
   const isOwner =
     !!connectedAddress &&
-    !!ownerData &&
-    (ownerData as string).toLowerCase() === connectedAddress.toLowerCase();
+    !!ownerAddress &&
+    ownerAddress.toLowerCase() === connectedAddress.toLowerCase();
+
+  // ── Safer registration state model ──────────────────────────────────────────
+  // Registration is determined from ownership and expiry data — NOT from the
+  // resolved address. Absence of a forward record ≠ unregistered.
+  const hasOwner = !!ownerAddress;
+  const hasExpiry = expiryTs > 0n;
+  const now = BigInt(Math.floor(Date.now() / 1000));
+  const isExpired = hasExpiry && expiryTs <= now;
+
+  // Only conclude "unregistered" once all reads have settled and none
+  // returned ownership or expiry data.
+  const readsSettled =
+    hasResult && !isLoading && !expiryLoading && !ownerLoading && !registrarOwnerLoading;
+  const isRegistered = hasOwner || hasExpiry;
+  const isUnregistered = readsSettled && !isRegistered;
+  const isActive = isRegistered && !isExpired;
 
   const explorerTokenHref =
     tld && label
@@ -464,7 +515,7 @@ export default function ResolvePage() {
       : "https://testnet.arcscan.app";
 
   const resolvedExplorerHref = hasAddr
-    ? `https://testnet.arcscan.app/address/${addr}`
+    ? `https://testnet.arcscan.app/address/${normalizedResolvedAddress}`
     : undefined;
 
   const ownerExplorerHref = ownerAddress
@@ -725,19 +776,15 @@ export default function ResolvePage() {
                       isLoading
                         ? "Loading..."
                         : hasAddr
-                          ? shortAddress(addr!, 10, 8)
-                          : isUnregistered
-                            ? "Name not registered"
-                            : "No receiving address set"
+                          ? shortAddress(normalizedResolvedAddress!, 10, 8)
+                          : "No address record"
                     }
                     valueColor={
                       hasAddr
                         ? "var(--arcns-text-primary)"
-                        : isUnregistered
-                          ? "var(--arcns-danger)"
-                          : "var(--arcns-text-muted)"
+                        : "var(--arcns-text-muted)"
                     }
-                    copyValue={hasAddr ? addr : undefined}
+                    copyValue={hasAddr ? normalizedResolvedAddress : undefined}
                     explorerHref={resolvedExplorerHref}
                   />
 
@@ -765,8 +812,22 @@ export default function ResolvePage() {
 
                   <DetailRow
                     label="Expires"
-                    value={expiryTs > 0n ? formatExpiry(expiryTs) : "Not registered"}
-                    valueColor={expiryTs > 0n ? "var(--arcns-text-primary)" : "var(--arcns-danger)"}
+                    value={
+                      expiryLoading
+                        ? "Loading..."
+                        : expiryTs > 0n
+                          ? formatExpiry(expiryTs)
+                          : isUnregistered
+                            ? "Not registered"
+                            : "—"
+                    }
+                    valueColor={
+                      expiryTs > 0n
+                        ? "var(--arcns-text-primary)"
+                        : isUnregistered
+                          ? "var(--arcns-danger)"
+                          : "var(--arcns-text-muted)"
+                    }
                   />
 
                   {isOwner && !hasAddr ? (
@@ -799,7 +860,7 @@ export default function ResolvePage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (addr) navigator.clipboard?.writeText(addr).catch(() => undefined);
+                      if (normalizedResolvedAddress) navigator.clipboard?.writeText(normalizedResolvedAddress).catch(() => undefined);
                     }}
                     className="inline-flex h-12 items-center justify-center gap-3 rounded-[var(--arcns-radius-lg)] border px-5 text-sm font-semibold"
                     style={{
@@ -814,7 +875,7 @@ export default function ResolvePage() {
                 ) : null}
 
                 {hasAddr ? (
-                  <MiniAction href={`https://testnet.arcscan.app/address/${addr}`}>
+                  <MiniAction href={`https://testnet.arcscan.app/address/${normalizedResolvedAddress}`}>
                     Open in Explorer <ExternalIcon />
                   </MiniAction>
                 ) : null}
@@ -881,12 +942,12 @@ export default function ResolvePage() {
                   <p
                     className="min-w-0 truncate font-mono text-sm font-semibold"
                     style={{ color: hasAddr ? "var(--arcns-text-primary)" : "var(--arcns-text-muted)" }}
-                    title={hasAddr ? addr : undefined}
+                    title={hasAddr ? normalizedResolvedAddress : undefined}
                   >
-                    {hasAddr ? shortAddress(addr!, 12, 10) : "No address record"}
+                    {hasAddr ? shortAddress(normalizedResolvedAddress!, 12, 10) : "No address record"}
                   </p>
 
-                  {hasAddr ? <CopyButton value={addr!} aria-label="Copy resolved address" /> : null}
+                  {hasAddr ? <CopyButton value={normalizedResolvedAddress!} aria-label="Copy resolved address" /> : null}
                 </div>
 
                 <div className="mt-5 flex items-center justify-between">
@@ -1030,7 +1091,13 @@ export default function ResolvePage() {
                       Expires
                     </p>
                     <p className="text-sm font-semibold" style={{ color: "var(--arcns-text-primary)" }}>
-                      {expiryTs > 0n ? formatExpiry(expiryTs) : "Not registered"}
+                      {expiryLoading
+                        ? "Loading..."
+                        : expiryTs > 0n
+                          ? formatExpiry(expiryTs)
+                          : isUnregistered
+                            ? "Not registered"
+                            : "—"}
                     </p>
                   </div>
 
@@ -1040,9 +1107,19 @@ export default function ResolvePage() {
                     </p>
                     <span
                       className="rounded-[var(--arcns-radius-pill)] px-3 py-1 text-xs font-bold"
-                      style={expiryTs > 0n ? expiryStyle(expiryState) : expiryStyle("expired")}
+                      style={
+                        isRegistered
+                          ? expiryStyle(expiryState)
+                          : isUnregistered
+                            ? expiryStyle("expired")
+                            : { background: "rgba(120,160,255,0.08)", border: "1px solid rgba(120,160,255,0.16)", color: "var(--arcns-text-muted)" }
+                      }
                     >
-                      {isUnregistered ? "Not registered" : expiryTs > 0n ? badge.label : "Unknown"}
+                      {isUnregistered
+                        ? "Not registered"
+                        : isRegistered
+                          ? badge.label
+                          : "Loading…"}
                     </span>
                   </div>
 
