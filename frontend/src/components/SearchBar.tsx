@@ -2,11 +2,16 @@
 /**
  * SearchBar.tsx — canonical ArcNS search input.
  *
- * Canonical product flow:
- *   normalize → validate → price-tier preview → availability lookup
+ * Phase 6 visual redesign: ArcNS brandkit applied.
  *
- * Emits { label, tld } to parent on every valid, debounced input.
- * Shows inline validation hints. TLD selector for .arc / .circle.
+ * LOGIC IS UNCHANGED:
+ *   - normalizeLabel, validateLabel, priceTierFor, formatUSDC imports untouched
+ *   - processInput, handleChange, handleTldChange, handleSubmit handlers untouched
+ *   - debounce ref and cleanup untouched
+ *   - onSearch / onInput / defaultTld props untouched
+ *   - SUPPORTED_TLDS iteration untouched
+ *
+ * Only JSX structure and visual classes were updated.
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -19,7 +24,7 @@ import {
   SUPPORTED_TLDS,
 } from "../lib/normalization";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Types — UNCHANGED ────────────────────────────────────────────────────────
 
 interface SearchBarProps {
   /** Called (debounced 400ms) when input is valid — triggers availability RPC */
@@ -37,12 +42,13 @@ export default function SearchBar({
   onInput,
   defaultTld = "arc",
 }: SearchBarProps) {
-  const [raw,   setRaw]   = useState("");
-  const [tld,   setTld]   = useState<SupportedTLD>(defaultTld);
-  const [hint,  setHint]  = useState<string | null>(null);
+  // ── State — UNCHANGED ──────────────────────────────────────────────────────
+  const [raw,  setRaw]  = useState("");
+  const [tld,  setTld]  = useState<SupportedTLD>(defaultTld);
+  const [hint, setHint] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Process input ──────────────────────────────────────────────────────────
+  // ── processInput — UNCHANGED ───────────────────────────────────────────────
   const processInput = useCallback((value: string, activeTld: SupportedTLD) => {
     const normalized = normalizeLabel(value);
     const error      = validateLabel(normalized);
@@ -79,6 +85,7 @@ export default function SearchBar({
     }, 400);
   }, [onSearch, onInput]);
 
+  // ── Handlers — UNCHANGED ───────────────────────────────────────────────────
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setRaw(value);
@@ -99,82 +106,100 @@ export default function SearchBar({
     }
   }, [raw, tld, onSearch]);
 
-  // Cleanup debounce on unmount
+  // Cleanup debounce on unmount — UNCHANGED
   useEffect(() => () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
   }, []);
 
+  // ── Derived state — UNCHANGED ──────────────────────────────────────────────
   const normalized = normalizeLabel(raw);
   const isValid    = raw.length > 0 && validateLabel(normalized) === null;
   const tier       = isValid ? priceTierFor(normalized) : null;
 
-  return (
-    <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="relative">
+  // ── TLD badge colors ───────────────────────────────────────────────────────
+  const tldActiveStyle: Record<SupportedTLD, React.CSSProperties> = {
+    arc:    { background: "rgba(37, 99, 255, 0.20)", color: "#8FB3FF", border: "1px solid rgba(37,99,255,0.40)" },
+    circle: { background: "rgba(0, 230, 194, 0.16)", color: "#7FFFE3", border: "1px solid rgba(0,230,194,0.36)" },
+  };
+
+    return (
+    <div className="w-full">
+      <form onSubmit={handleSubmit}>
         <div
-          className="flex items-center rounded-2xl border-2 transition-colors"
-          style={{
-            background: 'var(--color-surface-card)',
-            borderColor: hint
-              ? 'rgba(239,68,68,0.6)'
-              : isValid
-                ? 'var(--color-border-accent)'
-                : 'var(--color-border-subtle)',
-          }}
+          className="arcns-searchbar-shell"
+          data-valid={isValid && !hint ? "true" : "false"}
+          data-error={hint ? "true" : "false"}
         >
-          {/* Text input */}
+          <div className="arcns-searchbar-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+              <circle
+                cx="10.5"
+                cy="10.5"
+                r="6.5"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="M15.5 15.5L21 21"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
           <input
             type="text"
             value={raw}
             onChange={handleChange}
-            placeholder="Search for a name…"
+            placeholder="Search for a name..."
             autoComplete="off"
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            className="flex-1 px-5 py-4 text-lg bg-transparent outline-none placeholder-gray-500 min-w-0"
-            style={{ color: 'var(--color-text-primary)' }}
+            className="arcns-searchbar-input"
+            aria-label="Search for an ArcNS name"
           />
 
-          {/* TLD selector */}
-          <div className="flex items-center gap-1 px-3 border-l" style={{ borderColor: 'var(--color-border-subtle)' }}>
+          <div className="arcns-searchbar-divider" aria-hidden="true" />
+
+          <div className="arcns-searchbar-tlds">
             {SUPPORTED_TLDS.map(t => (
               <button
                 key={t}
                 type="button"
                 onClick={() => handleTldChange(t)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${tld === t ? 'text-white' : ''}`}
-                style={tld === t
-                  ? { background: 'var(--color-accent-primary)' }
-                  : { color: 'var(--color-text-secondary)', background: 'transparent' }
-                }
+                className="arcns-searchbar-tld"
+                data-active={tld === t ? "true" : "false"}
+                data-tld={t}
+                aria-pressed={tld === t}
               >
                 .{t}
               </button>
             ))}
           </div>
 
-          {/* Search button */}
           <button
             type="submit"
             disabled={!isValid}
-            className="m-2 px-5 py-2.5 text-white rounded-xl font-semibold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-opacity hover:opacity-90"
-            style={{ background: 'var(--color-accent-primary)' }}
+            className="arcns-searchbar-button"
           >
             Search
           </button>
         </div>
       </form>
 
-      {/* Validation hint */}
       {hint ? (
-        <p className="mt-2 text-sm px-1" style={{ color: 'var(--color-error)' }}>{hint}</p>
+        <p className="mt-3 text-sm px-1" style={{ color: "var(--arcns-danger)" }}>
+          {hint}
+        </p>
       ) : null}
 
-      {/* Price-tier preview — instant, no RPC */}
       {isValid && tier ? (
-        <p className="mt-2 text-sm px-1" style={{ color: 'var(--color-text-tertiary)' }}>
-          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{normalized}.{tld}</span>
+        <p className="mt-3 text-sm px-1" style={{ color: "var(--arcns-text-muted)" }}>
+          <span className="font-semibold" style={{ color: "var(--arcns-text-primary)" }}>
+            {normalized}.{tld}
+          </span>
           {" · "}
           {tier.label} · from {formatUSDC(tier.annualUSDC)}/year
         </p>
