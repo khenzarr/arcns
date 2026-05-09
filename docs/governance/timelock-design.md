@@ -1,6 +1,9 @@
 ﻿# ArcNS Timelock Design
 
-## Status: PREPARED — not yet executed
+## Status: COMPLETE — Deployed and operational (2026-04-29)
+
+**Timelock address:** `0x0f9d898D74f29c69cAD1a66918b41891E73e08f0`  
+**UPGRADER_ROLE migration:** Complete — Timelock holds UPGRADER_ROLE on arcController, circleController, resolver.
 
 ## Overview
 
@@ -132,8 +135,8 @@ The upgrade calldata is the ABI-encoded call to `upgradeTo(newImpl)` or `upgrade
 
 | Phase | Status |
 |---|---|
-| Multisig migration (Safe deployment + role migration) | COMPLETE (pending ORACLE_ROLE residual revoke) |
-| Timelock design | LOCKED (this document) |
-| Timelock deployment | PREPARED — not yet executed |
-| UPGRADER_ROLE migration to timelock | PREPARED — not yet executed |
+| Multisig migration (Safe deployment + role migration) | ✅ COMPLETE |
+| Timelock design | ✅ COMPLETE |
+| Timelock deployment | ✅ COMPLETE — `0x0f9d898D74f29c69cAD1a66918b41891E73e08f0` |
+| UPGRADER_ROLE migration to timelock | ✅ COMPLETE — arcController, circleController, resolver |
 | Treasury migration | DEFERRED — separate pass after timelock is live |

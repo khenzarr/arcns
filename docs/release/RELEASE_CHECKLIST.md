@@ -104,8 +104,16 @@ Run after every contract deploy (or when addresses change).
   cd frontend && npm run build
   ```
 - [ ] Confirm build succeeds with zero errors
-- [ ] Deploy to hosting (Vercel / static host)
-- [ ] Set environment variables on hosting platform (all `NEXT_PUBLIC_*` from `frontend/.env.local`)
+- [ ] Deploy to Vercel:
+  ```
+  cd frontend && vercel --prod
+  ```
+  Or deploy via the Vercel dashboard (push to main branch triggers auto-deploy if configured).
+- [ ] Set environment variables on Vercel (Settings → Environment Variables):
+  - `NEXT_PUBLIC_SUBGRAPH_URL`
+  - `NEXT_PUBLIC_RPC_URL`
+  - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
+- [ ] Verify production app at https://arcns-app.vercel.app
 
 ---
 
@@ -141,3 +149,6 @@ Run before any public demo.
 - [ ] Registration flow completes end-to-end (see smoke test matrix)
 - [ ] Portfolio shows registered names (subgraph or RPC fallback)
 - [ ] Resolve page resolves a known registered name
+- [ ] Resolve `thebstoftimes.arc` → shows owner (from `registrar.ownerOf`), expiry, and "No address record"
+
+> **Note on Resolve owner display:** The Resolve page reads the domain owner from `registrar.ownerOf(tokenId)` (the ERC-721 NFT owner), not from `registry.owner(node)`. For managed second-level names, `registry.owner(node)` returns the registrar contract address — not the user's wallet. This is the correct behavior.

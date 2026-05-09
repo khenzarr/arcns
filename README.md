@@ -33,6 +33,9 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 
 The protocol is fully functional on testnet. Mainnet deployment is gated on an external security audit and operational hardening. See [Mainnet Gap Report](docs/final/MAINNET_GAP_REPORT.md) for the full checklist.
 
+**Production app:** https://arcns-app.vercel.app  
+**Grant reviewer entry point:** [docs/grants/CIRCLE_GRANT_README.md](docs/grants/CIRCLE_GRANT_README.md)
+
 ---
 
 ## Core Capabilities
@@ -119,7 +122,7 @@ Payment flow:
 |----------|---------|
 | ArcNSRegistry | `0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A` |
 | ArcNSResolver (proxy) | `0x4c3a2D4245346732CE498937fEAD6343e77Eb097` |
-| ArcNSReverseRegistrar | `0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57` |
+| ArcNSReverseRegistrar | `0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304` |
 | ArcBaseRegistrar (.arc) | `0xD600B8D80e921ec48845fC1769c292601e5e90C4` |
 | CircleBaseRegistrar (.circle) | `0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a` |
 | ArcController (.arc proxy) | `0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46` |
@@ -259,7 +262,7 @@ See [Subgraph Guide](docs/final/SUBGRAPH_GUIDE.md) for the full deployment flow.
 ### Finalization & Deployment
 | Document | Purpose |
 |----------|---------|
-| [FINAL_STATUS.md](FINAL_STATUS.md) | Authoritative live status — what works, what is tested, what is not mainnet-ready |
+| [FINAL_STATUS.md](docs/final/FINAL_STATUS.md) | Authoritative live status — what works, what is tested, what is not mainnet-ready |
 | [DEPLOYED_ADDRESSES.md](docs/final/DEPLOYED_ADDRESSES.md) | All contract addresses, subgraph URL, explorer links |
 | [RELEASE_SUMMARY.md](docs/final/RELEASE_SUMMARY.md) | What is live, what is v1-scope-only, what is not yet mainnet-ready |
 | [ENVIRONMENT_GUIDE.md](docs/final/ENVIRONMENT_GUIDE.md) | Environment variable reference |
@@ -339,7 +342,7 @@ ArcNS is in active pre-mainnet development. If you are an ecosystem partner, gra
 - **Audit inquiries:** See [AUDIT_SCOPE.md](docs/final/AUDIT_SCOPE.md) for scope and [THREAT_MODEL_SUMMARY.md](docs/final/THREAT_MODEL_SUMMARY.md) for the threat model.
 - **Explorer integration:** See [arcscan-integration-package.md](docs/integration/arcscan-integration-package.md).
 - **Wallet integration:** See [wallet-integration-package.md](docs/integration/wallet-integration-package.md).
-- **Grant / hackathon reviewers:** See [FINAL_STATUS.md](FINAL_STATUS.md) for the authoritative live status and [MAINNET_GAP_REPORT.md](docs/final/MAINNET_GAP_REPORT.md) for the honest gap analysis.
+- **Grant / hackathon reviewers:** See [FINAL_STATUS.md](docs/final/FINAL_STATUS.md) for the authoritative live status and [MAINNET_GAP_REPORT.md](docs/final/MAINNET_GAP_REPORT.md) for the honest gap analysis. Grant reviewer entry point: [CIRCLE_GRANT_README.md](docs/grants/CIRCLE_GRANT_README.md).
 
 ---
 

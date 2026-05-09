@@ -19,10 +19,10 @@ npx hardhat run scripts/v3/deployV3.js --network arc_testnet
 # 3. Confirm output file
 cat deployments/arc_testnet-v3.json | python -m json.tool
 
-# 4. Verify contracts on ArcScan (repeat for each proxy)
-npx hardhat verify --network arc_testnet <ARC_CONTROLLER_ADDRESS>
-npx hardhat verify --network arc_testnet <CIRCLE_CONTROLLER_ADDRESS>
-npx hardhat verify --network arc_testnet <RESOLVER_ADDRESS>
+# 4. Verify contracts on ArcScan (replace placeholders with actual addresses from deployments/arc_testnet-v3.json)
+npx hardhat verify --network arc_testnet <ARC_CONTROLLER_PROXY_ADDRESS>
+npx hardhat verify --network arc_testnet <CIRCLE_CONTROLLER_PROXY_ADDRESS>
+npx hardhat verify --network arc_testnet <RESOLVER_PROXY_ADDRESS>
 ```
 
 **Expected output:** `deployments/arc_testnet-v3.json` with 13 contract addresses, `version: "v3"`.
@@ -173,3 +173,55 @@ npx hardhat console --network arc_testnet
 # > const registry = await ethers.getContractAt("ArcNSRegistry", "<REGISTRY>")
 # > await registry.owner(arcNode)               // must return arcRegistrar address
 ```
+
+---
+
+## RB-9: Deploy Frontend to Production (Vercel)
+
+**When:** After any frontend change or after updating environment variables.
+
+```bash
+# From repo root (requires Vercel CLI installed and authenticated)
+cd frontend && npm run build
+# Then deploy via Vercel dashboard or CLI:
+# vercel --prod
+```
+
+**Verify after deploy:**
+- [ ] https://arcns-app.vercel.app loads
+- [ ] Header shows "ArcNS" with "Testnet" badge
+- [ ] Search for `flowpay.arc` → shows "Taken" badge
+- [ ] My Domains page loads (connect wallet)
+- [ ] Resolve `flowpay.arc` → shows resolved address and owner
+- [ ] Resolve `thebstoftimes.arc` → shows owner, expiry, "No address record"
+
+---
+
+## RB-10: Post-Release Final Checks
+
+**When:** After every production deployment.
+
+```bash
+# 1. Verify production app is live
+curl -I https://arcns-app.vercel.app
+
+# 2. Verify resolution API is responding
+curl https://arcns-app.vercel.app/api/v1/health
+
+# 3. Verify name resolution
+curl https://arcns-app.vercel.app/api/v1/resolve/name/flowpay.arc
+
+# 4. Verify address resolution
+curl https://arcns-app.vercel.app/api/v1/resolve/address/0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D
+```
+
+**Manual checks:**
+- [ ] `/` — home page loads, search works
+- [ ] `/my-domains` — portfolio loads (connect wallet)
+- [ ] `/resolve` — resolve page loads
+- [ ] Resolve `thebstoftimes.arc` — registered name with no address record shows correctly:
+  - Owner shown (from `registrar.ownerOf(tokenId)`, not `registry.owner(node)`)
+  - Expiry shown
+  - "No address record" shown (not "Not registered")
+
+> **Note on Resolve owner display:** The Resolve page reads the domain owner from `registrar.ownerOf(tokenId)` (the ERC-721 NFT owner), not from `registry.owner(node)`. For managed second-level names, `registry.owner(node)` returns the registrar contract address — not the user's wallet. Using `registrar.ownerOf(tokenId)` is the correct source of truth.
