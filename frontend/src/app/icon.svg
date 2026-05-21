@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="arcGrad" x1="256" y1="58" x2="256" y2="432" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#150A7A"/>
+    <stop offset="0.48" stop-color="#2563FF"/>
+    <stop offset="1" stop-color="#00E6FF"/>
+  </linearGradient>
+  <linearGradient id="nodeGrad" x1="256" y1="150" x2="256" y2="380" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#00E6FF"/>
+    <stop offset="1" stop-color="#2563FF"/>
+  </linearGradient>
+</defs>
+<path d="M111 394 C102 267 153 111 256 58 C359 111 410 267 401 394" stroke="url(#arcGrad)" stroke-width="46" stroke-linecap="round"/>
+<path d="M68 419 C147 374 209 366 256 366 C303 366 365 374 444 419" stroke="url(#arcGrad)" stroke-width="23" stroke-linecap="round"/>
+<circle cx="256" cy="174" r="28" fill="url(#nodeGrad)"/>
+<rect x="244" y="199" width="24" height="115" rx="12" fill="url(#nodeGrad)"/>
+<circle cx="256" cy="366" r="36" fill="white" stroke="url(#nodeGrad)" stroke-width="16"/>
+</svg>

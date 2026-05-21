@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "ArcNS — Arc Name Service",
   description:
     "Decentralized naming service for Arc Testnet. Register .arc and .circle domains.",
-  icons: { icon: "/favicon.ico" },
+  icons: { icon: "/icon.svg" },
 };
 
 export default function RootLayout({
