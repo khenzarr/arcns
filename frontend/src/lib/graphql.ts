@@ -10,18 +10,23 @@
  * are NOT touched here — this file is read-only indexed data only.
  */
 
-const SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL || "";
+const PRIMARY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL || "";
+const GOLDSKY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL || "";
 
-const SUBGRAPH_ENABLED =
-  Boolean(SUBGRAPH_URL) && !SUBGRAPH_URL.includes("YOUR_ID");
+function isConfiguredSubgraphUrl(url: string): boolean {
+  return Boolean(url) && !url.includes("YOUR_ID");
+}
 
-async function gqlQuery<T>(
+const PRIMARY_SUBGRAPH_ENABLED = isConfiguredSubgraphUrl(PRIMARY_SUBGRAPH_URL);
+const GOLDSKY_SUBGRAPH_ENABLED = isConfiguredSubgraphUrl(GOLDSKY_SUBGRAPH_URL);
+
+async function gqlQueryFromUrl<T>(
+  url: string,
   query: string,
   variables?: Record<string, unknown>
 ): Promise<T | null> {
-  if (!SUBGRAPH_ENABLED) return null;
   try {
-    const res = await fetch(SUBGRAPH_URL, {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables }),
@@ -34,6 +39,25 @@ async function gqlQuery<T>(
   } catch {
     return null;
   }
+}
+
+async function gqlQuery<T>(
+  query: string,
+  variables?: Record<string, unknown>
+): Promise<T | null> {
+  if (!PRIMARY_SUBGRAPH_ENABLED && !GOLDSKY_SUBGRAPH_ENABLED) return null;
+
+  // Goldsky is an optional fallback endpoint for ArcNS indexed data on Arc Testnet.
+  if (PRIMARY_SUBGRAPH_ENABLED) {
+    const primaryData = await gqlQueryFromUrl<T>(PRIMARY_SUBGRAPH_URL, query, variables);
+    if (primaryData !== null) return primaryData;
+  }
+
+  if (GOLDSKY_SUBGRAPH_ENABLED) {
+    return await gqlQueryFromUrl<T>(GOLDSKY_SUBGRAPH_URL, query, variables);
+  }
+
+  return null;
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
