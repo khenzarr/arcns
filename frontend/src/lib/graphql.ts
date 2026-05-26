@@ -11,6 +11,7 @@
  */
 
 const PRIMARY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL || "";
+const FALLBACK_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL || "";
 const GOLDSKY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL || "";
 
 function isConfiguredSubgraphUrl(url: string): boolean {
@@ -18,7 +19,33 @@ function isConfiguredSubgraphUrl(url: string): boolean {
 }
 
 const PRIMARY_SUBGRAPH_ENABLED = isConfiguredSubgraphUrl(PRIMARY_SUBGRAPH_URL);
+const FALLBACK_SUBGRAPH_ENABLED = isConfiguredSubgraphUrl(FALLBACK_SUBGRAPH_URL);
 const GOLDSKY_SUBGRAPH_ENABLED = isConfiguredSubgraphUrl(GOLDSKY_SUBGRAPH_URL);
+
+function normalizeSubgraphUrl(url: string): string {
+  return url.trim();
+}
+
+function getConfiguredSubgraphEndpoints(): string[] {
+  const orderedCandidates = [
+    PRIMARY_SUBGRAPH_ENABLED ? PRIMARY_SUBGRAPH_URL : "",
+    FALLBACK_SUBGRAPH_ENABLED ? FALLBACK_SUBGRAPH_URL : "",
+    GOLDSKY_SUBGRAPH_ENABLED ? GOLDSKY_SUBGRAPH_URL : "",
+  ];
+
+  const seen = new Set<string>();
+  const endpoints: string[] = [];
+
+  for (const candidate of orderedCandidates) {
+    if (!candidate) continue;
+    const normalized = normalizeSubgraphUrl(candidate);
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    endpoints.push(normalized);
+  }
+
+  return endpoints;
+}
 
 async function gqlQueryFromUrl<T>(
   url: string,
@@ -45,16 +72,12 @@ async function gqlQuery<T>(
   query: string,
   variables?: Record<string, unknown>
 ): Promise<T | null> {
-  if (!PRIMARY_SUBGRAPH_ENABLED && !GOLDSKY_SUBGRAPH_ENABLED) return null;
+  const endpoints = getConfiguredSubgraphEndpoints();
+  if (endpoints.length === 0) return null;
 
-  // Goldsky is an optional fallback endpoint for ArcNS indexed data on Arc Testnet.
-  if (PRIMARY_SUBGRAPH_ENABLED) {
-    const primaryData = await gqlQueryFromUrl<T>(PRIMARY_SUBGRAPH_URL, query, variables);
-    if (primaryData !== null) return primaryData;
-  }
-
-  if (GOLDSKY_SUBGRAPH_ENABLED) {
-    return await gqlQueryFromUrl<T>(GOLDSKY_SUBGRAPH_URL, query, variables);
+  for (const endpoint of endpoints) {
+    const data = await gqlQueryFromUrl<T>(endpoint, query, variables);
+    if (data !== null) return data;
   }
 
   return null;
