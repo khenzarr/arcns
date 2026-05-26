@@ -41,6 +41,7 @@ Copy from `frontend/.env.local.example` if it exists, or create manually:
 # frontend/.env.local
 
 NEXT_PUBLIC_SUBGRAPH_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
+NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL=
 NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
 ```
@@ -48,6 +49,7 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `NEXT_PUBLIC_SUBGRAPH_URL` | Yes | The Graph Studio query URL for `arcnslatest`. Used for portfolio, history, and reverse resolution. |
+| `NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL` | Optional | Goldsky fallback subgraph URL for ArcNS indexed reads on Arc Testnet. Queried only if the primary subgraph endpoint fails or returns unusable data. |
 | `NEXT_PUBLIC_RPC_URL` | Yes | Arc Testnet RPC endpoint. Used as fallback when subgraph is unavailable. |
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | Yes | WalletConnect v2 project ID. Get from https://cloud.walletconnect.com |
 
@@ -56,6 +58,7 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
 - `frontend/.env.local` is in `.gitignore`. Never commit it.
 - Contract addresses are **not** in `.env.local`. They are generated into `frontend/src/lib/generated-contracts.ts` by `scripts/generate-frontend-config.js`. Do not hand-edit `generated-contracts.ts`.
 - If the subgraph URL changes (e.g. after a new subgraph version is deployed), update `NEXT_PUBLIC_SUBGRAPH_URL` and restart the dev server or redeploy.
+- Keep `NEXT_PUBLIC_SUBGRAPH_URL` as the primary endpoint. `NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL` is optional fallback only.
 
 ---
 
