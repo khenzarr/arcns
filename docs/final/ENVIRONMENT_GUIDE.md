@@ -40,7 +40,8 @@ Copy from `frontend/.env.local.example` if it exists, or create manually:
 ```bash
 # frontend/.env.local
 
-NEXT_PUBLIC_SUBGRAPH_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
+NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn
+NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
 NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL=
 NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
@@ -48,8 +49,9 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `NEXT_PUBLIC_SUBGRAPH_URL` | Yes | The Graph Studio query URL for `arcnslatest`. Used for portfolio, history, and reverse resolution. |
-| `NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL` | Optional | Goldsky fallback subgraph URL for ArcNS indexed reads on Arc Testnet. Queried only if the primary subgraph endpoint fails or returns unusable data. |
+| `NEXT_PUBLIC_SUBGRAPH_URL` | Yes | Primary subgraph endpoint for indexed reads (portfolio, history, reverse resolution). Recommended production value: Goldsky product endpoint. |
+| `NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL` | Optional | Generic fallback subgraph endpoint. Queried only if `NEXT_PUBLIC_SUBGRAPH_URL` fails or returns unusable data. Recommended production value: legacy The Graph Studio endpoint. |
+| `NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL` | Optional | Backward-compatible additional fallback endpoint. Queried after `NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL` only when configured and different. |
 | `NEXT_PUBLIC_RPC_URL` | Yes | Arc Testnet RPC endpoint. Used as fallback when subgraph is unavailable. |
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | Yes | WalletConnect v2 project ID. Get from https://cloud.walletconnect.com |
 
@@ -58,7 +60,10 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
 - `frontend/.env.local` is in `.gitignore`. Never commit it.
 - Contract addresses are **not** in `.env.local`. They are generated into `frontend/src/lib/generated-contracts.ts` by `scripts/generate-frontend-config.js`. Do not hand-edit `generated-contracts.ts`.
 - If the subgraph URL changes (e.g. after a new subgraph version is deployed), update `NEXT_PUBLIC_SUBGRAPH_URL` and restart the dev server or redeploy.
-- Keep `NEXT_PUBLIC_SUBGRAPH_URL` as the primary endpoint. `NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL` is optional fallback only.
+- Keep `NEXT_PUBLIC_SUBGRAPH_URL` as the primary endpoint.
+- Use `NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL` as the preferred generic fallback endpoint.
+- `NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL` remains optional for backward compatibility as an additional fallback.
+- RPC fallback behavior remains unchanged and is still used when indexed endpoints fail or return unusable data.
 
 ---
 
@@ -68,7 +73,8 @@ When deploying to Vercel, set the following environment variables in the Vercel 
 
 | Variable | Value |
 |----------|-------|
-| `NEXT_PUBLIC_SUBGRAPH_URL` | `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3` |
+| `NEXT_PUBLIC_SUBGRAPH_URL` | `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn` |
+| `NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL` | `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3` |
 | `NEXT_PUBLIC_RPC_URL` | `https://rpc.testnet.arc.network` |
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | Your WalletConnect project ID |
 
@@ -84,9 +90,14 @@ The Graph Studio query URL format is:
 https://api.studio.thegraph.com/query/<STUDIO_ID>/arcnslatest/<VERSION>
 ```
 
-Current production URL:
+Legacy The Graph Studio URL:
 ```
 https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
+```
+
+Recommended Goldsky primary URL:
+```
+https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn
 ```
 
 After deploying a new subgraph version, update `NEXT_PUBLIC_SUBGRAPH_URL` to the new version URL. See [SUBGRAPH_GUIDE.md](SUBGRAPH_GUIDE.md) for the full subgraph deployment flow.
