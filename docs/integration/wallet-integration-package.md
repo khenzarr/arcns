@@ -135,7 +135,7 @@ GET /api/v1/resolve/address/{address}
 
 The `/address/` endpoint will include a `verified` field — `true` only if forward-confirmation passed. Wallets must check `verified: true` before displaying a primary name.
 
-The ArcNS resolution API is publicly hosted at `https://arcns-app.vercel.app`. Wallets may use the v1 endpoints directly. For security-critical operations (sending funds), always verify the returned address via direct RPC before executing a transaction.
+The ArcNS resolution API is publicly hosted at `https://arcname.services`. Wallets may use the v1 endpoints directly. Previous Vercel URL (legacy): `https://arcns-app.vercel.app`. For security-critical operations (sending funds), always verify the returned address via direct RPC before executing a transaction.
 
 ### 3.4 Minimum ABI required
 

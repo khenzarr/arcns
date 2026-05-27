@@ -80,7 +80,8 @@
 
 | Field | Value |
 |-------|-------|
-| URL | https://arcns-app.vercel.app |
+| URL | https://arcname.services |
+| Previous Vercel URL (legacy) | https://arcns-app.vercel.app |
 | Hosting | Vercel |
 | Status | Live |
 

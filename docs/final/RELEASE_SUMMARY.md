@@ -4,7 +4,8 @@
 **Network:** Arc Testnet (Chain ID: 5042002)  
 **Initial Deployment:** 2026-04-24  
 **Security Migration:** 2026-04-29  
-**Production App:** https://arcns-app.vercel.app
+**Production App:** https://arcname.services
+**Previous Vercel URL (legacy):** https://arcns-app.vercel.app
 
 ---
 
@@ -31,10 +32,12 @@ All 8 v3 contracts are deployed and operational:
 
 ### Frontend
 
-- Production app live at https://arcns-app.vercel.app
+- Production app live at https://arcname.services
 - Pages: Home/Search, My Domains (portfolio + history + primary name), Resolve
 - Indexed data reads use Goldsky as primary, The Graph Studio as fallback, with RPC fallback preserved
 - Public resolution API: `/api/v1/resolve/name/{name}`, `/api/v1/resolve/address/{address}`
+
+> Historical note: earlier release/deployment material referenced `https://arcns-app.vercel.app`. The current official production domain is `https://arcname.services`.
 
 ### Indexed Data Layer
 

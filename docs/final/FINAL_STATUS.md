@@ -3,13 +3,14 @@
 **Date:** 2026-05-09  
 **Network:** Arc Testnet (Chain ID: 5042002)  
 **Version:** v3  
-**Production App:** https://arcns-app.vercel.app
+**Production App:** https://arcname.services
+**Previous Vercel URL (legacy):** https://arcns-app.vercel.app
 
 ---
 
 ## Current Status: Live on Arc Testnet · Demo-Ready · Pre-Mainnet
 
-ArcNS is fully deployed and operational on Arc Testnet. The production frontend is live at https://arcns-app.vercel.app. Core registration, renewal, resolution, and primary-name flows are working end-to-end.
+ArcNS is fully deployed and operational on Arc Testnet. The production frontend is live at https://arcname.services. Core registration, renewal, resolution, and primary-name flows are working end-to-end.
 
 This is a testnet deployment. No real funds are at risk. ArcNS is not a financial product. Mainnet deployment is gated on an external security audit and operational hardening.
 
