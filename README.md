@@ -25,7 +25,7 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 | Component | Status |
 |-----------|--------|
 | All 8 v3 contracts | Deployed on Arc Testnet (2026-04-24) |
-| Subgraph (`arcnslatest`) | Published on The Graph Studio |
+| Indexed data layer | Goldsky primary (Arc Testnet), The Graph Studio fallback, RPC fallback preserved |
 | Frontend (Next.js) | Functional, v3-wired, local dev |
 | Contract test suite | ~180 passing tests, zero failures |
 | Live smoke tests | 10 flows verified on-chain |
@@ -55,8 +55,10 @@ Any address can set a primary name via the ReverseRegistrar. The protocol stores
 ### NFT Ownership
 Names are ERC-721 tokens on the BaseRegistrar contracts. Token ID is `uint256(keccak256(label))`. `tokenURI` returns fully on-chain JSON metadata with an inline SVG image — no external fetch required.
 
-### Subgraph
-The `arcnslatest` subgraph indexes registrations, renewals, transfers, address record changes, and reverse record changes. It powers the portfolio view and transaction history in the frontend.
+### Indexed Data Layer
+ArcNS production uses Goldsky as the primary indexed data source on Arc Testnet. The legacy The Graph Studio endpoint is retained as a fallback, and direct RPC fallback is preserved for resilience.
+
+The indexed data layer powers registrations/renewals history, transfers, resolver record changes, reverse record changes, and portfolio views in the frontend.
 
 ---
 
@@ -130,7 +132,9 @@ Payment flow:
 | ArcNSPriceOracle | `0xde9b95B560f5e803f5Cc045f27285F0226913548` |
 | USDC (Arc Testnet) | `0x3600000000000000000000000000000000000000` |
 
-**Subgraph:** `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3`  
+**Primary indexed endpoint (Goldsky):** `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn`
+**Fallback indexed endpoint (The Graph Studio):** `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3`
+**RPC fallback:** `https://rpc.testnet.arc.network`
 **Explorer:** `https://testnet.arcscan.app`  
 **Canonical addresses:** `deployments/arc_testnet-v3.json` → `frontend/src/lib/generated-contracts.ts`
 
@@ -207,7 +211,8 @@ cp .env.example .env
 Frontend environment:
 ```bash
 # frontend/.env.local
-NEXT_PUBLIC_SUBGRAPH_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
+NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn
+NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
 NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
 ```

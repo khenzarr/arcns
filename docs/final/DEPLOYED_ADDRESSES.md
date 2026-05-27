@@ -64,13 +64,15 @@
 
 ---
 
-## Subgraph
+## Indexed Data Layer
 
 | Field | Value |
 |-------|-------|
-| Subgraph name | `arcnslatest` |
-| Query URL | `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3` |
-| Hosted on | The Graph Studio |
+| Primary indexed endpoint | Goldsky `arcns-product/v0.1.0` |
+| Primary query URL | `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn` |
+| Fallback indexed endpoint | The Graph Studio `arcnslatest/v3` |
+| Fallback query URL | `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3` |
+| RPC fallback | `https://rpc.testnet.arc.network` |
 
 ---
 

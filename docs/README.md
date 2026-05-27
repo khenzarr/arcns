@@ -30,7 +30,8 @@ ArcNS is a decentralized naming protocol for Arc. It maps human-readable `.arc` 
 - **Live app:** https://arcns-app.vercel.app
 - **GitHub:** https://github.com/khenzarr/arcns
 - **Explorer:** https://testnet.arcscan.app
-- **Subgraph:** https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
+- **Primary indexed endpoint (Goldsky):** https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn
+- **Fallback indexed endpoint (The Graph Studio):** https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
 
 ---
 
@@ -38,11 +39,11 @@ ArcNS is a decentralized naming protocol for Arc. It maps human-readable `.arc` 
 
 | Document | Purpose |
 |----------|---------|
-| [final/DEPLOYED_ADDRESSES.md](final/DEPLOYED_ADDRESSES.md) | All contract addresses, subgraph URL, explorer links |
+| [final/DEPLOYED_ADDRESSES.md](final/DEPLOYED_ADDRESSES.md) | All contract addresses, indexed endpoint URLs, explorer links |
 | [final/RELEASE_SUMMARY.md](final/RELEASE_SUMMARY.md) | What is live, what is v1-scope-only, what is not yet mainnet-ready |
 | [final/FINAL_STATUS.md](final/FINAL_STATUS.md) | Authoritative live status — what works, what is tested, what is not mainnet-ready |
 | [final/ENVIRONMENT_GUIDE.md](final/ENVIRONMENT_GUIDE.md) | `.env` and `.env.local` variable reference |
-| [final/SUBGRAPH_GUIDE.md](final/SUBGRAPH_GUIDE.md) | Subgraph build, deploy, and frontend consumption |
+| [final/SUBGRAPH_GUIDE.md](final/SUBGRAPH_GUIDE.md) | Indexing guide: Goldsky primary, The Graph fallback, RPC fallback behavior |
 | [final/SMOKE_TEST_RESULTS.md](final/SMOKE_TEST_RESULTS.md) | Live manual test results on Arc Testnet |
 
 ---
@@ -107,6 +108,11 @@ ArcNS is a decentralized naming protocol for Arc. It maps human-readable `.arc` 
 | [integration/wallet-integration-package.md](integration/wallet-integration-package.md) | Implementation-grade wallet integration spec |
 | [integration/dapp-fallback-ux.md](integration/dapp-fallback-ux.md) | In-app fallback UX while native ecosystem support is pending |
 | [integration/integration-reality-audit.md](integration/integration-reality-audit.md) | Phase 8A — what is available on-chain vs what external tools consume |
+| [integration/GOLDSKY_ARCNS_INTEGRATION_PLAN.md](integration/GOLDSKY_ARCNS_INTEGRATION_PLAN.md) | Goldsky integration plan and production indexing migration scope |
+| [integration/GOLDSKY_PHASE1_BUILD_READINESS.md](integration/GOLDSKY_PHASE1_BUILD_READINESS.md) | Goldsky Phase 1 build readiness report |
+| [integration/GOLDSKY_PHASE2_PRODUCT_DEPLOY_REPORT.md](integration/GOLDSKY_PHASE2_PRODUCT_DEPLOY_REPORT.md) | Goldsky Phase 2 product deployment report |
+| [integration/GOLDSKY_PHASE3_SYNC_PARITY_REPORT.md](integration/GOLDSKY_PHASE3_SYNC_PARITY_REPORT.md) | Goldsky Phase 3 sync/parity validation report |
+| [integration/GOLDSKY_PHASE3_FINAL_SYNC_PARITY_REPORT.md](integration/GOLDSKY_PHASE3_FINAL_SYNC_PARITY_REPORT.md) | Goldsky final sync/parity report (healthy/active/synced) |
 
 ---
 
@@ -115,5 +121,5 @@ ArcNS is a decentralized naming protocol for Arc. It maps human-readable `.arc` 
 | Document | Purpose |
 |----------|---------|
 | [grants/CIRCLE_GRANT_README.md](grants/CIRCLE_GRANT_README.md) | Circle 2026 Cohort 2 grant application overview |
-| [grants/DEMO_VIDEO_SCRIPT.md](grants/DEMO_VIDEO_SCRIPT.md) | 3–5 minute demo video script |
+| [final/FOUNDER_DEMO_SCRIPT.md](final/FOUNDER_DEMO_SCRIPT.md) | 3–5 minute live demo script |
 | [grants/INVESTOR_DECK_OUTLINE.md](grants/INVESTOR_DECK_OUTLINE.md) | 8–10 slide deck outline |

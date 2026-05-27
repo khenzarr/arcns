@@ -27,7 +27,7 @@ This is a testnet deployment. No real funds are at risk. ArcNS is not a financia
 | Primary name set (My Domains) | ✅ Working | `ReverseRegistrar.setName()` |
 | NFT ownership (ERC-721) | ✅ Working | `BaseRegistrar.ownerOf(tokenId)` |
 | On-chain SVG metadata | ✅ Working | `tokenURI` returns base64 JSON + inline SVG |
-| Subgraph (`arcnslatest`) | ✅ Working | Indexed on The Graph Studio |
+| Indexed data layer | ✅ Working | Goldsky primary on Arc Testnet, The Graph Studio fallback, RPC fallback preserved |
 | Portfolio view (My Domains) | ✅ Working | Subgraph-first, RPC fallback |
 | Transaction history | ✅ Working | Registrations and renewals |
 | Wrong-network guard | ✅ Working | Blocks writes on wrong chain |
@@ -79,7 +79,7 @@ The Resolve page empty-state (search bar and Identity Inspector card) has minor 
 - **Not mainnet.** This is Arc Testnet. No real USDC. No real funds.
 - **External audit pending.** No external audit has been completed. The protocol has undergone internal review and security hardening, but external audit is required before mainnet.
 - **Treasury is an EOA.** Registration fees go to an EOA treasury. Migration to a multisig-controlled contract is planned.
-- **No ecosystem integrations yet.** ArcScan, wallets, and third-party dApps have not yet integrated ArcNS. Integration packages are ready and documented.
+- **External native integrations pending.** ArcScan, wallets, and third-party dApps have not yet completed native ArcNS integration. ArcNS now uses Goldsky indexing infrastructure in production and is listed in ArcLens under Identity.
 
 ---
 
