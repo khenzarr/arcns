@@ -33,7 +33,8 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 
 The protocol is fully functional on testnet. Mainnet deployment is gated on an external security audit and operational hardening. See [Mainnet Gap Report](docs/final/MAINNET_GAP_REPORT.md) for the full checklist.
 
-**Production app:** https://arcns-app.vercel.app  
+**Production app:** https://arcname.services
+**Previous Vercel URL (legacy):** https://arcns-app.vercel.app
 **Grant reviewer entry point:** [docs/grants/CIRCLE_GRANT_README.md](docs/grants/CIRCLE_GRANT_README.md)
 
 ---

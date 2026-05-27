@@ -55,7 +55,7 @@ Circle's USDC is the payment token for the entire ArcNS economy. This is not a r
 | Multisig (2-of-3 Safe) | Live |
 | Timelock (48h upgrade delay) | Live |
 | Indexed data layer | Goldsky primary (`arcns-product/v0.1.0`), The Graph Studio fallback, RPC fallback preserved |
-| Production frontend | Live at https://arcns-app.vercel.app |
+| Production frontend | Live at https://arcname.services |
 | Contract test suite | ~180 passing tests, zero failures |
 | External security audit | Not yet completed — required before mainnet |
 
@@ -63,7 +63,9 @@ Circle's USDC is the payment token for the entire ArcNS economy. This is not a r
 
 ## Live App
 
-**https://arcns-app.vercel.app**
+**https://arcname.services**
+
+Previous Vercel URL (legacy/reference): https://arcns-app.vercel.app
 
 - Home/Search: search and register `.arc` and `.circle` names
 - My Domains: portfolio, transaction history, primary name management
@@ -148,7 +150,9 @@ Full address table: [docs/final/DEPLOYED_ADDRESSES.md](../final/DEPLOYED_ADDRESS
 - Proposal was submitted and is currently in review.
 - The final demo video update was posted via Questbook comments (proposal body was not editable after submission).
 - Goldsky primary indexing is now live in production on Arc Testnet.
-- ArcNS remains live at https://arcns-app.vercel.app on Arc Testnet (pre-mainnet, external audit pending).
+- ArcNS official production domain is now https://arcname.services.
+- Prior submitted/grant material may still reference https://arcns-app.vercel.app.
+- ArcNS remains live on Arc Testnet (pre-mainnet, external audit pending).
 - ArcNS is listed on ArcLens under the Identity category.
 - During the grant period, ArcNS reached 100+ holders and 142+ registered `.arc` / `.circle` names.
 
@@ -187,7 +191,8 @@ Full gap analysis: [docs/final/MAINNET_GAP_REPORT.md](../final/MAINNET_GAP_REPOR
 
 | Resource | URL |
 |----------|-----|
-| Live app | https://arcns-app.vercel.app |
+| Live app | https://arcname.services |
+| Previous Vercel URL (legacy) | https://arcns-app.vercel.app |
 | GitHub | https://github.com/khenzarr/arcns |
 | Explorer | https://testnet.arcscan.app |
 | Primary indexed endpoint (Goldsky) | https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn |

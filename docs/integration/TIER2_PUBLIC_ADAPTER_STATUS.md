@@ -3,19 +3,20 @@
 **Date:** 2026-04-26  
 **Network:** Arc Testnet (Chain ID: 5042002)  
 **Milestone:** Tier 2 — Public Adapter Deployment  
-**Status:** Complete · Live at `https://arcns-app.vercel.app`
+**Status:** Complete · Live at `https://arcname.services`
 
 ---
 
 ## 1. What Is Now Publicly Reachable
 
-**Public base URL:** `https://arcns-app.vercel.app`
+**Public base URL:** `https://arcname.services`
+**Previous Vercel URL (legacy):** `https://arcns-app.vercel.app`
 
 | Endpoint | Status |
 |----------|--------|
-| `GET https://arcns-app.vercel.app/api/v1/health` | ✅ Live |
-| `GET https://arcns-app.vercel.app/api/v1/resolve/name/{name}` | ✅ Live |
-| `GET https://arcns-app.vercel.app/api/v1/resolve/address/{address}` | ✅ Live |
+| `GET https://arcname.services/api/v1/health` | ✅ Live |
+| `GET https://arcname.services/api/v1/resolve/name/{name}` | ✅ Live |
+| `GET https://arcname.services/api/v1/resolve/address/{address}` | ✅ Live |
 
 **Hosting surface:** The adapter is co-located with the ArcNS Next.js frontend on Vercel. The `/api/v1/*` routes are standard Next.js App Router API routes served from the same deployment. This is acceptable for the current testnet phase.
 
@@ -153,7 +154,7 @@ After ArcScan outreach is initiated, the next priority is wallet partner outreac
 | 2A — Hosting plan | `docs/integration/adapter-hosting-plan.md` | ✅ |
 | 2B — Deployment audit | `docs/integration/adapter-deployment-audit.md` | ✅ |
 | 2C — ABI artifact fix | `frontend/src/lib/abis/` populated, `abis.ts` imports updated | ✅ |
-| 2D — Vercel deployment | Adapter live at `https://arcns-app.vercel.app` | ✅ |
+| 2D — Vercel deployment | Adapter live at `https://arcname.services` | ✅ |
 | 2E — Docs / URL update | All integration docs updated with live URL, stale wording removed | ✅ |
 | 2F — Final status | This document | ✅ |
 

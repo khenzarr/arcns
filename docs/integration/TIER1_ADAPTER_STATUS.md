@@ -3,7 +3,8 @@
 **Date:** 2026-04-26  
 **Network:** Arc Testnet (Chain ID: 5042002)  
 **Milestone:** Tier 1 — Public Resolution Adapter / API Hardening  
-**Status:** Complete · Live at `https://arcns-app.vercel.app`
+**Status:** Complete · Live at `https://arcname.services`
+**Previous Vercel URL (legacy):** `https://arcns-app.vercel.app`
 
 ---
 
@@ -107,9 +108,9 @@ The adapter is deployed and publicly accessible. Verified live endpoints:
 
 | Endpoint | Status |
 |----------|--------|
-| `https://arcns-app.vercel.app/api/v1/health` | ✅ Live |
-| `https://arcns-app.vercel.app/api/v1/resolve/name/{name}` | ✅ Live |
-| `https://arcns-app.vercel.app/api/v1/resolve/address/{address}` | ✅ Live |
+| `https://arcname.services/api/v1/health` | ✅ Live |
+| `https://arcname.services/api/v1/resolve/name/{name}` | ✅ Live |
+| `https://arcname.services/api/v1/resolve/address/{address}` | ✅ Live |
 
 **Deployment note:** The Vercel build requires ABI artifact JSON files at `frontend/src/lib/abis/`. The v3 ABI artifacts were copied from the repo-root `artifacts/` path into that directory, and `frontend/src/lib/abis.ts` imports were updated accordingly. The hosted build cannot resolve paths outside the `frontend/` tree.
 
@@ -132,7 +133,7 @@ The adapter is deployed and publicly accessible. Verified live endpoints:
 
 ### Adapter is live and consumable
 
-The public base URL `https://arcns-app.vercel.app` is stable. ArcScan, wallet teams, and third-party dApps can integrate against it immediately. No further adapter changes are required for initial ecosystem handoff.
+The public base URL `https://arcname.services` is stable. ArcScan, wallet teams, and third-party dApps can integrate against it immediately. No further adapter changes are required for initial ecosystem handoff.
 
 ### Docs ready for third-party handoff
 
@@ -184,4 +185,4 @@ Recommended path:
 | 1F — Status | This document | ✅ |
 | **2E — URL update** | **Public URL documented, stale local-only wording removed** | ✅ |
 
-**Tier 1 is complete. The ArcNS public resolution adapter is live at `https://arcns-app.vercel.app`.**
+**Tier 1 is complete. The ArcNS public resolution adapter is live at `https://arcname.services`.**

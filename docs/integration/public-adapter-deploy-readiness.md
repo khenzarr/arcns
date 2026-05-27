@@ -2,7 +2,8 @@
 
 **Date:** 2026-04-26  
 **Status:** Live · Publicly hosted on Vercel  
-**Public base URL:** `https://arcns-app.vercel.app`
+**Public base URL:** `https://arcname.services`
+**Previous Vercel URL (legacy):** `https://arcns-app.vercel.app`
 
 ---
 
@@ -10,13 +11,13 @@
 
 ### What is implemented and live
 
-The adapter is deployed and publicly accessible at `https://arcns-app.vercel.app`. The following endpoints are verified live:
+The adapter is deployed and publicly accessible at `https://arcname.services`. The following endpoints are verified live:
 
 | Endpoint | Status |
 |----------|--------|
-| `https://arcns-app.vercel.app/api/v1/health` | ✅ Live |
-| `https://arcns-app.vercel.app/api/v1/resolve/name/{name}` | ✅ Live |
-| `https://arcns-app.vercel.app/api/v1/resolve/address/{address}` | ✅ Live |
+| `https://arcname.services/api/v1/health` | ✅ Live |
+| `https://arcname.services/api/v1/resolve/name/{name}` | ✅ Live |
+| `https://arcname.services/api/v1/resolve/address/{address}` | ✅ Live |
 
 **Note on `not_found` responses:** A name that exists on-chain but has no `addr` record set (e.g. `test1.arc`) correctly returns `status: "not_found"` with hint `"Name has no address record set."` — this is expected and correct behavior, not a bug.
 
@@ -167,7 +168,7 @@ Malformed inputs are rejected at the validation layer with HTTP 400. No RPC or s
 - [x] CORS preflight (`OPTIONS`) handlers
 - [x] Health endpoint
 - [x] 65 passing adapter tests
-- [x] **Deployed to public host** — `https://arcns-app.vercel.app`
+- [x] **Deployed to public host** — `https://arcname.services`
 - [x] **Public endpoints verified live**
 
 ### Ready with small changes
@@ -190,6 +191,8 @@ Malformed inputs are rejected at the validation layer with HTTP 400. No RPC or s
 
 ## 6. Time to Public Deployment
 
-**Deployment is complete.** The adapter is live at `https://arcns-app.vercel.app`.
+**Deployment is complete.** The adapter is live at `https://arcname.services`.
+
+Historical note: earlier deployment material referenced `https://arcns-app.vercel.app`.
 
 The remaining work items (rate limiting, logging, monitoring) are operational improvements for production hardening, not blockers for ecosystem integration outreach.

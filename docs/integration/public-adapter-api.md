@@ -3,7 +3,8 @@
 **Version:** v1  
 **Network:** Arc Testnet (Chain ID: 5042002)  
 **Status:** Live · Publicly hosted  
-**Public base URL:** `https://arcns-app.vercel.app`  
+**Public base URL:** `https://arcname.services`
+**Previous Vercel URL (legacy):** `https://arcns-app.vercel.app`
 **Base path:** `/api/v1`
 
 ---
@@ -14,9 +15,9 @@ The adapter is live and publicly accessible:
 
 | Endpoint | URL |
 |----------|-----|
-| Health | `https://arcns-app.vercel.app/api/v1/health` |
-| Name resolution | `https://arcns-app.vercel.app/api/v1/resolve/name/{name}` |
-| Address resolution | `https://arcns-app.vercel.app/api/v1/resolve/address/{address}` |
+| Health | `https://arcname.services/api/v1/health` |
+| Name resolution | `https://arcname.services/api/v1/resolve/name/{name}` |
+| Address resolution | `https://arcname.services/api/v1/resolve/address/{address}` |
 
 ---
 
