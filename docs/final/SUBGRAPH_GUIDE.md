@@ -1,15 +1,19 @@
-# ArcNS — Subgraph Guide
+# ArcNS — Indexing Guide
 
-**Subgraph name:** `arcnslatest`  
-**Query URL:** `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3`  
-**Hosted on:** The Graph Studio  
+**Primary indexed endpoint (Goldsky):** `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn`
+**Fallback indexed endpoint (The Graph Studio):** `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3`
+**RPC fallback:** `https://rpc.testnet.arc.network`
+**Primary Goldsky subgraph:** `arcns-product/v0.1.0`
+**Legacy Graph subgraph:** `arcnslatest`
 **Source:** `indexer/` directory
 
 ---
 
 ## Overview
 
-The `arcnslatest` subgraph indexes ArcNS contract events on Arc Testnet and provides fast, queryable access to domain registrations, renewals, transfers, address records, and reverse records.
+ArcNS production indexing on Arc Testnet uses Goldsky as the primary indexed data source, with The Graph Studio retained as a legacy indexed fallback and direct RPC fallback preserved.
+
+Both indexed endpoints provide fast, queryable access to domain registrations, renewals, transfers, address records, and reverse records.
 
 The subgraph is a **speed layer** — it provides indexed data for display purposes. It is not a trust layer. For security-sensitive operations (availability checks, ownership verification, transaction routing), always verify with direct RPC calls.
 
@@ -29,7 +33,29 @@ The subgraph is a **speed layer** — it provides indexed data for display purpo
 
 ---
 
-## Build and Deploy
+## Production Endpoint Order
+
+1. **Goldsky primary**
+2. **The Graph Studio fallback**
+3. **RPC fallback**
+
+The frontend queries in this order for resilient read behavior.
+
+---
+
+## Goldsky References (Production)
+
+For Goldsky integration and parity details, see:
+
+- [../integration/GOLDSKY_ARCNS_INTEGRATION_PLAN.md](../integration/GOLDSKY_ARCNS_INTEGRATION_PLAN.md)
+- [../integration/GOLDSKY_PHASE1_BUILD_READINESS.md](../integration/GOLDSKY_PHASE1_BUILD_READINESS.md)
+- [../integration/GOLDSKY_PHASE2_PRODUCT_DEPLOY_REPORT.md](../integration/GOLDSKY_PHASE2_PRODUCT_DEPLOY_REPORT.md)
+- [../integration/GOLDSKY_PHASE3_SYNC_PARITY_REPORT.md](../integration/GOLDSKY_PHASE3_SYNC_PARITY_REPORT.md)
+- [../integration/GOLDSKY_PHASE3_FINAL_SYNC_PARITY_REPORT.md](../integration/GOLDSKY_PHASE3_FINAL_SYNC_PARITY_REPORT.md)
+
+---
+
+## The Graph Studio Deploy Flow (Legacy / Fallback)
 
 ### Prerequisites
 
@@ -68,7 +94,7 @@ graph codegen
 graph build
 ```
 
-### Step 4 — Authenticate with Graph Studio
+### Step 4 — Authenticate with Graph Studio (legacy/fallback)
 
 ```bash
 graph auth --studio <YOUR_DEPLOY_KEY>
@@ -76,7 +102,7 @@ graph auth --studio <YOUR_DEPLOY_KEY>
 
 The deploy key is available in The Graph Studio dashboard. Never store it in files or commit it.
 
-### Step 5 — Deploy
+### Step 5 — Deploy (legacy/fallback)
 
 ```bash
 graph deploy arcnslatest
@@ -84,7 +110,7 @@ graph deploy arcnslatest
 
 You will be prompted for a version label (e.g. `v3`, `v3.1`).
 
-### Step 6 — Verify sync
+### Step 6 — Verify sync (legacy/fallback)
 
 - Open The Graph Studio dashboard
 - Confirm `arcnslatest` is syncing
@@ -92,14 +118,16 @@ You will be prompted for a version label (e.g. `v3`, `v3.1`).
 
 ---
 
-## Updating the Frontend Subgraph URL
+## Updating Indexed Endpoints in Frontend Environment
 
-After deploying a new subgraph version:
+When endpoint versions change:
 
-1. Get the new query URL from The Graph Studio (format: `https://api.studio.thegraph.com/query/<ID>/arcnslatest/<version>`)
+1. Get the primary Goldsky URL and fallback Graph Studio URL
 2. Update `frontend/.env.local`:
    ```
-   NEXT_PUBLIC_SUBGRAPH_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/<new-version>
+   NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/<version>/gn
+   NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/<new-version>
+   NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
    ```
 3. Update the Vercel environment variable in the Vercel project settings
 4. Redeploy the frontend

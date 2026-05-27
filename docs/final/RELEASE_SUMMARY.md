@@ -33,12 +33,14 @@ All 8 v3 contracts are deployed and operational:
 
 - Production app live at https://arcns-app.vercel.app
 - Pages: Home/Search, My Domains (portfolio + history + primary name), Resolve
-- Subgraph-first data with RPC fallback
+- Indexed data reads use Goldsky as primary, The Graph Studio as fallback, with RPC fallback preserved
 - Public resolution API: `/api/v1/resolve/name/{name}`, `/api/v1/resolve/address/{address}`
 
-### Subgraph
+### Indexed Data Layer
 
-- `arcnslatest` published on The Graph Studio
+- Goldsky primary indexed endpoint: `arcns-product/v0.1.0`
+- Goldsky query URL: `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn`
+- Legacy The Graph Studio fallback: `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3`
 - Indexes: registrations, renewals, transfers, address records, reverse records
 
 ---

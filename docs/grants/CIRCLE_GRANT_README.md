@@ -54,7 +54,7 @@ Circle's USDC is the payment token for the entire ArcNS economy. This is not a r
 | Security migration | Complete (2026-04-29) |
 | Multisig (2-of-3 Safe) | Live |
 | Timelock (48h upgrade delay) | Live |
-| Subgraph (`arcnslatest`) | Published on The Graph Studio |
+| Indexed data layer | Goldsky primary (`arcns-product/v0.1.0`), The Graph Studio fallback, RPC fallback preserved |
 | Production frontend | Live at https://arcns-app.vercel.app |
 | Contract test suite | ~180 passing tests, zero failures |
 | External security audit | Not yet completed — required before mainnet |
@@ -78,7 +78,7 @@ Circle's USDC is the payment token for the entire ArcNS economy. This is not a r
 - `contracts/v3/` — all 8 v3 contracts
 - `deployments/arc_testnet-v3.json` — canonical deployed addresses
 - `frontend/` — Next.js 14 production frontend
-- `indexer/` — The Graph subgraph
+- `indexer/` — indexed data mappings and manifests (Goldsky primary, The Graph Studio fallback)
 - `docs/` — full documentation
 
 ---
@@ -143,9 +143,20 @@ Full address table: [docs/final/DEPLOYED_ADDRESSES.md](../final/DEPLOYED_ADDRESS
 
 ---
 
+## Post-submission reviewer update
+
+- Proposal was submitted and is currently in review.
+- The final demo video update was posted via Questbook comments (proposal body was not editable after submission).
+- Goldsky primary indexing is now live in production on Arc Testnet.
+- ArcNS remains live at https://arcns-app.vercel.app on Arc Testnet (pre-mainnet, external audit pending).
+- ArcNS is listed on ArcLens under the Identity category.
+- During the grant period, ArcNS reached 100+ holders and 142+ registered `.arc` / `.circle` names.
+
+---
+
 ## Demo Flow
 
-See [DEMO_VIDEO_SCRIPT.md](DEMO_VIDEO_SCRIPT.md) for the full 3–5 minute demo script.
+See [../final/FOUNDER_DEMO_SCRIPT.md](../final/FOUNDER_DEMO_SCRIPT.md) for the full 3–5 minute demo script.
 
 **Quick summary:**
 1. Home page — search for a name
@@ -164,7 +175,7 @@ See [DEMO_VIDEO_SCRIPT.md](DEMO_VIDEO_SCRIPT.md) for the full 3–5 minute demo 
 |-----|-------|
 | External audit pending | Required before mainnet. Audit prep package is ready. |
 | Treasury is an EOA | Migration to multisig contract is planned. |
-| No ecosystem integrations yet | Integration packages are ready. Adoption requires third-party work. |
+| External native integrations pending | Integration packages are ready. Adoption requires third-party implementation work. Goldsky indexing is live and ArcNS is listed on ArcLens (Identity). |
 | Not mainnet | Arc Testnet only. No real funds. |
 | Resolve empty-state polish | Minor UX polish deferred. Not a blocker. |
 
@@ -179,8 +190,9 @@ Full gap analysis: [docs/final/MAINNET_GAP_REPORT.md](../final/MAINNET_GAP_REPOR
 | Live app | https://arcns-app.vercel.app |
 | GitHub | https://github.com/khenzarr/arcns |
 | Explorer | https://testnet.arcscan.app |
-| Subgraph | https://api.studio.thegraph.com/query/1748590/arcnslatest/v3 |
-| Demo script | [DEMO_VIDEO_SCRIPT.md](DEMO_VIDEO_SCRIPT.md) |
+| Primary indexed endpoint (Goldsky) | https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn |
+| Fallback indexed endpoint (The Graph Studio) | https://api.studio.thegraph.com/query/1748590/arcnslatest/v3 |
+| Demo script | [../final/FOUNDER_DEMO_SCRIPT.md](../final/FOUNDER_DEMO_SCRIPT.md) |
 | Deck outline | [INVESTOR_DECK_OUTLINE.md](INVESTOR_DECK_OUTLINE.md) |
 | Deployed addresses | [docs/final/DEPLOYED_ADDRESSES.md](../final/DEPLOYED_ADDRESSES.md) |
 | Audit scope | [docs/final/AUDIT_SCOPE.md](../final/AUDIT_SCOPE.md) |
