@@ -1,7 +1,7 @@
 # ArcNS Goldsky Phase 3 Final Sync & Parity Report
 
 Date: 2026-05-27
-Repo: `C:\Users\mertb\Desktop\NODE\ArcNameServices\arcns`
+Repo: `https://github.com/khenzarr/arcns`
 Phase: 3 Final (post full sync)
 
 ---
