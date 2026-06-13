@@ -9,7 +9,6 @@ import {
   PRICING_TABLE,
   type SupportedTLD,
 } from "../lib/normalization";
-import { FooterIdentityLine } from "../components/ui/FooterIdentityLine";
 
 const TRUST_ITEMS = [
   {
@@ -203,7 +202,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <FooterIdentityLine className="arcns-home-footer" />
     </div>
   );
 }
