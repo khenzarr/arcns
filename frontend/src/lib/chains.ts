@@ -6,7 +6,7 @@ export const ARC_TESTNET_RUNTIME_MODE = "arc-testnet" as const;
 export const ARC_TESTNET_RPCS = {
   primary: {
     key: "primary",
-    name: "Arc Official RPC",
+    name: "Arc Testnet RPC",
     url: process.env.NEXT_PUBLIC_RPC_URL ?? "https://rpc.testnet.arc.network",
   },
   secondary: [

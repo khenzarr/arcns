@@ -76,7 +76,7 @@
 
 ---
 
-## Production App
+## Public Testnet App
 
 | Field | Value |
 |-------|-------|

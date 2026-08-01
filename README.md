@@ -1,6 +1,12 @@
 # ArcNS — Arc Name Service
 
-ArcNS is a decentralized naming protocol built for Arc Testnet. It maps human-readable names ending in `.arc` and `.circle` to on-chain addresses, issues names as ERC-721 NFTs, and lets any address set a verified primary name for its on-chain identity.
+**Independent decentralized naming service built on Arc Testnet.**
+
+ArcNS maps human-readable names ending in `.arc` and `.circle` to on-chain addresses, issues names as ERC-721 NFTs for selected registration periods, and lets any address set a verified primary name.
+
+ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with, endorsed by, or sponsored by Circle unless separately agreed in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.
+
+> `.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.
 
 Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. No off-chain infrastructure is required to read or verify a name.
 
@@ -33,7 +39,7 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 
 The protocol is fully functional on testnet. Mainnet deployment is gated on an external security audit and operational hardening. See [Mainnet Gap Report](docs/final/MAINNET_GAP_REPORT.md) for the full checklist.
 
-**Production app:** https://arcname.services
+**Public testnet app:** https://arcname.services
 
 **Previous Vercel URL (legacy):** https://arcns-app.vercel.app
 
@@ -59,7 +65,7 @@ Any address can set a primary name via the ReverseRegistrar. The protocol stores
 Names are ERC-721 tokens on the BaseRegistrar contracts. Token ID is `uint256(keccak256(label))`. `tokenURI` returns fully on-chain JSON metadata with an inline SVG image — no external fetch required.
 
 ### Indexed Data Layer
-ArcNS production uses Goldsky as the primary indexed data source on Arc Testnet. The legacy The Graph Studio endpoint is retained as a fallback, and direct RPC fallback is preserved for resilience.
+The live testnet frontend uses Goldsky as the primary indexed data source on Arc Testnet. The legacy The Graph Studio endpoint is retained as a fallback, and direct RPC fallback is preserved for resilience.
 
 The indexed data layer powers registrations/renewals history, transfers, resolver record changes, reverse record changes, and portfolio views in the frontend.
 

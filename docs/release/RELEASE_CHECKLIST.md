@@ -113,7 +113,7 @@ Run after every contract deploy (or when addresses change).
   - `NEXT_PUBLIC_SUBGRAPH_URL`
   - `NEXT_PUBLIC_RPC_URL`
   - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
-- [ ] Verify production app at https://arcns-app.vercel.app
+- [ ] Verify public testnet app at https://arcname.services
 
 ---
 

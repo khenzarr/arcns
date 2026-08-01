@@ -1,6 +1,8 @@
 # ArcNS — Circle 2026 Cohort 2 Grant Application
 
-**One-line summary:** ArcNS is a USDC-native decentralized naming protocol for Arc — it maps human-readable `.arc` and `.circle` names to on-chain addresses, issued as ERC-721 NFTs, paid for in USDC.
+**One-line summary:** ArcNS is an independent decentralized naming protocol deployed on Arc Testnet — it maps human-readable `.arc` and `.circle` testnet names to on-chain addresses, issued as ERC-721 NFTs for selected registration periods and paid for in testnet USDC.
+
+ArcNS is not an official Arc or Circle service and is not affiliated with, endorsed by, or sponsored by Circle unless separately agreed in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates. `.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.
 
 ---
 
@@ -8,7 +10,7 @@
 
 Wallet addresses are 42-character hex strings. They are impossible to remember, easy to mistype, and create friction for every on-chain interaction. This friction is a barrier to adoption — especially for users new to crypto.
 
-Existing naming solutions (ENS, Unstoppable Domains) are built for Ethereum and do not natively support Arc. Arc users have no human-readable identity layer.
+Existing naming solutions may not currently support Arc Testnet directly. Arc Testnet users can benefit from optional human-readable address resolution.
 
 ---
 
@@ -26,7 +28,7 @@ ArcNS provides a naming protocol purpose-built for Arc:
 
 ## Why Arc
 
-Arc is a high-performance EVM-compatible chain with a growing ecosystem. ArcNS is the identity layer that Arc needs to make addresses human-readable. The `.arc` TLD is native to Arc. The `.circle` TLD is a dedicated namespace for Circle-aligned use cases.
+Arc is a high-performance EVM-compatible chain with a growing ecosystem. ArcNS independently tests human-readable address resolution on Arc Testnet through ArcNS-operated `.arc` and `.circle` testnet namespaces.
 
 ---
 
@@ -35,7 +37,7 @@ Arc is a high-performance EVM-compatible chain with a growing ecosystem. ArcNS i
 ArcNS is USDC-native from day one:
 
 - All registration and renewal fees are paid in USDC
-- The `.circle` TLD is a first-class namespace for Circle-aligned identities
+- The `.circle` testnet namespace is operated by ArcNS and carries no Circle endorsement or ownership claim
 - The protocol is designed to integrate with Circle's payment infrastructure
 - Planned: USDC payment flows for dApps using ArcNS names as payment identifiers
 - Planned: Circle Programmable Wallets integration for seamless onboarding
@@ -55,7 +57,7 @@ Circle's USDC is the payment token for the entire ArcNS economy. This is not a r
 | Multisig (2-of-3 Safe) | Live |
 | Timelock (48h upgrade delay) | Live |
 | Indexed data layer | Goldsky primary (`arcns-product/v0.1.0`), The Graph Studio fallback, RPC fallback preserved |
-| Production frontend | Live at https://arcname.services |
+| Public testnet frontend | Live at https://arcname.services |
 | Contract test suite | ~180 passing tests, zero failures |
 | External security audit | Not yet completed — required before mainnet |
 
@@ -79,7 +81,7 @@ Previous Vercel URL (legacy/reference): https://arcns-app.vercel.app
 
 - `contracts/v3/` — all 8 v3 contracts
 - `deployments/arc_testnet-v3.json` — canonical deployed addresses
-- `frontend/` — Next.js 14 production frontend
+- `frontend/` — Next.js 14 live testnet frontend
 - `indexer/` — indexed data mappings and manifests (Goldsky primary, The Graph Studio fallback)
 - `docs/` — full documentation
 
@@ -108,7 +110,7 @@ Full address table: [docs/final/DEPLOYED_ADDRESSES.md](../final/DEPLOYED_ADDRESS
 | Product | Integration |
 |---------|-------------|
 | USDC (Arc Testnet) | Payment token for all registrations and renewals |
-| `.circle` TLD | Dedicated namespace for Circle-aligned identities |
+| `.circle` TLD | ArcNS testnet namespace; no Circle endorsement, affiliation, sponsorship, or ownership implied |
 
 ---
 
@@ -150,7 +152,7 @@ Full address table: [docs/final/DEPLOYED_ADDRESSES.md](../final/DEPLOYED_ADDRESS
 - Proposal was submitted and is currently in review.
 - The final demo video update was posted via Questbook comments (proposal body was not editable after submission).
 - Goldsky primary indexing is now live in production on Arc Testnet.
-- ArcNS official production domain is now https://arcname.services.
+- ArcNS canonical public testnet domain is now https://arcname.services.
 - Prior submitted/grant material may still reference https://arcns-app.vercel.app.
 - ArcNS remains live on Arc Testnet (pre-mainnet, external audit pending).
 - ArcNS is listed on ArcLens under the Identity category.
@@ -169,7 +171,7 @@ See [../final/FOUNDER_DEMO_SCRIPT.md](../final/FOUNDER_DEMO_SCRIPT.md) for the f
 4. Resolve — forward resolution and identity inspection
 5. `thebstoftimes.arc` — registered name with no address record (demonstrates correctness)
 6. ArcScan — verified contracts
-7. Circle alignment — USDC-native, `.circle` TLD, planned integrations
+7. Independent-project disclosure — testnet USDC, `.circle` namespace disclaimer, planned integrations
 
 ---
 

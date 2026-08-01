@@ -202,8 +202,8 @@ cd frontend && npm run build
 **When:** After every production deployment.
 
 ```bash
-# 1. Verify production app is live
-curl -I https://arcns-app.vercel.app
+# 1. Verify public testnet app is live
+curl -I https://arcname.services
 
 # 2. Verify resolution API is responding
 curl https://arcns-app.vercel.app/api/v1/health

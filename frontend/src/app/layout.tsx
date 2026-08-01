@@ -16,7 +16,9 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "ArcNS — Arc Name Service",
   description:
-    "Decentralized naming service for Arc Testnet. Register .arc and .circle domains.",
+    "ArcNS is an independent name service built on Arc Testnet. Register and resolve human-readable .arc and .circle testnet names.",
+  metadataBase: new URL("https://arcname.services"),
+  alternates: { canonical: "/" },
   icons: { icon: "/icon.svg" },
 };
 

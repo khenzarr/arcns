@@ -185,7 +185,7 @@ Do **not** change logic now. Later, after parity:
 
 - Deploy **indexer/** subgraph to Goldsky without touching frontend config.
 - Optionally deploy `bens-subgraph/` to Goldsky for parallel observability.
-- Keep The Graph endpoint active for production frontend.
+- Keep The Graph endpoint active as a live testnet frontend fallback.
 
 ## Phase 2 — Endpoint parity tests (old vs Goldsky)
 

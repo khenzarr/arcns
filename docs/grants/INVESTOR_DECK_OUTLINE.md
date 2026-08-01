@@ -6,10 +6,10 @@
 
 ## Slide 1 — Title
 
-**Title:** ArcNS — The Identity Layer for Arc  
-**Subtitle:** Human-readable names for Arc addresses, paid in USDC  
-**Visual:** ArcNS logo + Arc Testnet badge  
-**Footer:** https://arcns-app.vercel.app · Arc Testnet · Pre-mainnet
+**Title:** ArcNS — Independent Naming on Arc Testnet
+**Subtitle:** Human-readable testnet names for Arc addresses, paid in testnet USDC
+**Visual:** ArcNS logo + Arc Testnet badge
+**Footer:** https://arcname.services · Arc Testnet · Pre-mainnet · Independent project
 
 ---
 
@@ -21,7 +21,7 @@
 - `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` — this is what users share today
 - 42 characters. Impossible to remember. Easy to mistype. Zero identity signal.
 - Every on-chain interaction requires copy-pasting an address
-- No naming solution exists natively for Arc
+- Arc Testnet users need an optional human-readable naming service
 
 **Visual:** Side-by-side: hex address vs `alice.arc`
 
@@ -48,13 +48,13 @@
 
 **Why Arc:**
 - Arc is a high-performance EVM chain with a growing ecosystem
-- ArcNS is the identity layer Arc needs
-- `.arc` TLD is native to Arc
+- ArcNS is an independent naming-service project for Arc Testnet addresses
+- `.arc` is an ArcNS testnet namespace
 - First mover — no competing naming protocol on Arc
 
 **Why Circle:**
 - USDC is the payment token for the entire ArcNS economy — from day one
-- `.circle` TLD is a dedicated namespace for Circle-aligned identities
+- `.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership
 - Planned: Circle Programmable Wallets integration
 - Planned: USDC payment routing via ArcNS names
 - ArcNS makes USDC more useful by giving addresses human-readable identities
@@ -63,7 +63,7 @@
 
 ## Slide 5 — Product Demo
 
-**Headline:** Live on Arc Testnet at arcns-app.vercel.app
+**Headline:** Live on Arc Testnet at arcname.services
 
 **Screenshots / flow:**
 1. Home page — search bar with `.arc` / `.circle` TLD selector
@@ -73,7 +73,7 @@
 
 **Key callout:** "Everything resolves on-chain. No off-chain infrastructure required."
 
-**Link:** https://arcns-app.vercel.app
+**Link:** https://arcname.services
 
 ---
 
@@ -105,7 +105,7 @@
 | Governance | 2-of-3 Safe + 48h Timelock |
 | Contract tests | ~180 passing, 0 failures |
 | Smoke tests | 10 flows verified on-chain |
-| Production frontend | Live at arcns-app.vercel.app |
+| Public testnet frontend | Live at arcname.services |
 | Subgraph | Live on The Graph Studio |
 | External audit | Not yet completed — required before mainnet |
 
@@ -153,16 +153,16 @@
 
 ## Slide 10 — Vision
 
-**Headline:** ArcNS is the identity layer for the Arc ecosystem
+**Headline:** A proposed independent naming service for Arc Testnet users
 
 **Vision:**
 - Every Arc address has a human-readable name
 - Every USDC payment on Arc can be addressed by name
-- ArcNS names are the primary identity primitive for Arc dApps, wallets, and explorers
-- The `.circle` namespace becomes the standard identity for Circle-aligned users on Arc
+- ArcNS names could provide an optional naming primitive for compatible dApps, wallets, and explorers
+- The `.circle` testnet namespace remains non-official and subject to legal/brand review
 
 **Why now:**
-- Arc is growing. The identity layer needs to be in place before the ecosystem scales.
+- Arc is growing, creating an opportunity to test optional human-readable naming infrastructure.
 - USDC adoption on Arc is accelerating. ArcNS makes USDC payments more human.
 - First mover advantage — no competing naming protocol on Arc.
 
@@ -174,7 +174,7 @@
 
 | Document | Link |
 |----------|------|
-| Live app | https://arcns-app.vercel.app |
+| Live testnet app | https://arcname.services |
 | GitHub | https://github.com/khenzarr/arcns |
 | Demo video script | [DEMO_VIDEO_SCRIPT.md](DEMO_VIDEO_SCRIPT.md) |
 | Deployed addresses | [docs/final/DEPLOYED_ADDRESSES.md](../final/DEPLOYED_ADDRESSES.md) |

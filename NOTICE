@@ -3,6 +3,25 @@ Copyright (c) 2026 ArcNS contributors
 
 -----------------------------------------------------------------------------
 
+Project Independence and Third-Party Marks
+
+ArcNS is an independent name service built on Arc Testnet. ArcNS is not
+affiliated with, endorsed by, or sponsored by Circle unless separately agreed
+in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its
+affiliates.
+
+The ArcNS project claims no ownership of the Arc or Circle names, marks, logos,
+or other brand assets. References to Arc Testnet and Circle are descriptive and
+do not claim official status, endorsement, sponsorship, partnership, or approval.
+
+".circle" is an ArcNS testnet namespace and does not imply Circle endorsement,
+sponsorship, affiliation, or ownership.
+
+ArcNS is live on Arc Testnet for testing and demonstration. No mainnet or public
+launch, financial result, legal outcome, or continued service is promised.
+
+-----------------------------------------------------------------------------
+
 Branding and Reserved Names
 
 "ArcNS", "Arc Name Service", and associated logos and visual identifiers are

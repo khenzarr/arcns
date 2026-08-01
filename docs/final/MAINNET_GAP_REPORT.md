@@ -23,7 +23,7 @@ This document is an honest, prioritized analysis of what must be completed befor
 | UUPS storage layout verification in CI | ❌ Not done | **P2 — Recommended** |
 | Ecosystem integrations (ArcScan, wallets) | ❌ Not started | **P3 — Nice to have** |
 | Reserved names policy | ❌ Not defined | **P3 — Nice to have** |
-| Legal / branding review | ❌ Not done | **P3 — Nice to have** |
+| Legal / branding review | ❌ Not done | **P0 — Blocker** |
 
 ---
 
@@ -105,7 +105,7 @@ This document is an honest, prioritized analysis of what must be completed befor
 ### Legal / Branding Review
 
 **What:** Legal review of the ArcNS name and branding. Review of terms of service and privacy policy.  
-**Why:** Required for a production product.
+**Why:** Required before a public mainnet launch.
 
 ---
 
@@ -120,7 +120,7 @@ This document is an honest, prioritized analysis of what must be completed befor
 | All deployer EOA privileges revoked | ✅ Done |
 | Internal security review | ✅ Done |
 | Audit preparation package | ✅ Done |
-| Production frontend deployed | ✅ Done |
+| Public testnet frontend deployed | ✅ Done |
 | Subgraph published | ✅ Done |
 | Integration packages ready | ✅ Done |
 
