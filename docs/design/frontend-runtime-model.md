@@ -20,7 +20,7 @@ graph TD
     end
 
     subgraph "Read Authority"
-        PRC[Primary Public Client\nArc Official RPC\nhttps://rpc.testnet.arc.network]
+        PRC[Primary Public Client\nArc Testnet RPC\nhttps://rpc.testnet.arc.network]
         FB[Fallback Chain\nBlockdaemon RPC → QuickNode RPC]
     end
 

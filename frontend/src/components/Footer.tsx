@@ -23,7 +23,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
       { label: "Search Names", href: "/" },
       { label: "My Domains", href: "/my-domains" },
       { label: "Resolve", href: "/resolve" },
-      { label: "Official Domain", href: "https://arcname.services", external: true },
+      { label: "Public Testnet App", href: "https://arcname.services", external: true },
       { label: "GitHub", href: GITHUB_REPO, external: true },
     ],
   },
@@ -107,10 +107,9 @@ const FOOTER_SECTIONS: FooterSection[] = [
   {
     title: "Legal / Brand",
     links: [
-      { label: "Privacy Policy", disabled: true, note: "Coming soon" },
-      { label: "Terms of Use", disabled: true, note: "Coming soon" },
-      { label: "Trademark Guidelines", disabled: true, note: "Coming soon" },
-      { label: "Brand Kit", disabled: true, note: "Coming soon" },
+      { label: "Terms of Use", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Trademark / Brand Notice", href: "/trademark" },
     ],
   },
 ];
@@ -193,7 +192,7 @@ export default function Footer() {
                     ArcNS
                   </p>
                   <p className="text-sm text-[var(--arcns-text-secondary)]">
-                    Human-readable identity for Arc.
+                    Human-readable names for Arc Testnet addresses.
                   </p>
                 </div>
               </div>
@@ -207,8 +206,11 @@ export default function Footer() {
               <div className="space-y-2 text-sm leading-6 text-[var(--arcns-text-secondary)]">
                 <p>Live on Arc Testnet · Pre-mainnet · External audit pending</p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
-                  ArcNS is an Arc Testnet naming and identity protocol. Mainnet deployment is gated on
-                  security review and operational hardening.
+                  ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with,
+                  endorsed by, or sponsored by Circle unless separately agreed in writing.
+                </p>
+                <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
+                  Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.
                 </p>
               </div>
             </div>

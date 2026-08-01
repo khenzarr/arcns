@@ -3,7 +3,7 @@
 **Network:** Arc Testnet (Chain ID: 5042002)  
 **Version:** v3  
 **Status:** Live on testnet · Pre-mainnet  
-**Production App:** https://arcname.services
+**Public Testnet App:** https://arcname.services
 **Previous Vercel URL (legacy):** https://arcns-app.vercel.app
 
 ---
@@ -26,7 +26,9 @@
 
 ## Product Overview
 
-ArcNS is a decentralized naming protocol for Arc. It maps human-readable `.arc` and `.circle` names to on-chain addresses, issues names as ERC-721 NFTs, and lets any address set a verified primary name. Registration and renewal fees are paid in USDC.
+ArcNS is an independent naming protocol deployed on Arc Testnet. It maps human-readable `.arc` and `.circle` testnet names to on-chain addresses, issues names as ERC-721 NFTs with registration periods and renewal requirements, and lets any address set a verified primary name. Registration and renewal fees are paid in testnet USDC.
+
+ArcNS is not affiliated with, endorsed by, or sponsored by Circle unless separately agreed in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates. `.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.
 
 - **Live app:** https://arcname.services
 - **Previous Vercel URL (legacy):** https://arcns-app.vercel.app

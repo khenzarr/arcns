@@ -1,6 +1,6 @@
 # ArcNS — Founder Demo Script
 
-**App:** https://arcns-app.vercel.app  
+**Public testnet app:** https://arcname.services
 **Network:** Arc Testnet (Chain ID: 5042002)  
 **Demo names:** `flowpay.arc`, `thebstoftimes.arc`, `slippage.arc`, `emperor.arc`
 
@@ -12,18 +12,18 @@ Before starting:
 
 - [ ] MetaMask connected to Arc Testnet (Chain ID 5042002)
 - [ ] Wallet has USDC balance (get from https://faucet.circle.com)
-- [ ] Browser tab open at https://arcns-app.vercel.app
+- [ ] Browser tab open at https://arcname.services
 - [ ] Second browser tab open at https://testnet.arcscan.app
 - [ ] Screen share ready
 
 ---
 
-## Step 1 — Home Page: The Identity Layer for Arc
+## Step 1 — Home Page: Human-Readable Names for Arc Testnet
 
-**Navigate to:** https://arcns-app.vercel.app
+**Navigate to:** https://arcname.services
 
 **Say:**
-> "This is ArcNS — the naming protocol for Arc. Instead of sharing a 42-character wallet address, you register a human-readable name like `flowpay.arc` or `alice.circle`. The name is yours as an NFT, paid for in USDC, and resolves entirely on-chain."
+> "This is ArcNS — an independent name service built on Arc Testnet. Instead of sharing a 42-character wallet address, you can register a human-readable testnet name like `flowpay.arc` or `alice.circle` for a selected registration period, pay in testnet USDC, and resolve it on-chain."
 
 **Point out:**
 - The search bar with `.arc` / `.circle` TLD selector
@@ -122,14 +122,14 @@ Before starting:
 
 ---
 
-## Step 8 — Circle Alignment
+## Step 8 — USDC Integration and Independent-Project Notice
 
 **Say:**
-> "ArcNS is built on Circle's infrastructure. Registration and renewal fees are paid in USDC. The `.circle` TLD is a first-class namespace — `alice.circle` is as valid as `alice.arc`. We're applying to the Circle 2026 Cohort 2 grant to accelerate ecosystem integrations and mainnet preparation."
+> "ArcNS uses testnet USDC for registration and renewal fees. ArcNS is an independent project and is not affiliated with, endorsed by, or sponsored by Circle unless separately agreed in writing. `.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership."
 
 **Key points:**
 - USDC-native from day one
-- `.circle` TLD as a dedicated namespace
+- `.circle` is an ArcNS testnet namespace with no Circle endorsement or ownership claim
 - Planned: USDC payment flows for dApps using ArcNS names
 - Planned: Circle Programmable Wallets integration for seamless onboarding
 

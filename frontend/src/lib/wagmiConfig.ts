@@ -20,9 +20,9 @@ export const wagmiConfig = createConfig({
       projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "b6d7afb94938b1fd9d9a72f7364fb905",
       metadata: {
         name: "Arc Name Service",
-        description: "Decentralized naming on Arc Testnet",
-        url: "https://arcns.app",
-        icons: ["https://arcns.app/favicon.ico"],
+        description: "Independent name service built on Arc Testnet",
+        url: "https://arcname.services",
+        icons: ["https://arcname.services/icon.svg"],
       },
       showQrModal: true,
     }),

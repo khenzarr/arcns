@@ -24,7 +24,7 @@ const TRUST_ITEMS = [
   },
   {
     title: "Pay with USDC",
-    sub: "Secure. Stable. On-chain.",
+    sub: "Testnet USDC. On-chain.",
     accent: "#3BA3FF",
     icon: (
       <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -60,7 +60,7 @@ const TRUST_ITEMS = [
 const FEATURES = [
   {
     title: "NFT Ownership",
-    desc: "Each name is an ERC-721 NFT. Transfer, sell, or hold forever.",
+    desc: "ERC-721 ownership for the selected registration period. Renew before expiry.",
     accent: "var(--arcns-cyan)",
     icon: TRUST_ITEMS[2].icon,
   },
@@ -121,14 +121,18 @@ export default function HomePage() {
             </div>
 
             <h1 className="arcns-hero-headline">
-              Your identity <span className="arcns-gradient-text">on Arc</span>
+              Human-readable names <span className="arcns-gradient-text">on Arc Testnet</span>
             </h1>
 
             <p className="arcns-hero-subtitle">
               Register <strong>.arc</strong> and <strong className="circle">.circle</strong> names.
               Pay with <span>USDC</span>.
               <br />
-              Own your on-chain identity as an NFT.
+              Receive an ERC-721 name NFT for your selected registration period.
+            </p>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--arcns-text-secondary)]">
+              ArcNS is an independent name service built on Arc Testnet. <strong>.circle</strong> is an
+              ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.
             </p>
           </div>
 

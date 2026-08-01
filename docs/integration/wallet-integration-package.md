@@ -22,7 +22,7 @@ ArcNS maps human-readable names ending in `.arc` or `.circle` to EVM addresses o
 
 Raw EVM addresses are 42-character hex strings. They are error-prone to type, hard to verify visually, and meaningless to most users. Name resolution at the wallet layer is the highest-leverage integration point in the ecosystem — it is where users spend the most time and where address errors cause the most harm.
 
-ArcNS is the naming system for Arc Testnet. Wallet support is the primary mechanism by which ArcNS names become useful to end users in practice. Without it, names are only visible inside the ArcNS app itself.
+ArcNS is an independent naming service deployed on Arc Testnet. Wallet support is a mechanism by which ArcNS names could become useful to end users in practice. Without it, names are only visible inside the ArcNS app itself.
 
 ### What is already available vs what wallets must consume
 
