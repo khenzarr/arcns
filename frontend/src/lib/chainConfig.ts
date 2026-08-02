@@ -57,17 +57,8 @@ export const CHAIN_CONFIGS: Record<number, ChainConfig> = {
     maxCommitmentAge: 86400,
   },
 
-  // ── Arc Mainnet (placeholder — not deployed yet) ───────────────────────────
-  // 5042001: {
-  //   chainId: 5042001,
-  //   name: "Arc Mainnet",
-  //   rpcUrl: "https://rpc.arc.network",
-  //   blockExplorer: "https://arcscan.app",
-  //   contracts: { ... },
-  //   subgraphUrl: "...",
-  //   minCommitmentAge: 60,
-  //   maxCommitmentAge: 86400,
-  // },
+  // Mainnet addresses are intentionally unset until deployment. This target is
+  // configuration/preflight-only and cannot be selected for checkout yet.
 };
 
 /** Get config for the active chain, falling back to Arc Testnet */

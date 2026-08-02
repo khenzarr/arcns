@@ -57,6 +57,15 @@ export const PRICE_TIERS = [
   { chars: 5, label: "5+ characters", annualUSDC:  2_000_000n, display:  "$2.00/yr"  },
 ] as const;
 
+export const TESTNET_PRICING = PRICE_TIERS;
+export const MAINNET_PRICING = [
+  { chars: 1, label: "1 character", annualUSDC: 100_000_000n, display: "$100.00/yr" },
+  { chars: 2, label: "2 characters", annualUSDC: 50_000_000n, display: "$50.00/yr" },
+  { chars: 3, label: "3 characters", annualUSDC: 25_000_000n, display: "$25.00/yr" },
+  { chars: 4, label: "4 characters", annualUSDC: 15_000_000n, display: "$15.00/yr" },
+  { chars: 5, label: "5+ characters", annualUSDC: 5_000_000n, display: "$5.00/yr" },
+] as const;
+
 export const PRICING_TABLE = [
   { len: "5+ characters", price: "$2.00 / year",  annual:  2_000_000n },
   { len: "4 characters",  price: "$10.00 / year", annual: 10_000_000n },

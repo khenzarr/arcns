@@ -1,0 +1,14 @@
+# Mainnet Security Checklist
+
+- [ ] Confirm standard oracle reads are 100/50/25/15/5 USDC in p1..p5 order.
+- [ ] Confirm normal `register()` and `renew()` remain the standard paths.
+- [ ] Confirm discount route requires `owner == msg.sender`, a matured sender-bound commitment, and a valid proof.
+- [ ] Confirm both controllers point to one shared registry, both are authorized, and `consume()` rejects claims until the root is frozen.
+- [ ] Confirm registry consumption and registration are atomic and failed registrations restore `used` state.
+- [ ] Confirm the oracle's expired-name premium is never discounted and renewals never consume a claim.
+- [ ] Confirm the current 90-day availability grace makes the 28-day nonzero premium unreachable for successful re-registration; if lifecycle timing changes, preserve full premium charging.
+- [ ] Confirm pause, resolver allowlist, maxCost, duration, availability, and name validation behavior.
+- [ ] Confirm finalized snapshot block/hash, exclusions, counts, root, and proofs through independent review.
+- [ ] Confirm no production frontend switch occurs before deployed addresses and proofs are available.
+
+No deploy/push/on-chain action was performed in this phase.

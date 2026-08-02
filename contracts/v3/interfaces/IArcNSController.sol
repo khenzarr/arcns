@@ -28,6 +28,19 @@ interface IArcNSController {
         uint256 maxCost
     ) external;
 
+    function registerWithDiscount(
+        string calldata name_,
+        address owner_,
+        uint256 duration,
+        bytes32 secret,
+        address resolverAddr,
+        bool reverseRecord,
+        uint256 maxCost,
+        bytes32[] calldata proof
+    ) external;
+
+    function discountRentPrice(string memory name_, uint256 duration) external view returns (IArcNSPriceOracle.Price memory);
+
     /// @notice Renews an existing name
     /// @param name_ The plaintext label to renew
     /// @param duration Additional duration in seconds
@@ -82,4 +95,6 @@ interface IArcNSController {
     ///      Rejects address(0). Emits ReverseRegistrarUpdated.
     /// @param newReverseRegistrar The new ArcNSReverseRegistrar contract address
     function setReverseRegistrar(address newReverseRegistrar) external;
+
+    function setDiscountRegistry(address newDiscountRegistry) external;
 }

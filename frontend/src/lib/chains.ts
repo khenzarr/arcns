@@ -1,6 +1,7 @@
 import { defineChain } from "viem";
 
 export const ARC_TESTNET_CHAIN_ID = 5042002;
+export const ARC_MAINNET_CHAIN_ID = 5042;
 export const ARC_TESTNET_RUNTIME_MODE = "arc-testnet" as const;
 
 export const ARC_TESTNET_RPCS = {
@@ -55,4 +56,17 @@ export const arcTestnet = defineChain({
     },
   },
   testnet: true,
+});
+
+export const arcMainnet = defineChain({
+  id: ARC_MAINNET_CHAIN_ID,
+  name: "Arc",
+  nativeCurrency: { decimals: 6, name: "USD Coin", symbol: "USDC" },
+  rpcUrls: {
+    default: { http: ["https://rpc.blockdaemon.mainnet.arc.io"] },
+    public: { http: ["https://rpc.blockdaemon.mainnet.arc.io"] },
+  },
+  blockExplorers: {
+    default: { name: "Blockscout", url: "https://arc-mainnet.cloud.blockscout.com" },
+  },
 });

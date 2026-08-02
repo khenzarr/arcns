@@ -7,8 +7,14 @@ import DomainCard from "../components/DomainCard";
 import {
   isValidLabel,
   PRICING_TABLE,
+  MAINNET_PRICING,
   type SupportedTLD,
 } from "../lib/normalization";
+import { ACTIVE_CHAIN_ID } from "../lib/chainConfig";
+
+const DISPLAY_PRICING_TABLE = ACTIVE_CHAIN_ID === 5042
+  ? MAINNET_PRICING.map((row) => ({ len: row.label, price: `${row.display.replace("/yr", "")} / year`, annual: row.annualUSDC }))
+  : PRICING_TABLE;
 
 const TRUST_ITEMS = [
   {
@@ -183,7 +189,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="arcns-price-grid">
-                  {PRICING_TABLE.map((row, index) => (
+                  {DISPLAY_PRICING_TABLE.map((row, index) => (
                     <div className="arcns-price-cell" key={row.len} data-best={index === 0 ? "true" : "false"}>
                       <span>{row.len}</span>
                       <strong>{row.price.replace(" / year", "")}</strong>

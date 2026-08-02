@@ -137,6 +137,20 @@ async function deployAll() {
   await arcCtrl.setApprovedResolver(await resolver.getAddress(),    true);
   await circleCtrl.setApprovedResolver(await resolver.getAddress(), true);
 
+  // One shared wallet-level early-adopter registry for both controllers.
+  const DiscountF = await ethers.getContractFactory("contracts/v3/discount/ArcNSEarlyAdopterDiscountRegistry.sol:ArcNSEarlyAdopterDiscountRegistry");
+  const campaignId = ethers.id("integration-campaign");
+  const discountRegistry = await DiscountF.deploy(campaignId, 123, deployer.address);
+  await discountRegistry.waitForDeployment();
+  const leaf = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(["bytes32", "address"], [campaignId, alice.address]));
+  await discountRegistry.setMerkleRoot(leaf);
+  await discountRegistry.freezeRoot();
+  await discountRegistry.setDiscountActive(true);
+  await discountRegistry.setControllerAuthorization(await arcCtrl.getAddress(), true);
+  await discountRegistry.setControllerAuthorization(await circleCtrl.getAddress(), true);
+  await arcCtrl.setDiscountRegistry(await discountRegistry.getAddress());
+  await circleCtrl.setDiscountRegistry(await discountRegistry.getAddress());
+
   // Mint USDC to alice and bob
   await usdc.mint(alice.address, 10_000_000_000n); // 10,000 USDC
   await usdc.mint(bob.address,   10_000_000_000n);
@@ -145,7 +159,7 @@ async function deployAll() {
   await usdc.connect(bob).approve(await arcCtrl.getAddress(),      ethers.MaxUint256);
   await usdc.connect(bob).approve(await circleCtrl.getAddress(),   ethers.MaxUint256);
 
-  return { registry, resolver, oracle, usdc, arcReg, circleReg, reverseReg, arcCtrl, circleCtrl, deployer, alice, bob, treasury };
+  return { registry, resolver, oracle, usdc, arcReg, circleReg, reverseReg, discountRegistry, arcCtrl, circleCtrl, deployer, alice, bob, treasury };
 }
 
 // ─── Test Suite ───────────────────────────────────────────────────────────────
@@ -158,6 +172,12 @@ describe("ArcNS v3 — Integration Tests", function () {
 
   // ── 1. Deployment wiring verification ──────────────────────────────────────
   describe("1. Deployment wiring", function () {
+    it("both controllers use one authorized shared discount registry", async function () {
+      expect(await ctx.arcCtrl.discountRegistry()).to.equal(await ctx.discountRegistry.getAddress());
+      expect(await ctx.circleCtrl.discountRegistry()).to.equal(await ctx.discountRegistry.getAddress());
+      expect(await ctx.discountRegistry.authorizedControllers(await ctx.arcCtrl.getAddress())).to.equal(true);
+      expect(await ctx.discountRegistry.authorizedControllers(await ctx.circleCtrl.getAddress())).to.equal(true);
+    });
     it("arcRegistrar owns the .arc TLD node in registry", async function () {
       expect(await ctx.registry.owner(ARC_NAMEHASH)).to.equal(await ctx.arcReg.getAddress());
     });
@@ -207,6 +227,102 @@ describe("ArcNS v3 — Integration Tests", function () {
 
     it("circleRegistrar is live (owns its baseNode)", async function () {
       expect(await ctx.registry.owner(CIRCLE_NAMEHASH)).to.equal(await ctx.circleReg.getAddress());
+    });
+  });
+
+  describe("11. Shared discount route", function () {
+    it("allows one TLD claim and rejects the same wallet on the other TLD", async function () {
+      const proof = [];
+      const secret = ethers.id("discount-cross-tld");
+      await commitAndWait(ctx.arcCtrl, "discountarc", ctx.alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ctx.alice);
+      await ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("discountarc", ctx.alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ethers.MaxUint256, proof);
+      expect(await ctx.discountRegistry.used(ctx.alice.address)).to.equal(true);
+
+      const circleSecret = ethers.id("discount-cross-tld-circle");
+      await commitAndWait(ctx.circleCtrl, "discountcircle", ctx.alice.address, ONE_YEAR, circleSecret, ethers.ZeroAddress, false, ctx.alice);
+      await expect(ctx.circleCtrl.connect(ctx.alice).registerWithDiscount("discountcircle", ctx.alice.address, ONE_YEAR, circleSecret, ethers.ZeroAddress, false, ethers.MaxUint256, proof))
+        .to.be.revertedWithCustomError(ctx.discountRegistry, "DiscountAlreadyUsed");
+    });
+
+    it("allows a .circle claim first and then rejects the same wallet on .arc", async function () {
+      const circleSecret = ethers.id("discount-circle-first");
+      await commitAndWait(ctx.circleCtrl, "circlefirst", ctx.alice.address, ONE_YEAR, circleSecret, ethers.ZeroAddress, false, ctx.alice);
+      await ctx.circleCtrl.connect(ctx.alice).registerWithDiscount("circlefirst", ctx.alice.address, ONE_YEAR, circleSecret, ethers.ZeroAddress, false, ethers.MaxUint256, []);
+
+      const arcSecret = ethers.id("discount-arc-second");
+      await commitAndWait(ctx.arcCtrl, "arcsecond", ctx.alice.address, ONE_YEAR, arcSecret, ethers.ZeroAddress, false, ctx.alice);
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("arcsecond", ctx.alice.address, ONE_YEAR, arcSecret, ethers.ZeroAddress, false, ethers.MaxUint256, []))
+        .to.be.revertedWithCustomError(ctx.discountRegistry, "DiscountAlreadyUsed");
+    });
+
+    it("enforces authorizedControllers through the controller route", async function () {
+      await ctx.discountRegistry.setControllerAuthorization(await ctx.arcCtrl.getAddress(), false);
+      const secret = ethers.id("discount-unauthorized-controller");
+      await commitAndWait(ctx.arcCtrl, "unauthorized", ctx.alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ctx.alice);
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("unauthorized", ctx.alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ethers.MaxUint256, []))
+        .to.be.revertedWithCustomError(ctx.discountRegistry, "UnauthorizedController");
+      expect(await ctx.discountRegistry.used(ctx.alice.address)).to.equal(false);
+    });
+
+    it("rolls back used state when registration fails after consume", async function () {
+      const secret = ethers.id("discount-rollback");
+      await register(ctx.arcCtrl, "already-owned", ctx.bob.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ctx.bob);
+      const discountSecret = ethers.id("discount-rollback-claim");
+      await commitAndWait(ctx.arcCtrl, "already-owned", ctx.alice.address, ONE_YEAR, discountSecret, ethers.ZeroAddress, false, ctx.alice);
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("already-owned", ctx.alice.address, ONE_YEAR, discountSecret, ethers.ZeroAddress, false, ethers.MaxUint256, []))
+        .to.be.reverted;
+      expect(await ctx.discountRegistry.used(ctx.alice.address)).to.equal(false);
+    });
+
+    it("preserves pause and owner/sender protections", async function () {
+      const secret = ethers.id("discount-paused");
+      await commitAndWait(ctx.arcCtrl, "pauseddiscount", ctx.alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ctx.alice);
+      await ctx.arcCtrl.pause();
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("pauseddiscount", ctx.alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ethers.MaxUint256, []))
+        .to.be.revertedWithCustomError(ctx.arcCtrl, "EnforcedPause");
+      await ctx.arcCtrl.unpause();
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("pauseddiscount", ctx.bob.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ethers.MaxUint256, []))
+        .to.be.revertedWithCustomError(ctx.arcCtrl, "DiscountOwnerMustBeSender");
+    });
+
+    it("preserves commitment age and sender binding", async function () {
+      const youngSecret = ethers.id("discount-young");
+      const young = await ctx.arcCtrl.makeCommitment("youngdiscount", ctx.alice.address, ONE_YEAR, youngSecret, ethers.ZeroAddress, false, ctx.alice.address);
+      await ctx.arcCtrl.connect(ctx.alice).commit(young);
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("youngdiscount", ctx.alice.address, ONE_YEAR, youngSecret, ethers.ZeroAddress, false, ethers.MaxUint256, []))
+        .to.be.revertedWithCustomError(ctx.arcCtrl, "CommitmentTooNew");
+
+      await time.increase(MAX_COMMIT_AGE + 1);
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("youngdiscount", ctx.alice.address, ONE_YEAR, youngSecret, ethers.ZeroAddress, false, ethers.MaxUint256, []))
+        .to.be.revertedWithCustomError(ctx.arcCtrl, "CommitmentExpired");
+
+      const boundSecret = ethers.id("discount-bound");
+      const bound = await ctx.arcCtrl.makeCommitment("bounddiscount", ctx.alice.address, ONE_YEAR, boundSecret, ethers.ZeroAddress, false, ctx.alice.address);
+      await ctx.arcCtrl.connect(ctx.alice).commit(bound);
+      await time.increase(MIN_COMMIT_AGE + 1);
+      await expect(ctx.arcCtrl.connect(ctx.bob).registerWithDiscount("bounddiscount", ctx.bob.address, ONE_YEAR, boundSecret, ethers.ZeroAddress, false, ethers.MaxUint256, []))
+        .to.be.revertedWithCustomError(ctx.arcCtrl, "CommitmentNotFound");
+    });
+
+    it("preserves resolver approval and maxCost", async function () {
+      const fakeResolver = ctx.bob.address;
+      const resolverSecret = ethers.id("discount-resolver");
+      await commitAndWait(ctx.arcCtrl, "resolverdiscount", ctx.alice.address, ONE_YEAR, resolverSecret, fakeResolver, false, ctx.alice);
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("resolverdiscount", ctx.alice.address, ONE_YEAR, resolverSecret, fakeResolver, false, ethers.MaxUint256, []))
+        .to.be.revertedWithCustomError(ctx.arcCtrl, "ResolverNotApproved");
+
+      const costSecret = ethers.id("discount-maxcost");
+      await commitAndWait(ctx.arcCtrl, "costdiscount", ctx.alice.address, ONE_YEAR, costSecret, ethers.ZeroAddress, false, ctx.alice);
+      await expect(ctx.arcCtrl.connect(ctx.alice).registerWithDiscount("costdiscount", ctx.alice.address, ONE_YEAR, costSecret, ethers.ZeroAddress, false, 1n, []))
+        .to.be.revertedWithCustomError(ctx.arcCtrl, "PriceExceedsMaxCost");
+      expect(await ctx.discountRegistry.used(ctx.alice.address)).to.equal(false);
+    });
+
+    it("renewal never consumes the discount", async function () {
+      const secret = ethers.id("discount-renewal");
+      await register(ctx.arcCtrl, "renewwithoutclaim", ctx.alice.address, ONE_YEAR, secret, ethers.ZeroAddress, false, ctx.alice);
+      await ctx.arcCtrl.connect(ctx.alice).renew("renewwithoutclaim", ONE_YEAR, ethers.MaxUint256);
+      expect(await ctx.discountRegistry.used(ctx.alice.address)).to.equal(false);
     });
   });
 

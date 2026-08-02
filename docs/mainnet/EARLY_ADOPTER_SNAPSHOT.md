@@ -1,0 +1,7 @@
+# Early-Adopter Snapshot Preparation
+
+Eligibility is based on one finalized Arc Testnet block (`5042002`): active v3 `.arc` and active v3 `.circle` names only. Legacy/v1/v2 names, expired names, burned/zero-owner names, and documented protocol/admin/internal addresses are excluded. Smart-contract wallets remain eligible unless explicitly excluded. Multiple names produce one wallet entry.
+
+The read-only generator is `scripts/snapshot/generate-arcns-v3-early-adopters.js`. It requires a real finalized block, block hash, both registrar addresses, and a deterministic indexer/RPC export. Every included row must expose registrar provenance through `registrar`, `registrarAddress`, `sourceRegistrar`, or `tldRegistrar`, and that address must exactly match the supplied registrar for its TLD. Explicit legacy/v1/v2 source markers are rejected. When an export has no separate version marker, exact registrar matching is the required v3 source proof; rows without enough provenance fail loudly. Zero owners are excluded. The generator writes the requested manifest/address/CSV/proof placeholders but never fabricates final data or a root. The leaf encoding is `keccak256(abi.encode(campaignId, account))`.
+
+Before launch: finalize the block, verify the export against registrar/controller history, review exclusions and counts, independently recompute the root/proofs, record the manifest git commit and timestamp, set the registry root, freeze it, authorize both controllers, then activate the campaign. The same shared registry enforces one claim across `.arc` and `.circle`.
