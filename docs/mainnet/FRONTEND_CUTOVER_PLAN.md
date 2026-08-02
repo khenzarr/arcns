@@ -8,6 +8,8 @@ This is a cutover plan, not an executed frontend switch. The production frontend
 
 Mainnet contract addresses, the mainnet subgraph endpoint, proof delivery, and Vercel environment values are `TBD`. The discount UI must remain hidden and inactive until contract deployment and verification, root freeze, proof delivery, indexer readiness, preview validation, and explicit launch approval are complete. Frontend readiness alone must never trigger root lifecycle operations or discount activation.
 
+Proof artifact preparation is tracked separately in [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELIVERY_PLAN.md).
+
 ## B. Required frontend inputs
 
 | Input | Required value | Source | Status | Notes |
