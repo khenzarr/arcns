@@ -42,6 +42,8 @@ Both commands are network-free, read-only, and require no signer or RPC.
 - Keep discount UI hidden until activation approval.
 - Do not assume the root is frozen until read-back confirms it.
 - `registerWithDiscount` is not wired in this phase.
+- An isolated `EarlyAdopterDiscountCard` UX shell now exists for explicitly reviewed preview use, but it is not mounted by the active app and the feature flag defaults to false. It performs no RPC or contract operation and exposes no claim or registration CTA.
+- The shell's proof-found state is informational only: proof existence does not imply claim availability. Production must keep the flag disabled until mainnet deployment, root set and freeze readback, discount activation approval, used-state readback or indexer support, preview smoke tests, and frontend cutover approval are complete.
 
 ## E. Readiness gates
 
