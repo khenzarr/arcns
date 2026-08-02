@@ -8,6 +8,7 @@ Status: read-only infrastructure preparation. This document records acceptance c
 - `https://radar-api-rpc.up.railway.app` remains a read-only/testing fallback only.
 - The Blockscout verification path must be validated before deployment.
 - Mainnet indexer/subgraph readiness is tracked in [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
+- Frontend mainnet/discount cutover readiness is tracked in [`FRONTEND_CUTOVER_PLAN.md`](./FRONTEND_CUTOVER_PLAN.md).
 - This document does not approve mainnet deployment.
 
 ## RPC endpoint classification
