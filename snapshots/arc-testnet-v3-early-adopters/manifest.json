@@ -1,0 +1,41 @@
+{
+  "campaignId": "ARCNS_TESTNET_V3_EARLY_ADOPTER_2026_V1",
+  "campaignIdBytes32": "0xae3c7462e46cc76b3e0349e7d211264ada95257da9d9d7a797abed70b7eb83e3",
+  "sourceChainId": 5042002,
+  "snapshotBlock": 54933646,
+  "snapshotBlockHash": "0x0a450d7fb8055de409084ddb9942f31431aa017a3b3241c4eb8e2e655b8c024d",
+  "snapshotTimestamp": 1785673991,
+  "snapshotTimestampISO": "2026-08-02T12:33:11.000Z",
+  "finalityAssumption": "Arc Testnet RPC finalized tag",
+  "sourceRpcEndpointIdentifier": "https://rpc.testnet.arc.network",
+  "subgraphEndpoint": "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn",
+  "indexerStartBlock": 38856377,
+  "sourceRegistryAddress": "0xc20b3f8c7a7b4fcbffe35c6c63331a1d9d12fd1a",
+  "sourceArcRegistrarAddress": "0xd600b8d80e921ec48845fc1769c292601e5e90c4",
+  "sourceCircleRegistrarAddress": "0xe1fde46df4bac6f433c52a337f4818822735bf8a",
+  "sourceControllerAddresses": {
+    "arc": "0xe0a67f2e74bcb740f0446ff2acf32081db877d46",
+    "circle": "0x4cb0650847459d9bbdd5823cc6d320c900d883da"
+  },
+  "eligibleWalletCount": 849,
+  "eligibleActiveNameCount": 1848,
+  "activeArcNameCount": 1272,
+  "activeCircleNameCount": 576,
+  "excludedCounts": {
+    "wrongTld": 0,
+    "expired": 0,
+    "burned": 0,
+    "zeroOwner": 0,
+    "protocolInternal": 26,
+    "duplicateWalletReductions": 999
+  },
+  "merkleRoot": "0xf18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e",
+  "leafEncoding": "keccak256(abi.encode(campaignId, account))",
+  "generatorScriptPath": "scripts/snapshot/generate-arcns-v3-early-adopters.js",
+  "generatorVersion": "2.0.0",
+  "gitCommit": "c16665bb37ba11870cf1fc7b50f8e6e40fb7dade",
+  "generatedAt": "2026-08-02T13:07:29.868Z",
+  "generatorCommand": "\"C:\\\\nvm4w\\\\nodejs\\\\node.exe\" \"C:\\\\Users\\\\mertb\\\\Desktop\\\\NODE\\\\ArcNameServices\\\\arcns\\\\scripts\\\\snapshot\\\\generate-arcns-v3-early-adopters.js\" \"--input\" \"snapshots/arc-testnet-v3-early-adopters/source/block-pinned-subgraph-records.json\" \"--exclusions\" \"scripts/snapshot/arc-testnet-v3-exclusions.json\" \"--out\" \"snapshots/arc-testnet-v3-early-adopters\" \"--snapshot-block\" \"54933646\" \"--snapshot-block-hash\" \"0x0a450d7fb8055de409084ddb9942f31431aa017a3b3241c4eb8e2e655b8c024d\" \"--snapshot-timestamp\" \"1785673991\" \"--arc-registrar\" \"0xD600B8D80e921ec48845fC1769c292601e5e90C4\" \"--circle-registrar\" \"0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a\" \"--registry\" \"0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A\" \"--arc-controller\" \"0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46\" \"--circle-controller\" \"0x4CB0650847459d9BbDd5823cc6D320C900D883dA\" \"--rpc-id\" \"https://rpc.testnet.arc.network\" \"--subgraph-url\" \"https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn\" \"--indexer-start-block\" \"38856377\" \"--finality\" \"Arc Testnet RPC finalized tag\"",
+  "exclusionPolicy": "Active v3 .arc/.circle names only; expired, burned/inactive, zero-owner, wrong-TLD, and reviewed protocol/admin/internal addresses excluded. Smart-contract wallets are otherwise allowed.",
+  "deterministicSortingRule": "lowercase addresses ascending; leaves retain order; each pair bytes32-sorted before hashing; unpaired nodes promoted"
+}

@@ -1,0 +1,88 @@
+{
+  "policy": "Active v3 .arc/.circle names only; expired, burned/inactive, zero-owner, wrong-TLD, and reviewed protocol/admin/internal addresses excluded. Smart-contract wallets are otherwise allowed.",
+  "exclusions": [
+    {
+      "address": "0x01baebec34dd426e98ca7e550eb652235ea7e4f3",
+      "reason": "protocol/admin address",
+      "role": "administration Safe"
+    },
+    {
+      "address": "0x0b943fe9f1f8135e0751ba8b43dc0cd688ad209d",
+      "reason": "documented protocol/admin address",
+      "role": "v3 deployer and administration Safe owner"
+    },
+    {
+      "address": "0x0f9d898d74f29c69cad1a66918b41891e73e08f0",
+      "reason": "protocol/admin address",
+      "role": "administration timelock"
+    },
+    {
+      "address": "0x1e19c1c829a387c2246567c0df264d81310d7775",
+      "reason": "documented protocol/admin address",
+      "role": "administration Safe owner"
+    },
+    {
+      "address": "0x352a1917dd82158ec9bc71a0ac84f1b95af26304",
+      "reason": "protocol contract",
+      "role": "reverse registrar"
+    },
+    {
+      "address": "0x4c3a2d4245346732ce498937fead6343e77eb097",
+      "reason": "protocol contract",
+      "role": "resolver"
+    },
+    {
+      "address": "0x4cb0650847459d9bbdd5823cc6d320c900d883da",
+      "reason": "protocol contract",
+      "role": ".circle controller"
+    },
+    {
+      "address": "0x961fc222eddb9ab83f78a255ebb1db1255f3df57",
+      "reason": "retired protocol contract",
+      "role": "old reverse registrar"
+    },
+    {
+      "address": "0xb2f6cfd0960a1fcc532de1bf2aafcc3077b4c396",
+      "reason": "documented protocol/admin address",
+      "role": "administration Safe owner"
+    },
+    {
+      "address": "0xbbdf5bc7d63b1b7223556d4899905d56589a682d",
+      "reason": "protocol/internal treasury",
+      "role": "treasury"
+    },
+    {
+      "address": "0xc20b3f8c7a7b4fcbffe35c6c63331a1d9d12fd1a",
+      "reason": "protocol contract",
+      "role": "v3 registry"
+    },
+    {
+      "address": "0xd600b8d80e921ec48845fc1769c292601e5e90c4",
+      "reason": "protocol contract",
+      "role": ".arc registrar"
+    },
+    {
+      "address": "0xde9b95b560f5e803f5cc045f27285f0226913548",
+      "reason": "protocol contract",
+      "role": "price oracle"
+    },
+    {
+      "address": "0xe0a67f2e74bcb740f0446ff2acf32081db877d46",
+      "reason": "protocol contract",
+      "role": ".arc controller"
+    },
+    {
+      "address": "0xe1fde46df4bac6f433c52a337f4818822735bf8a",
+      "reason": "protocol contract",
+      "role": ".circle registrar"
+    }
+  ],
+  "excludedCounts": {
+    "wrongTld": 0,
+    "expired": 0,
+    "burned": 0,
+    "zeroOwner": 0,
+    "protocolInternal": 26,
+    "duplicateWalletReductions": 999
+  }
+}
