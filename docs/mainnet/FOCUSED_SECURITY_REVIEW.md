@@ -8,6 +8,8 @@ The follow-on mainnet indexer/subgraph readiness plan is tracked in [`INDEXER_SU
 
 The follow-on frontend mainnet/discount cutover plan is tracked in [`FRONTEND_CUTOVER_PLAN.md`](./FRONTEND_CUTOVER_PLAN.md).
 
+Proof delivery preparation is tracked in [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELIVERY_PLAN.md).
+
 Remediation status: FSR-02 and FSR-06 are addressed by the Aşama 5A tooling guards. FSR-01 is partially addressed by a fail-closed read-only handoff assertion. FSR-04 is partially addressed by Aşama 6A reusable DiscountRegistry ABI/schema/mapping coverage; final address/start-block wiring, deployment, sync, and health verification remain launch actions and blockers.
 
 This is an **internal focused review**, **not an external audit**. Mainnet deployment remains blocked until the blockers listed below are resolved and independently rechecked. No deployment, Arc on-chain write, signing, ownership transfer, role change, price update, Merkle-root update, campaign activation, production frontend switch, staging, commit, or push was performed by this review.

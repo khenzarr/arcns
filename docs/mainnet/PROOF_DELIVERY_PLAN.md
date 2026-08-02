@@ -1,0 +1,62 @@
+# ArcNS Early-Adopter Proof Delivery Plan (Aşama 6B)
+
+> **Proof-data preparation only.** This plan prepares a future frontend proof artifact and validation tooling. It does not activate discount UX, enable discount UI, approve launch, or perform any on-chain operation.
+
+## A. Executive summary
+
+The public proof delivery artifact is prepared for future frontend discount UX. This work does not activate the discount, enable discount UI, or approve mainnet launch. Proof delivery remains blocked until frontend integration, root freeze, contract deployment, indexer readiness, and launch approval are complete.
+
+## B. Artifact details
+
+- **Path:** `frontend/public/discount-proofs/arcns-v3-early-adopter-2026.json`
+- **Campaign:** `ARCNS_TESTNET_V3_EARLY_ADOPTER_2026_V1`
+- **Campaign bytes32:** `0xae3c7462e46cc76b3e0349e7d211264ada95257da9d9d7a797abed70b7eb83e3`
+- **Snapshot:** block `54933646`, hash `0x0a450d7fb8055de409084ddb9942f31431aa017a3b3241c4eb8e2e655b8c024d`
+- **Merkle root:** `0xf18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e`
+- **Eligible wallets:** `849`
+- **Lookup:** `proofs[lowercaseWalletAddress]`; each value is a `bytes32[]`.
+- **Normalization:** wallet keys must be valid, lowercase `0x` addresses with no duplicates.
+- **Verification:** `keccak256(abi.encode(bytes32 campaignId, address account))`, followed by sorted-pair bytes32 Merkle hashing.
+
+Sources are `snapshots/arc-testnet-v3-early-adopters/manifest.json`, `eligible-addresses.json`, `merkle-proofs.json`, and `scripts/mainnet/final-snapshot.js`. Contract expectations are defined by `ArcNSEarlyAdopterDiscountRegistry.sol`.
+
+## C. Generation and validation
+
+```text
+node scripts/mainnet/generate-discount-proof-artifact.js
+node scripts/mainnet/validate-discount-proof-artifact.js
+```
+
+Both commands are network-free, read-only, and require no signer or RPC.
+
+## D. Frontend integration rules
+
+- Look up proofs using the lowercase connected wallet address.
+- A missing proof is an ineligible fallback; do not claim eligibility.
+- Proof existence alone does not mean the discount is active.
+- Check or safely handle already-used discount state before presenting the path.
+- Enforce one-time use across both `.arc` and `.circle` namespaces.
+- Do not discount an expired-name premium, if a premium exists.
+- Keep discount UI hidden until activation approval.
+- Do not assume the root is frozen until read-back confirms it.
+
+## E. Readiness gates
+
+- [x] Artifact generated and validated.
+- [x] 849 proofs present.
+- [x] Root matches finalized root.
+- [ ] Frontend integration PR created.
+- [ ] Preview smoke tests passed.
+- [ ] DiscountRegistry deployed.
+- [ ] Root set and frozen.
+- [ ] Discount inactive before launch.
+- [ ] Activation approval granted.
+- [ ] Indexer or direct-read fallback available for used state.
+
+## F. Remaining blockers
+
+Final mainnet addresses are TBD; the artifact is not wired into active UI; discount UI is not enabled; the root is not set/frozen on mainnet; DiscountRegistry is not deployed on mainnet; frontend cutover is not implemented; the indexer/subgraph is not deployed/synced; and final launch review is required.
+
+## G. Non-goals
+
+This document does not deploy contracts, set/freeze the root, activate the discount, switch the frontend to mainnet, enable discount UI, or approve mainnet launch.
