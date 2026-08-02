@@ -10,6 +10,8 @@ Mainnet contract addresses, the mainnet subgraph endpoint, proof delivery, and V
 
 Proof artifact preparation is tracked separately in [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELIVERY_PLAN.md).
 
+An inactive typed helper now validates and looks up the bundled static proof artifact at `frontend/src/lib/discountProofs.ts`. It is not connected to components, hooks, active registration, or `registerWithDiscount`; it does not use RPC or establish claim availability. Discount UI and the production network selection remain unchanged.
+
 ## B. Required frontend inputs
 
 | Input | Required value | Source | Status | Notes |
@@ -48,7 +50,7 @@ The following findings are based on the current repository inspection; they do n
 - **Contract address wiring:** `frontend/src/lib/contracts.ts` consumes testnet values exported by `frontend/src/lib/generated-contracts.ts`. `scripts/generate-frontend-config.js` currently targets the testnet deployment file. Mainnet addresses are absent and must not be inferred.
 - **Registration flow:** `frontend/src/hooks/useRegistration.ts` implements the active commit-reveal flow, including USDC approval and controller `register`; `frontend/src/hooks/useAvailability.ts` reads `available`, `rentPrice`, and expiry-related state directly from contracts.
 - **Renewal flow:** `frontend/src/hooks/useRenew.ts` performs direct ownership reads, USDC approval, and controller `renew`; it uses the normal quote and max-cost path.
-- **Discount UI/integration:** No active discount UI, `registerWithDiscount` call, proof lookup, or Merkle-proof handling was found under `frontend/src`. Discount UX is therefore absent/inactive rather than launch-ready.
+- **Discount UI/integration:** A static, read-only proof lookup helper and isolated tests now exist, but no active discount UI, `registerWithDiscount` call, hook integration, or component integration exists. The helper validates finalized artifact metadata and returns local lookup results only. Discount UX remains absent/inactive rather than launch-ready.
 - **Subgraph configuration:** `frontend/src/lib/graphql.ts` reads `NEXT_PUBLIC_SUBGRAPH_URL`, `NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL`, and `NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL`. No final mainnet endpoint exists.
 - **Direct reads versus indexed reads:** Availability, quotes, allowance/balance, registration, and renewal rely on direct contract interactions. Portfolio, registration/renewal history, and resolution-oriented reads can use GraphQL, with null/empty failure behavior and RPC fallback in relevant call sites.
 - **Wallet/network handling:** `frontend/src/lib/wagmiConfig.ts` configures Wagmi connectors. `frontend/src/app/providers.tsx` shows a wrong-network banner, and registration/renewal hooks reject a wallet chain that differs from `DEPLOYED_CHAIN_ID`. A reviewed mainnet-preview-only switch prompt is not yet implemented.
@@ -101,6 +103,8 @@ Steps 11 and 20 are future release operations and are not performed by this plan
 | Premium/expired-name premium handling is explained | Quote UI/tests show discount applies only to base and any premium remains full; current lifecycle caveat is documented | `TBD` | Yes |
 | Indexer supports discount lifecycle/consumption events or fallback direct reads are defined | Synced query evidence or reviewed read-only fallback specification | `TBD` | Yes |
 | Activation has explicit approval | Recorded final launch approval after all prior gates | `TBD` | Yes |
+
+The inactive helper does not satisfy these runtime gates. Proof existence is not evidence that the on-chain root matches, the root is frozen, the campaign is active, the controller is authorized, or the wallet's claim is unused. A future reviewed UI must check those states through approved read paths before presenting a final discount action.
 
 ## F. Frontend smoke test checklist
 
@@ -167,6 +171,7 @@ Never activate the discount solely because the frontend appears ready. Frontend 
 - Final mainnet contract addresses are `TBD`.
 - Final mainnet subgraph endpoint is `TBD`.
 - Proof delivery is unresolved.
+- The static proof helper is inactive; final used-state/lifecycle gating and `registerWithDiscount` wiring are unresolved.
 - Deploy-grade RPC is unresolved.
 - Blockscout verification is unresolved.
 - Mainnet indexer/subgraph is not deployed or synchronized.

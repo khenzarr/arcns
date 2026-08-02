@@ -31,21 +31,25 @@ Both commands are network-free, read-only, and require no signer or RPC.
 
 ## D. Frontend integration rules
 
+- A typed helper now exists at `frontend/src/lib/discountProofs.ts`, but it is intentionally inactive and is not imported by any active UI or registration flow.
+- The helper only fetches the bundled static artifact, validates its finalized metadata, normalizes an address, and performs a local proof lookup. It does not use RPC or call a contract.
 - Look up proofs using the lowercase connected wallet address.
 - A missing proof is an ineligible fallback; do not claim eligibility.
-- Proof existence alone does not mean the discount is active.
-- Check or safely handle already-used discount state before presenting the path.
+- Proof existence alone does not mean the discount is active, usable, or still unclaimed.
+- Before presenting any final discount action, a future reviewed integration must fail closed unless root equality, frozen state, activation state, controller authorization, and already-used state have been checked through approved read paths.
 - Enforce one-time use across both `.arc` and `.circle` namespaces.
 - Do not discount an expired-name premium, if a premium exists.
 - Keep discount UI hidden until activation approval.
 - Do not assume the root is frozen until read-back confirms it.
+- `registerWithDiscount` is not wired in this phase.
 
 ## E. Readiness gates
 
 - [x] Artifact generated and validated.
 - [x] 849 proofs present.
 - [x] Root matches finalized root.
-- [ ] Frontend integration PR created.
+- [x] Inactive static proof lookup helper and unit coverage prepared.
+- [ ] Active frontend discount integration reviewed and approved.
 - [ ] Preview smoke tests passed.
 - [ ] DiscountRegistry deployed.
 - [ ] Root set and frozen.
@@ -55,7 +59,7 @@ Both commands are network-free, read-only, and require no signer or RPC.
 
 ## F. Remaining blockers
 
-Final mainnet addresses are TBD; the artifact is not wired into active UI; discount UI is not enabled; the root is not set/frozen on mainnet; DiscountRegistry is not deployed on mainnet; frontend cutover is not implemented; the indexer/subgraph is not deployed/synced; and final launch review is required.
+Final mainnet addresses are TBD; the helper and artifact are not wired into active UI; `registerWithDiscount` is not wired; discount UI is not enabled; the root is not set/frozen on mainnet; DiscountRegistry is not deployed on mainnet; frontend cutover is not implemented; the indexer/subgraph is not deployed/synced; and final launch review is required. The helper is preparation only and does not mean the frontend discount UX is ready.
 
 ## G. Non-goals
 
