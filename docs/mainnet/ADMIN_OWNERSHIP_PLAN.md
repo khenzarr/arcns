@@ -89,6 +89,8 @@ These are future launch actions, not actions performed by this documentation pha
 
 Every transfer, grant, revoke, authorization, address assignment, and final role read must be independently reviewed against the finalized deployed addresses before mainnet activation.
 
+The strictly read-only `scripts/mainnet/assert-admin-handoff.js` must verify the finalized Safe, Timelock, treasury, deployed addresses, owners, roles, and deployer revocation before public launch. It does not execute the handoff and must not be treated as proof until run against the final deployment with independently reviewed expected values.
+
 ## Launch blockers
 
 - [ ] Final mainnet Admin Safe address is not yet recorded.
