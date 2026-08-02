@@ -2,6 +2,8 @@
 
 Status: internal focused review completed on branch `security/focused-mainnet-launch-review`.
 
+Remediation status: FSR-02 and FSR-06 are addressed by the Aşama 5A tooling guards. FSR-01 is partially addressed by a fail-closed read-only handoff assertion; final Safe/Timelock creation, handoff execution, and verification remain launch actions and blockers.
+
 This is an **internal focused review**, **not an external audit**. Mainnet deployment remains blocked until the blockers listed below are resolved and independently rechecked. No deployment, Arc on-chain write, signing, ownership transfer, role change, price update, Merkle-root update, campaign activation, production frontend switch, staging, commit, or push was performed by this review.
 
 ## Executive verdict
@@ -12,7 +14,7 @@ This is an **internal focused review**, **not an external audit**. Mainnet deplo
 
 The core discount and pricing design is internally coherent: the campaign and snapshot block are immutable; a frozen root cannot be changed; `consume` is restricted to authorized controllers; usage is keyed by wallet in one shared registry; controller discount registration binds the eligible account to `msg.sender`; the claim is atomic with registration; renewals do not consume or apply the discount; and expired-name premium remains payable in full.
 
-Deployment is nevertheless blocked by incomplete launch governance and infrastructure, and by insufficient fail-closed pinning in the write-capable deployment path.
+Deployment remains blocked by incomplete launch administration and infrastructure. Aşama 5A added fail-closed snapshot pinning and separated discount lifecycle operations; these guards still require independent review before launch.
 
 ## Findings summary
 

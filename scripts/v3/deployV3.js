@@ -24,11 +24,9 @@
  *   TREASURY_ADDRESS  — treasury EOA (defaults to deployer)
  *   PRIVATE_KEY       — deployer private key (from .env)
  *   DEPLOY_EARLY_ADOPTER_DISCOUNT_REGISTRY — true to deploy/wire the shared registry
- *   EARLY_ADOPTER_CAMPAIGN_ID               — required bytes32 or text ID when enabled
- *   EARLY_ADOPTER_SNAPSHOT_BLOCK            — required finalized source block when enabled
- *   EARLY_ADOPTER_MERKLE_ROOT               — optional bytes32 before final snapshot
- *   EARLY_ADOPTER_DISCOUNT_ACTIVE            — defaults false
- *   EARLY_ADOPTER_FREEZE_ROOT                — defaults false
+ *   Campaign facts come only from the finalized snapshot manifest. Supplied
+ *   EARLY_ADOPTER_* fact values must match it exactly. Root set, root freeze,
+ *   and activation are intentionally separate reviewed operations.
  */
 
 "use strict";
@@ -36,6 +34,7 @@
 const { ethers, upgrades, network } = require("hardhat");
 const fs   = require("fs");
 const path = require("path");
+const { loadAndValidateFinalSnapshot } = require("../mainnet/final-snapshot");
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -59,35 +58,36 @@ function envBoolean(value, defaultValue = false) {
   throw new Error(`Expected boolean true/false, received: ${value}`);
 }
 
-function discountDeploymentConfig(env = process.env) {
+function discountDeploymentConfig(env = process.env, options = {}) {
   const enabled = envBoolean(env.DEPLOY_EARLY_ADOPTER_DISCOUNT_REGISTRY, false);
   if (!enabled) return { enabled: false };
 
-  if (!env.EARLY_ADOPTER_CAMPAIGN_ID) throw new Error("EARLY_ADOPTER_CAMPAIGN_ID is required when discount registry deployment is enabled");
-  const snapshotBlock = Number(env.EARLY_ADOPTER_SNAPSHOT_BLOCK);
-  if (!Number.isSafeInteger(snapshotBlock) || snapshotBlock <= 0) {
-    throw new Error("EARLY_ADOPTER_SNAPSHOT_BLOCK must be a positive safe integer when discount registry deployment is enabled");
+  for (const name of ["EARLY_ADOPTER_DISCOUNT_ACTIVE", "EARLY_ADOPTER_FREEZE_ROOT", "EARLY_ADOPTER_SET_ROOT"]) {
+    if (env[name] !== undefined && env[name] !== "" && env[name] !== "false") {
+      throw new Error(`${name} is forbidden in deployV3.js; use the separate reviewed mainnet operation script`);
+    }
   }
-
-  const campaignId = ethers.isHexString(env.EARLY_ADOPTER_CAMPAIGN_ID, 32)
-    ? env.EARLY_ADOPTER_CAMPAIGN_ID
-    : ethers.id(env.EARLY_ADOPTER_CAMPAIGN_ID);
-  const merkleRoot = env.EARLY_ADOPTER_MERKLE_ROOT || null;
-  if (merkleRoot && !ethers.isHexString(merkleRoot, 32)) throw new Error("EARLY_ADOPTER_MERKLE_ROOT must be bytes32");
-
-  const active = envBoolean(env.EARLY_ADOPTER_DISCOUNT_ACTIVE, false);
-  const freezeRoot = envBoolean(env.EARLY_ADOPTER_FREEZE_ROOT, false);
-  if (!merkleRoot && (active || freezeRoot)) {
-    throw new Error("A finalized EARLY_ADOPTER_MERKLE_ROOT is required before freeze or activation");
-  }
-  return { enabled, campaignId, snapshotBlock, merkleRoot, active, freezeRoot };
+  const snapshot = loadAndValidateFinalSnapshot(env, options.manifestPath);
+  return {
+    enabled: true,
+    campaignId: snapshot.campaignIdBytes32,
+    snapshotBlock: snapshot.snapshotBlock,
+    snapshotBlockHash: snapshot.snapshotBlockHash,
+    merkleRoot: snapshot.merkleRoot,
+    eligibleWalletCount: snapshot.eligibleWalletCount,
+    rootSetDuringDeploy: false,
+    rootFrozenDuringDeploy: false,
+    activeDuringDeploy: false,
+  };
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  const [deployer] = await ethers.getSigners();
   const isLocal = ["hardhat", "localhost"].includes(network.name);
+  // All environment/manifest checks must finish before a signer is loaded or any write can occur.
+  const discountConfig = discountDeploymentConfig();
+  const [deployer] = await ethers.getSigners();
 
   console.log("\n╔══════════════════════════════════════╗");
   console.log("║   ArcNS v3 — Canonical Deployment    ║");
@@ -97,7 +97,6 @@ async function main() {
   console.log(`Deployer : ${deployer.address}\n`);
 
   const contracts = {};
-  const discountConfig = discountDeploymentConfig();
 
   if (network.name === "arc_mainnet") {
     const expected = [100_000_000n, 50_000_000n, 25_000_000n, 15_000_000n, 5_000_000n];
@@ -285,14 +284,13 @@ async function main() {
     await (await arcController.setDiscountRegistry(contracts.discountRegistry)).wait();
     await (await circleController.setDiscountRegistry(contracts.discountRegistry)).wait();
 
-    if (discountConfig.merkleRoot) await (await discountRegistry.setMerkleRoot(discountConfig.merkleRoot)).wait();
-    if (discountConfig.freezeRoot) await (await discountRegistry.freezeRoot()).wait();
-    if (discountConfig.active) await (await discountRegistry.setDiscountActive(true)).wait();
-
     if (await arcController.discountRegistry() !== contracts.discountRegistry || await circleController.discountRegistry() !== contracts.discountRegistry) {
       throw new Error("Both controllers must point to the same shared discount registry");
     }
-    console.log("   ✓ Shared discount registry authorized and wired to both controllers");
+    if (await discountRegistry.merkleRoot() !== ethers.ZeroHash || await discountRegistry.rootFrozen() || await discountRegistry.discountActive()) {
+      throw new Error("Discount registry deploy/bootstrap must leave root unset, unfrozen, and inactive");
+    }
+    console.log("   ✓ Shared discount registry wired; root remains unset, unfrozen, and inactive");
   }
 
   // ── 12. Save deployment output ─────────────────────────────────────────────
