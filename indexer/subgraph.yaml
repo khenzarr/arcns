@@ -187,3 +187,44 @@ dataSources:
         - event: ReverseClaimed(indexed address,indexed bytes32)
           handler: handleReverseClaimed
       file: ./src/reverseRegistrar.ts
+
+# DiscountRegistry has no version-controlled testnet deployment address/start
+# block. This dormant template validates its ABI, schema, and handlers without
+# inventing an address or indexing anything. A future reviewed manifest must
+# wire a concrete data source with the final address and exact start block.
+templates:
+  - kind: ethereum
+    name: DiscountRegistry
+    network: arc-testnet
+    source:
+      abi: ArcNSEarlyAdopterDiscountRegistry
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - DiscountRegistryState
+        - DiscountController
+        - DiscountRootUpdate
+        - DiscountRootFrozen
+        - DiscountActivationChange
+        - DiscountControllerAuthorization
+        - DiscountConsumed
+        - DiscountRegistryOwnershipTransfer
+      abis:
+        - name: ArcNSEarlyAdopterDiscountRegistry
+          file: ./abis/ArcNSEarlyAdopterDiscountRegistry.json
+      eventHandlers:
+        - event: DiscountRootUpdated(indexed bytes32,indexed bytes32)
+          handler: handleDiscountRootUpdated
+        - event: DiscountRootFrozen(indexed bytes32)
+          handler: handleDiscountRootFrozen
+        - event: DiscountActiveUpdated(bool)
+          handler: handleDiscountActiveUpdated
+        - event: DiscountControllerAuthorizationUpdated(indexed address,bool)
+          handler: handleDiscountControllerAuthorizationUpdated
+        - event: DiscountUsed(indexed address,indexed address,indexed bytes32)
+          handler: handleDiscountUsed
+        - event: OwnershipTransferred(indexed address,indexed address)
+          handler: handleOwnershipTransferred
+      file: ./src/discountRegistry.ts

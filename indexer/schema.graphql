@@ -114,3 +114,102 @@ type LabelhashIndex @entity(immutable: true) {
   id: ID!          # "{tld}-{labelhashHex}" e.g. "arc-0x1234..."
   domainId: String! # namehash hex — the Domain entity id
 }
+
+# ─── DiscountRegistry ─────────────────────────────────────────────────────────
+# Mutable current state, keyed by the lowercase DiscountRegistry address.
+# campaignId and snapshotBlock are constructor immutables read from the contract
+# because they are not emitted by every lifecycle event.
+
+type DiscountRegistryState @entity(immutable: false) {
+  id: ID!                        # lowercase DiscountRegistry address
+  contractAddress: Bytes!
+  owner: Bytes
+  campaignId: Bytes
+  snapshotBlock: BigInt
+  merkleRoot: Bytes!
+  rootFrozen: Boolean!
+  discountActive: Boolean!
+  blockNumber: BigInt!
+  logIndex: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+# Mutable current authorization state for one controller on one registry.
+
+type DiscountController @entity(immutable: false) {
+  id: ID!                        # "{registryAddress}-{controllerAddress}"
+  registry: DiscountRegistryState!
+  contractAddress: Bytes!
+  controller: Bytes!
+  authorized: Boolean!
+  blockNumber: BigInt!
+  logIndex: BigInt!
+  timestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type DiscountRootUpdate @entity(immutable: true) {
+  id: ID!                        # txHash-logIndex
+  contractAddress: Bytes!
+  oldRoot: Bytes!
+  newRoot: Bytes!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type DiscountRootFrozen @entity(immutable: true) {
+  id: ID!                        # txHash-logIndex
+  contractAddress: Bytes!
+  root: Bytes!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type DiscountActivationChange @entity(immutable: true) {
+  id: ID!                        # txHash-logIndex
+  contractAddress: Bytes!
+  active: Boolean!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type DiscountControllerAuthorization @entity(immutable: true) {
+  id: ID!                        # txHash-logIndex
+  contractAddress: Bytes!
+  controller: Bytes!
+  authorized: Boolean!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type DiscountConsumed @entity(immutable: true) {
+  id: ID!                        # txHash-logIndex
+  contractAddress: Bytes!
+  account: Bytes!
+  controller: Bytes!
+  campaignId: Bytes!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type DiscountRegistryOwnershipTransfer @entity(immutable: true) {
+  id: ID!                        # txHash-logIndex
+  contractAddress: Bytes!
+  previousOwner: Bytes!
+  newOwner: Bytes!
+  transactionHash: Bytes!
+  logIndex: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
