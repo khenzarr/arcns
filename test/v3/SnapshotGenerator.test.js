@@ -1,6 +1,14 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { sortRecords, uniqueWallets } = require("../../scripts/snapshot/generate-arcns-v3-early-adopters");
+const {
+  campaignBytes32,
+  classifyRecords,
+  sortRecords,
+  uniqueWallets,
+  leafFor,
+  buildMerkleTree,
+  verifyProof,
+} = require("../../scripts/snapshot/generate-arcns-v3-early-adopters");
 
 describe("v3 early-adopter snapshot generator", function () {
   const registrars = {
@@ -52,5 +60,37 @@ describe("v3 early-adopter snapshot generator", function () {
       record({ owner: bob, label: "burned", name: "burned.arc", burned: true }),
     ], timestamp, registrars);
     expect(rows).to.deep.equal([]);
+  });
+
+  it("reports exclusion counts and excludes reviewed protocol/internal owners", function () {
+    const result = classifyRecords([
+      record({ owner: ethers.ZeroAddress }),
+      record({ owner: bob, label: "expired", expires: timestamp }),
+      record({ owner: bob, label: "burned", burned: true }),
+      record({ owner: bob, label: "internal" }),
+      record({ tld: "eth", registrar: registrars.arc }),
+    ], timestamp, registrars, [{ address: bob, reason: "protocol internal" }]);
+    expect(result.eligible).to.deep.equal([]);
+    expect(result.excluded).to.deep.equal({ wrongTld: 1, expired: 1, burned: 1, zeroOwner: 1, protocolInternal: 1 });
+  });
+
+  it("uses ethers.id for the exact campaign bytes32", function () {
+    expect(campaignBytes32("ARCNS_TESTNET_V3_EARLY_ADOPTER_2026_V1")).to.equal(
+      "0xae3c7462e46cc76b3e0349e7d211264ada95257da9d9d7a797abed70b7eb83e3",
+    );
+  });
+
+  it("builds deterministic Solidity-compatible leaves and proofs", function () {
+    const campaign = campaignBytes32("ARCNS_TESTNET_V3_EARLY_ADOPTER_2026_V1");
+    const wallets = [alice.toLowerCase(), bob.toLowerCase(), "0x5000000000000000000000000000000000000005"];
+    const first = buildMerkleTree(wallets, campaign);
+    const second = buildMerkleTree(wallets, campaign);
+    expect(first.root).to.equal(second.root);
+    expect(first.entries[0].leaf).to.equal(
+      ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(["bytes32", "address"], [campaign, alice])),
+    );
+    for (const entry of first.entries) expect(verifyProof(entry.leaf, entry.proof, first.root)).to.equal(true);
+    expect(verifyProof(leafFor(campaign, "0x6000000000000000000000000000000000000006"), first.entries[0].proof, first.root)).to.equal(false);
+    expect(verifyProof(leafFor(campaignBytes32("wrong-campaign"), alice), first.entries[0].proof, first.root)).to.equal(false);
   });
 });
