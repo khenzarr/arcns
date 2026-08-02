@@ -8,6 +8,8 @@ The future Safe / Timelock / deployer-revocation ceremony and its read-only veri
 
 Deploy-grade RPC acceptance and Blockscout verification blockers are tracked in [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
 
+Mainnet indexer/subgraph inputs, event coverage, and frontend readiness gates are tracked in [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
+
 Arc mainnet target: chain ID `5042`, deploy-grade RPC still to be finalized (the previously listed `https://rpc.blockdaemon.mainnet.arc.io` endpoint remains a candidate pending approval), explorer `https://arc-mainnet.cloud.blockscout.com`, native symbol `USDC`, USDC `0x3600000000000000000000000000000000000000`. The confirmed `https://radar-api-rpc.up.railway.app` endpoint is a read-only/testing fallback only and is not deployment-grade RPC.
 
 1. Confirm a separately approved deployer and treasury configuration; never place credentials in source.
