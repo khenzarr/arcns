@@ -1,0 +1,21 @@
+{
+  "policy": "Exclude canonical ArcNS v3 protocol, administration, treasury, and deployment-authority addresses. Smart-contract wallets not listed here remain eligible.",
+  "source": "deployments/arc_testnet-v3.json at git commit 05257a74eb6c710a9421730b45d1c288d0908c5b",
+  "exclusions": [
+    { "address": "0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A", "role": "v3 registry", "reason": "protocol contract" },
+    { "address": "0xD600B8D80e921ec48845fC1769c292601e5e90C4", "role": ".arc registrar", "reason": "protocol contract" },
+    { "address": "0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a", "role": ".circle registrar", "reason": "protocol contract" },
+    { "address": "0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46", "role": ".arc controller", "reason": "protocol contract" },
+    { "address": "0x4CB0650847459d9BbDd5823cc6D320C900D883dA", "role": ".circle controller", "reason": "protocol contract" },
+    { "address": "0x4c3a2D4245346732CE498937fEAD6343e77Eb097", "role": "resolver", "reason": "protocol contract" },
+    { "address": "0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304", "role": "reverse registrar", "reason": "protocol contract" },
+    { "address": "0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57", "role": "old reverse registrar", "reason": "retired protocol contract" },
+    { "address": "0xde9b95B560f5e803f5Cc045f27285F0226913548", "role": "price oracle", "reason": "protocol contract" },
+    { "address": "0xbbDF5bC7D63B1b7223556d4899905d56589A682d", "role": "treasury", "reason": "protocol/internal treasury" },
+    { "address": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3", "role": "administration Safe", "reason": "protocol/admin address" },
+    { "address": "0x0f9d898D74f29c69cAD1a66918b41891E73e08f0", "role": "administration timelock", "reason": "protocol/admin address" },
+    { "address": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D", "role": "v3 deployer and administration Safe owner", "reason": "documented protocol/admin address" },
+    { "address": "0xB2F6CfD0960A1fCC532DE1BF2Aafcc3077B4c396", "role": "administration Safe owner", "reason": "documented protocol/admin address" },
+    { "address": "0x1e19c1c829A387c2246567c0df264D81310d7775", "role": "administration Safe owner", "reason": "documented protocol/admin address" }
+  ]
+}
