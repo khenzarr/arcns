@@ -55,12 +55,23 @@ The current `indexer/` package is a testnet-oriented Graph Protocol project. Its
 | `.arc` / `.circle` registrars/NFTs | ERC-721 `Transfer` | `indexer/src/registrar.ts` handles ownership transfers and skips mints | Rebind both registrar sources; confirm token ID/labelhash behavior. |
 | Resolver | `AddrChanged`, `NameChanged` | `indexer/src/resolver.ts` handles address and name updates | Include if frontend resolution/reverse data depends on indexed state. |
 | Reverse registrar | `ReverseClaimed` | `indexer/src/reverseRegistrar.ts` handles reverse claims | Include if frontend reverse records depend on indexed state. |
-| DiscountRegistry | `DiscountRootUpdated`, `DiscountRootFrozen`, `DiscountActiveUpdated`, `DiscountControllerAuthorizationUpdated`, `DiscountUsed` | No DiscountRegistry data source, schema entities, or mapping handlers are present in the current indexer reference | **Coverage gap.** Add and review exact ABI/schema/handlers after final contract ABI is available; do not treat the current indexer as discount readiness. |
+| DiscountRegistry | `DiscountRootUpdated`, `DiscountRootFrozen`, `DiscountActiveUpdated`, `DiscountControllerAuthorizationUpdated`, `DiscountUsed`, inherited `OwnershipTransferred` | ABI, schema entities, typed handlers, and dormant template are implemented | Add a reviewed concrete data source only after the final address and exact start block are available; preparation alone is not deployment readiness. |
 | Ownership/admin sources | Contract-specific ownership and role events, if present | Not currently a dedicated source | Add only where useful for operational monitoring and only after confirming exact ABI event names. |
 
 The final event inventory must be generated from the verified mainnet ABIs. If a needed event does not exist on the deployed contract, record it as a gap and define a direct-read or alternate monitoring path rather than inventing an event or handler.
 
-The current schema supports domains, accounts, registrations, renewals, domain events, resolver records, reverse records, and labelhash lookup. Before deployment, verify that the schema supports the required counts and discount lifecycle queries. In particular, DiscountRegistry entities/events are not yet represented by the current reference schema.
+The current schema supports domains, accounts, registrations, renewals, domain events, resolver records, reverse records, labelhash lookup, DiscountRegistry current state, per-controller authorization state, and immutable DiscountRegistry event history. Before deployment, verify that the schema supports all required production counts and lifecycle queries against a concretely wired and synced data source.
+
+### Aşama 6A preparation status
+
+The reusable DiscountRegistry preparation is implemented in `indexer/`:
+
+- `abis/ArcNSEarlyAdopterDiscountRegistry.json` is derived from the compiled contract artifact;
+- `schema.graphql` contains current state, current controller authorization, and immutable history entities;
+- `src/discountRegistry.ts` handles all five DiscountRegistry lifecycle events plus inherited `OwnershipTransferred`, using transaction-hash/log-index IDs; and
+- `subgraph.yaml` contains a dormant template so codegen/build validate the ABI and handlers without inventing an address.
+
+The dormant template is not instantiated by any mapping and therefore indexes nothing. Concrete testnet/mainnet address and start-block wiring remains `TBD`.
 
 ## D. Mainnet subgraph deployment sequence (dry run)
 
@@ -174,7 +185,7 @@ Rollback of the frontend endpoint is a configuration/release action, not an on-c
 - Blockscout verification path is unresolved.
 - Frontend mainnet cutover is unresolved and must be separate.
 - Proof delivery integration remains unresolved if discount UX is in scope.
-- DiscountRegistry event/schema/handler coverage must be added and reviewed.
+- Concrete DiscountRegistry data-source address/start-block wiring remains `TBD`; reusable event/schema/handler coverage is implemented.
 - Final launch review is required after the evidence above is complete.
 
 ## K. Non-goals

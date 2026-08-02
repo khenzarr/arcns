@@ -21,7 +21,10 @@ Frontend mainnet/discount cutover readiness evidence: [`FRONTEND_CUTOVER_PLAN.md
 - [ ] Confirm deployment left the discount root unset, unfrozen, and inactive; set, freeze, and activation are separate reviewed operations.
 - [ ] Run the read-only `scripts/mainnet/assert-admin-handoff.js` and require its PASS result before public launch.
 - [ ] Confirm no production frontend switch occurs before deployed addresses and proofs are available.
+- [x] Confirm reusable DiscountRegistry ABI/schema/event-handler coverage exists and passes indexer codegen/build.
+- [ ] Replace the dormant DiscountRegistry template with reviewed concrete data-source wiring after the final address and exact start block are available.
+- [ ] Deploy, fully sync, and health-check the reviewed mainnet subgraph before frontend cutover.
 
-Deploy-grade RPC selection, Blockscout verification, mainnet indexer/subgraph deployment, and frontend cutover remain unresolved launch blockers. This checklist is not mainnet deployment approval.
+Deploy-grade RPC selection, Blockscout verification, final DiscountRegistry address/start-block wiring, mainnet indexer/subgraph deployment and sync, and frontend cutover remain unresolved launch blockers. The implemented handler/schema preparation is not evidence of a deployed subgraph or frontend readiness. This checklist is not mainnet deployment approval.
 
 No deploy/push/on-chain action was performed in this phase.

@@ -8,7 +8,7 @@ The follow-on mainnet indexer/subgraph readiness plan is tracked in [`INDEXER_SU
 
 The follow-on frontend mainnet/discount cutover plan is tracked in [`FRONTEND_CUTOVER_PLAN.md`](./FRONTEND_CUTOVER_PLAN.md).
 
-Remediation status: FSR-02 and FSR-06 are addressed by the Aşama 5A tooling guards. FSR-01 is partially addressed by a fail-closed read-only handoff assertion; final Safe/Timelock creation, handoff execution, and verification remain launch actions and blockers.
+Remediation status: FSR-02 and FSR-06 are addressed by the Aşama 5A tooling guards. FSR-01 is partially addressed by a fail-closed read-only handoff assertion. FSR-04 is partially addressed by Aşama 6A reusable DiscountRegistry ABI/schema/mapping coverage; final address/start-block wiring, deployment, sync, and health verification remain launch actions and blockers.
 
 This is an **internal focused review**, **not an external audit**. Mainnet deployment remains blocked until the blockers listed below are resolved and independently rechecked. No deployment, Arc on-chain write, signing, ownership transfer, role change, price update, Merkle-root update, campaign activation, production frontend switch, staging, commit, or push was performed by this review.
 
@@ -67,14 +67,14 @@ Deployment remains blocked by incomplete launch administration and infrastructur
 - **Docs-only fix sufficient:** No; infrastructure validation is required.
 - **Blocks Aşama 6:** Yes.
 
-### FSR-04 — Mainnet indexer/subgraph plan is unresolved
+### FSR-04 — Mainnet indexer/subgraph deployment remains unresolved
 
 - **Severity:** BLOCKER
 - **Affected:** `indexer/subgraph.yaml`, root `subgraph.yaml`, `bens-subgraph/subgraph.yaml`, frontend subgraph configuration, `docs/mainnet/ADMIN_OWNERSHIP_PLAN.md`
-- **Description:** Existing manifests/configuration are testnet-oriented and there is no finalized mainnet indexing deployment, start block, deployed-address manifest, health/readiness gate, or rollback/fallback plan.
+- **Description:** Existing concrete data sources/configuration remain testnet-oriented. Aşama 6A added DiscountRegistry ABI, schema entities, typed handlers, and a dormant template, but there is no known version-controlled DiscountRegistry deployment address/start block, finalized mainnet indexing deployment, deployed-address manifest, health/readiness gate, or rollback/fallback plan.
 - **Impact:** Names may register on-chain while portfolio, search, resolution, or availability-related indexed views remain stale or unavailable.
-- **Recommended fix:** Prepare a separate reviewed mainnet indexer change with final addresses and deployment block, validate schema/event coverage, deploy and sync it, and define frontend health/readiness checks before cutover.
-- **Code change required:** Yes.
+- **Recommended fix:** After deployment values exist, add a separately reviewed concrete data source with the final address and exact deployment block, revalidate all schema/event coverage, deploy and sync the mainnet subgraph, and define frontend health/readiness checks before cutover.
+- **Code change required:** Yes; reusable event coverage is implemented, while concrete deployment wiring remains `TBD`.
 - **Docs-only fix sufficient:** No.
 - **Blocks Aşama 6:** Yes.
 
@@ -201,3 +201,9 @@ Validation caveat: `test/v3/Integration.test.js` contains a smoke test that invo
 - Production frontend: not switched.
 - Git staging/commit/push: not performed.
 - Unrelated private planning materials: not accessed, modified, or included.
+
+## Aşama 6A indexer coverage update
+
+DiscountRegistry code-preparation coverage now includes all actual lifecycle events—`DiscountRootUpdated`, `DiscountRootFrozen`, `DiscountActiveUpdated`, `DiscountControllerAuthorizationUpdated`, and `DiscountUsed`—plus inherited `OwnershipTransferred`. Historical event entities use deterministic transaction-hash/log-index IDs, while current registry, owner, and controller authorization state are maintained separately. `snapshotBlock` is obtained from the immutable contract getter because it is not emitted by these events.
+
+No concrete DiscountRegistry address or start block was available in version-controlled deployment artifacts. The manifest therefore contains only a dormant template, not an active data source, and no value was invented. This update does not deploy or sync a subgraph, does not establish a mainnet endpoint, does not make the frontend ready, and does not close FSR-04.
