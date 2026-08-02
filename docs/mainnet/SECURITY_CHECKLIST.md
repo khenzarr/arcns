@@ -1,5 +1,6 @@
 # Mainnet Security Checklist
 
+- [ ] Confirm every ownership, admin, upgrade, pause, treasury, and deployer-revocation item in [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md).
 - [ ] Confirm standard oracle reads are 100/50/25/15/5 USDC in p1..p5 order.
 - [ ] Confirm normal `register()` and `renew()` remain the standard paths.
 - [ ] Confirm discount route requires `owner == msg.sender`, a matured sender-bound commitment, and a valid proof.
