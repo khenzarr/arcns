@@ -4,6 +4,8 @@ Status: internal focused review completed on branch `security/focused-mainnet-la
 
 Current deploy-grade RPC and Blockscout verification readiness is tracked in [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
 
+The follow-on mainnet indexer/subgraph readiness plan is tracked in [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
+
 Remediation status: FSR-02 and FSR-06 are addressed by the Aşama 5A tooling guards. FSR-01 is partially addressed by a fail-closed read-only handoff assertion; final Safe/Timelock creation, handoff execution, and verification remain launch actions and blockers.
 
 This is an **internal focused review**, **not an external audit**. Mainnet deployment remains blocked until the blockers listed below are resolved and independently rechecked. No deployment, Arc on-chain write, signing, ownership transfer, role change, price update, Merkle-root update, campaign activation, production frontend switch, staging, commit, or push was performed by this review.

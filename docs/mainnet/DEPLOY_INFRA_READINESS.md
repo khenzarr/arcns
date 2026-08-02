@@ -7,6 +7,7 @@ Status: read-only infrastructure preparation. This document records acceptance c
 - An explicitly approved deploy-grade RPC is a launch blocker.
 - `https://radar-api-rpc.up.railway.app` remains a read-only/testing fallback only.
 - The Blockscout verification path must be validated before deployment.
+- Mainnet indexer/subgraph readiness is tracked in [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
 - This document does not approve mainnet deployment.
 
 ## RPC endpoint classification
