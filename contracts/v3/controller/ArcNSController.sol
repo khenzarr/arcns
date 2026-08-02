@@ -13,6 +13,8 @@ import "../interfaces/IArcNSRegistry.sol";
 import "../interfaces/IArcNSResolver.sol";
 import "../interfaces/IArcNSReverseRegistrar.sol";
 import "../interfaces/IArcNSController.sol";
+import "../discount/IArcNSEarlyAdopterDiscountRegistry.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 /// @title ArcNSController
 /// @notice Orchestrates commit-reveal registration and renewal for ArcNS names
@@ -70,6 +72,9 @@ contract ArcNSController is
     /// @param maxCost The caller's maximum acceptable cost
     error PriceExceedsMaxCost(uint256 price, uint256 maxCost);
 
+    error DiscountRegistryNotConfigured();
+    error DiscountOwnerMustBeSender();
+
     // ─── Events ───────────────────────────────────────────────────────────────
 
     /// @notice Emitted when a name is successfully registered
@@ -92,6 +97,8 @@ contract ArcNSController is
 
     /// @notice Emitted when the reverseRegistrar address is updated
     event ReverseRegistrarUpdated(address indexed oldReverseRegistrar, address indexed newReverseRegistrar);
+
+    event DiscountRegistryUpdated(address indexed oldRegistry, address indexed newRegistry);
 
     // ─── Roles ────────────────────────────────────────────────────────────────
 
@@ -118,6 +125,8 @@ contract ArcNSController is
     /// @notice Maximum time a commitment remains valid (24 hours)
     uint256 public constant MAX_COMMITMENT_AGE = 24 hours;
 
+    uint256 private constant ONE_YEAR = 365 days;
+
     // ─── Storage layout (CRITICAL — do not reorder) ───────────────────────────
     //
     // Inherited slots: Initializable, AccessControlUpgradeable, PausableUpgradeable, UUPSUpgradeable
@@ -134,7 +143,8 @@ contract ArcNSController is
     // Slot N+8:  commitments                (mapping bytes32 => uint256)
     // Slot N+9:  usedCommitments            (mapping bytes32 => bool)
     // Slot N+10: approvedResolvers          (mapping address => bool)
-    // Slots N+11 to N+60: __gap[50]         (reserved for future fields)
+    // Slot N+11: discountRegistry
+    // Slots N+12 to N+60: __gap[49]         (reserved for future fields)
 
     /// @dev Storage-based reentrancy guard status
     uint256 private _reentrancyStatus;
@@ -172,8 +182,11 @@ contract ArcNSController is
     /// @notice Admin-controlled allowlist of approved resolver addresses
     mapping(address => bool)    public approvedResolvers;
 
-    /// @dev Reserved storage gap for future fields (50 slots)
-    uint256[50] private __gap;
+    /// @notice Shared one-time discount registry used by both TLD controllers
+    IArcNSEarlyAdopterDiscountRegistry public discountRegistry;
+
+    /// @dev Reserved storage gap for future fields (49 slots)
+    uint256[49] private __gap;
 
     // ─── Reentrancy guard ─────────────────────────────────────────────────────
 
@@ -355,6 +368,53 @@ contract ArcNSController is
         emit NameRegistered(name_, label, owner_, cost, expires);
     }
 
+    /// @notice Registers with the shared, one-time active-v3-holder discount.
+    /// @dev Uses the normal sender-bound commitment. Registry consumption and registration
+    ///      are atomic, so a later revert restores the wallet's unused state.
+    function registerWithDiscount(
+        string calldata name_,
+        address owner_,
+        uint256 duration,
+        bytes32 secret,
+        address resolverAddr,
+        bool reverseRecord,
+        uint256 maxCost,
+        bytes32[] calldata proof
+    ) external override nonReentrant whenNotPaused {
+        if (owner_ != msg.sender) revert DiscountOwnerMustBeSender();
+        if (address(discountRegistry) == address(0)) revert DiscountRegistryNotConfigured();
+
+        bytes32 commitment = makeCommitment(name_, owner_, duration, secret, resolverAddr, reverseRecord, msg.sender);
+        _validateCommitment(commitment);
+        if (!_validName(name_)) revert InvalidName();
+        if (duration < MIN_REGISTRATION_DURATION) revert DurationTooShort();
+        if (resolverAddr != address(0) && !approvedResolvers[resolverAddr]) {
+            revert ResolverNotApproved(resolverAddr);
+        }
+
+        IArcNSPriceOracle.Price memory p = discountRentPrice(name_, duration);
+        uint256 cost = p.base + p.premium;
+        if (cost > maxCost) revert PriceExceedsMaxCost(cost, maxCost);
+
+        discountRegistry.consume(msg.sender, proof);
+        usdc.safeTransferFrom(msg.sender, treasury, cost);
+
+        bytes32 label = keccak256(bytes(name_));
+        uint256 tokenId = uint256(label);
+        bytes32 nodehash = keccak256(abi.encodePacked(base.baseNode(), label));
+        uint256 expires;
+        if (resolverAddr != address(0)) {
+            expires = base.registerWithResolver(tokenId, owner_, duration, resolverAddr);
+            resolver.setAddr(nodehash, owner_);
+        } else {
+            expires = base.register(tokenId, owner_, duration);
+        }
+        if (reverseRecord && resolverAddr != address(0)) {
+            try reverseRegistrar.setReverseRecord(owner_, string(abi.encodePacked(name_, ".", base.tld()))) {} catch {}
+        }
+        emit NameRegistered(name_, label, owner_, cost, expires);
+    }
+
     // ─── Renewal ──────────────────────────────────────────────────────────────
 
     /// @notice Renews an existing name
@@ -400,6 +460,26 @@ contract ArcNSController is
         bytes32 label   = keccak256(bytes(name_));
         uint256 tokenId = uint256(label);
         return priceOracle.price(name_, base.nameExpires(tokenId), duration);
+    }
+
+    /// @notice Quotes the discounted registration while preserving any expired-name premium in full.
+    function discountRentPrice(string memory name_, uint256 duration) public view override returns (IArcNSPriceOracle.Price memory) {
+        bytes32 label = keccak256(bytes(name_));
+        uint256 tokenId = uint256(label);
+        uint256 expires = base.nameExpires(tokenId);
+        IArcNSPriceOracle.Price memory fullQuote = priceOracle.price(name_, expires, duration);
+        uint256 discountedAnnual = _earlyAdopterAnnualPrice(bytes(name_).length);
+        uint256 discountedBase;
+
+        if (duration <= ONE_YEAR) {
+            discountedBase = Math.mulDiv(discountedAnnual, duration, ONE_YEAR, Math.Rounding.Ceil);
+        } else {
+            uint256 remainingDuration = duration - ONE_YEAR;
+            uint256 standardAnnual = priceOracle.price(name_, expires, ONE_YEAR).base;
+            discountedBase = discountedAnnual
+                + Math.mulDiv(standardAnnual, remainingDuration, ONE_YEAR, Math.Rounding.Ceil);
+        }
+        return IArcNSPriceOracle.Price({base: discountedBase, premium: fullQuote.premium});
     }
 
     /// @notice Returns whether a name is available for registration
@@ -458,6 +538,12 @@ contract ArcNSController is
         address old = address(reverseRegistrar);
         reverseRegistrar = IArcNSReverseRegistrar(newReverseRegistrar);
         emit ReverseRegistrarUpdated(old, newReverseRegistrar);
+    }
+
+    function setDiscountRegistry(address newDiscountRegistry) external override onlyRole(ADMIN_ROLE) {
+        address old = address(discountRegistry);
+        discountRegistry = IArcNSEarlyAdopterDiscountRegistry(newDiscountRegistry);
+        emit DiscountRegistryUpdated(old, newDiscountRegistry);
     }
 
     /// @notice Approves or revokes a resolver address
@@ -545,5 +631,13 @@ contract ArcNSController is
         if (b[0] == 0x2D || b[b.length - 1] == 0x2D) return false;  // leading/trailing hyphen
         if (b.length >= 4 && b[2] == 0x2D && b[3] == 0x2D) return false;  // double-hyphen at pos 2-3
         return true;
+    }
+
+    function _earlyAdopterAnnualPrice(uint256 len) internal pure returns (uint256) {
+        if (len == 1) return 50_000_000;
+        if (len == 2) return 25_000_000;
+        if (len == 3) return 15_000_000;
+        if (len == 4) return 10_000_000;
+        return 2_000_000;
     }
 }

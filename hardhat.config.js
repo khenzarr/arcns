@@ -51,6 +51,12 @@ module.exports = {
       accounts: [PRIVATE_KEY],
       gasPrice: "auto",
     },
+    arc_mainnet: {
+      url: process.env.ARC_MAINNET_RPC_URL || "https://rpc.blockdaemon.mainnet.arc.io",
+      chainId: 5042,
+      accounts: [PRIVATE_KEY],
+      gasPrice: "auto",
+    },
   },
   etherscan: {
     apiKey: {
@@ -63,6 +69,15 @@ module.exports = {
         urls: {
           apiURL: "https://testnet.arcscan.app/api",
           browserURL: "https://testnet.arcscan.app",
+        },
+      },
+      {
+        network: "arc_mainnet",
+        chainId: 5042,
+        urls: {
+          // Configure only after validating the provider's API endpoint.
+          apiURL: process.env.ARC_MAINNET_EXPLORER_API_URL || "",
+          browserURL: "https://arc-mainnet.cloud.blockscout.com",
         },
       },
     ],
