@@ -2,6 +2,8 @@
 
 > **Readiness plan only.** This document records the inputs, event coverage, deployment sequence, and acceptance evidence required for a future mainnet indexer/subgraph deployment. It does not deploy contracts, deploy a subgraph, create an endpoint, or approve mainnet launch.
 
+The dependent frontend gates and rollback requirements are tracked in [`FRONTEND_CUTOVER_PLAN.md`](./FRONTEND_CUTOVER_PLAN.md).
+
 ## A. Executive summary
 
 The mainnet indexer/subgraph remains a **launch blocker** until a mainnet deployment has been configured with final addresses and start blocks, deployed, synchronized, queried successfully, and compared with direct chain reads. No mainnet subgraph endpoint is approved at this time.
