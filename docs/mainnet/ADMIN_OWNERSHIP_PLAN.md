@@ -126,6 +126,7 @@ Arc mainnet is not ready to deploy while any launch blocker above remains open.
 
 - Mainnet pricing: [`PRICING.md`](./PRICING.md)
 - Early-adopter snapshot: [`EARLY_ADOPTER_SNAPSHOT.md`](./EARLY_ADOPTER_SNAPSHOT.md)
+- Safe / Timelock / handoff ceremony: [`HANDOFF_CEREMONY_PLAN.md`](./HANDOFF_CEREMONY_PLAN.md)
 - Deployment preparation runbook: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)
 - Security checklist: [`SECURITY_CHECKLIST.md`](./SECURITY_CHECKLIST.md)
 

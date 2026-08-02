@@ -1,0 +1,179 @@
+# ArcNS Mainnet Safe / Timelock / Handoff Ceremony Plan (Aşama 5B)
+
+Status: operational planning only. This document describes a future ceremony; it does not execute a handoff or authorize mainnet launch.
+
+## Executive summary
+
+- This is an operational plan, not an executed handoff.
+- Mainnet deployment remains blocked until every required address is finalized, independently reviewed, and recorded, and the ceremony is executed and verified.
+- The approved launch model is a 2-of-3 Admin Safe, a 48-hour `TimelockController`, the deployer wallet as the launch treasury recipient, and the Admin Safe as emergency pause authority.
+- The deployer EOA is limited to deployment and bootstrap. After handoff it must retain no protocol authority and may remain only the treasury recipient if that remains the final reviewed launch choice.
+
+## Required addresses checklist
+
+`TBD` is a blocker. No unknown address may be inferred from testnet, generated for this plan, or replaced with an unreviewed value.
+
+| Item | Required value | Status | Notes |
+|---|---|---|---|
+| Deployer EOA | `TBD` | Blocked | Deployment/bootstrap only; no protocol authority after handoff. |
+| Treasury recipient | `TBD` | Blocked | Approved launch choice is the deployer wallet, but its final address is not recorded. |
+| Admin Safe address | `TBD` | Blocked | Must be the independently verified final mainnet Safe. |
+| Admin Safe owner 1 | `TBD` | Blocked | Final owner address must be operationally verified. |
+| Admin Safe owner 2 | `TBD` | Blocked | Final owner address must be operationally verified. |
+| Admin Safe owner 3 | `TBD` | Blocked | Final owner address must be operationally verified. |
+| Admin Safe threshold | `2-of-3` | Approved model; verification pending | Final Safe configuration must be operationally verified before the ceremony. |
+| TimelockController address | `TBD` | Blocked | Timelock is not deployed. |
+| Timelock minDelay | `172800` seconds | Approved | Equivalent to 48 hours; deployed read-back must match. |
+| Registry address | `TBD` | Blocked | Unknown until mainnet deployment. |
+| `.arc` registrar address | `TBD` | Blocked | Unknown until mainnet deployment. |
+| `.circle` registrar address | `TBD` | Blocked | Unknown until mainnet deployment. |
+| `.arc` controller address | `TBD` | Blocked | Unknown until mainnet deployment. |
+| `.circle` controller address | `TBD` | Blocked | Unknown until mainnet deployment. |
+| Resolver address | `TBD` | Blocked | Unknown until mainnet deployment. |
+| Reverse registrar address | `TBD` | Blocked | Unknown until mainnet deployment. |
+| PriceOracle address | `TBD` | Blocked | Unknown until mainnet deployment. |
+| DiscountRegistry address | `TBD` | Blocked | Unknown until mainnet deployment. |
+
+## Timelock deployment parameters
+
+The intended parameters for a separately reviewed future deployment are:
+
+| Parameter / role | Intended value |
+|---|---|
+| `minDelay` | `172800` seconds (48 hours) |
+| Proposers | Admin Safe (`TBD` address) |
+| Cancellers | Admin Safe (`TBD` address) |
+| Executors | Admin Safe (`TBD` address), for launch simplicity |
+| Admin | Final bootstrap and role-admin setup is `TBD` and must be separately reviewed against the exact OpenZeppelin contract version before deployment. Use a safe pattern that avoids leaving an unnecessary standing bootstrap admin after the intended roles and Timelock self-administration are verified. Do not infer or apply a final admin parameter from this plan. |
+
+The Timelock is a smart contract, not a wallet. It has no private key, and nobody signs as the Timelock. The Admin Safe proposes, cancels, and executes eligible operations according to the finalized role setup; the Timelock contract enforces the configured delay and performs an authorized action after that delay.
+
+## Post-deployment handoff sequence
+
+The following is a numbered dry-run plan for a future ceremony. Every address, role identifier, transaction payload, signer expectation, and read-back must be prepared and independently reviewed before execution. None of these actions is performed by this document.
+
+1. Deploy all ArcNS v3 mainnet contracts.
+2. Deploy `TimelockController` with a 48-hour (`172800` second) delay and the separately reviewed final role setup.
+3. Transfer registry root owner to the Admin Safe.
+4. Transfer `.arc` registrar owner to the Admin Safe.
+5. Transfer `.circle` registrar owner to the Admin Safe.
+6. Grant controller admin roles to the Admin Safe.
+7. Grant controller pauser roles to the Admin Safe.
+8. Grant controller upgrader roles to the Timelock.
+9. Revoke deployer controller admin, pauser, upgrader, and any other privileged roles. The current assertion script also requires `ORACLE_ROLE` to be held by the Admin Safe and revoked from the deployer; include that assignment in the independently reviewed controller-role transaction plan.
+10. Grant resolver admin to the Admin Safe.
+11. Grant resolver upgrader role to the Timelock.
+12. Revoke deployer resolver admin and upgrader roles.
+13. Transfer reverse registrar owner to the Admin Safe.
+14. Transfer PriceOracle owner to the Admin Safe.
+15. Transfer DiscountRegistry owner to the Admin Safe.
+16. Authorize only the finalized `.arc` and `.circle` controllers in DiscountRegistry.
+17. Set each controller's discount registry address to the finalized shared DiscountRegistry.
+18. Set each controller's treasury recipient to the deployer wallet if that remains the final launch choice.
+19. Verify that the deployer has no protocol authority after handoff and remains only the treasury recipient if that launch choice is retained.
+20. Run the read-only `scripts/mainnet/assert-admin-handoff.js` assertion and require its PASS result.
+
+Deployment and handoff remain one incomplete launch operation until all required final-state reads and the assertion script pass.
+
+## Read-only assertion script inputs
+
+The following names come directly from `scripts/mainnet/assert-admin-handoff.js`. All values are currently `TBD`. Explicit deployed-contract variables take precedence; alternatively, `DEPLOYMENT_ARTIFACT_PATH` may point to a reviewed JSON file whose `contracts` object contains the corresponding camel-case keys. This plan does not create or modify that artifact.
+
+| Variable name | Expected value | Source of value | Known or TBD |
+|---|---|---|---|
+| `EXPECTED_ADMIN_SAFE_ADDRESS` | Final Admin Safe address | Independently verified Safe record | `TBD` |
+| `EXPECTED_TIMELOCK_ADDRESS` | Final TimelockController address | Verified Timelock deployment record | `TBD` |
+| `EXPECTED_TREASURY_RECIPIENT` | Final launch treasury recipient | Final launch approval; intended to equal deployer wallet | `TBD` |
+| `EXPECTED_DEPLOYER_ADDRESS` | Mainnet deployer EOA | Final deployment operator record | `TBD` |
+| `DEPLOYMENT_ARTIFACT_PATH` | Optional path to reviewed deployment JSON | Final deployment output; omit when every contract variable below is supplied | `TBD` / optional |
+| `DEPLOYED_REGISTRY_ADDRESS` | Registry address | Explicit final deployment record, or artifact key `registry` | `TBD` |
+| `DEPLOYED_ARC_REGISTRAR_ADDRESS` | `.arc` registrar address | Explicit final deployment record, or artifact key `arcRegistrar` | `TBD` |
+| `DEPLOYED_CIRCLE_REGISTRAR_ADDRESS` | `.circle` registrar address | Explicit final deployment record, or artifact key `circleRegistrar` | `TBD` |
+| `DEPLOYED_ARC_CONTROLLER_ADDRESS` | `.arc` controller proxy address | Explicit final deployment record, or artifact key `arcController` | `TBD` |
+| `DEPLOYED_CIRCLE_CONTROLLER_ADDRESS` | `.circle` controller proxy address | Explicit final deployment record, or artifact key `circleController` | `TBD` |
+| `DEPLOYED_RESOLVER_ADDRESS` | Resolver proxy address | Explicit final deployment record, or artifact key `resolver` | `TBD` |
+| `DEPLOYED_REVERSE_REGISTRAR_ADDRESS` | Reverse registrar address | Explicit final deployment record, or artifact key `reverseRegistrar` | `TBD` |
+| `DEPLOYED_PRICE_ORACLE_ADDRESS` | PriceOracle address | Explicit final deployment record, or artifact key `priceOracle` | `TBD` |
+| `DEPLOYED_DISCOUNT_REGISTRY_ADDRESS` | DiscountRegistry address | Explicit final deployment record, or artifact key `discountRegistry` | `TBD` |
+
+The script also requires the configured Hardhat `arc_mainnet` network to resolve to Arc mainnet chain ID `5042`. It performs provider reads only: bytecode checks, ownership reads, controller/resolver role reads, treasury reads, and deployer-revocation checks. For both controllers it expects the Admin Safe to hold `DEFAULT_ADMIN_ROLE`, `PAUSER_ROLE`, and `ORACLE_ROLE`, the Timelock to hold `UPGRADER_ROLE`, and the deployer to hold none of those roles.
+
+The script's PASS result is necessary but not sufficient. It does **not** inspect Safe owner membership or threshold, Timelock `minDelay` or internal proposer/canceller/executor/admin roles, registrar controller allowlists, DiscountRegistry controller authorization/owner state, controller discount-registry pointers, root state, or discount activation state. Verify those separately through reviewed read-only calls and operational evidence before treating the ceremony as complete.
+
+## Read-only assertion command template
+
+PowerShell placeholder-only template using explicit contract addresses:
+
+```powershell
+$env:EXPECTED_ADMIN_SAFE_ADDRESS = "<TBD_ADMIN_SAFE_ADDRESS>"
+$env:EXPECTED_TIMELOCK_ADDRESS = "<TBD_TIMELOCK_ADDRESS>"
+$env:EXPECTED_TREASURY_RECIPIENT = "<TBD_TREASURY_ADDRESS>"
+$env:EXPECTED_DEPLOYER_ADDRESS = "<TBD_DEPLOYER_ADDRESS>"
+$env:DEPLOYED_REGISTRY_ADDRESS = "<TBD_REGISTRY_ADDRESS>"
+$env:DEPLOYED_ARC_REGISTRAR_ADDRESS = "<TBD_ARC_REGISTRAR_ADDRESS>"
+$env:DEPLOYED_CIRCLE_REGISTRAR_ADDRESS = "<TBD_CIRCLE_REGISTRAR_ADDRESS>"
+$env:DEPLOYED_ARC_CONTROLLER_ADDRESS = "<TBD_ARC_CONTROLLER_ADDRESS>"
+$env:DEPLOYED_CIRCLE_CONTROLLER_ADDRESS = "<TBD_CIRCLE_CONTROLLER_ADDRESS>"
+$env:DEPLOYED_RESOLVER_ADDRESS = "<TBD_RESOLVER_ADDRESS>"
+$env:DEPLOYED_REVERSE_REGISTRAR_ADDRESS = "<TBD_REVERSE_REGISTRAR_ADDRESS>"
+$env:DEPLOYED_PRICE_ORACLE_ADDRESS = "<TBD_PRICE_ORACLE_ADDRESS>"
+$env:DEPLOYED_DISCOUNT_REGISTRY_ADDRESS = "<TBD_DISCOUNT_REGISTRY_ADDRESS>"
+npx hardhat run scripts/mainnet/assert-admin-handoff.js --network arc_mainnet
+```
+
+Do not run this template with placeholders. Before a future run, replace every placeholder with an independently reviewed value in the operator's transient shell environment; do not add real values to this document.
+
+## Failure handling
+
+- If any assertion fails, stop. Do not proceed to root set, root freeze, or discount activation.
+- If the deployer retains any protocol authority, stop and complete the required revocation before continuing.
+- If either controller's treasury does not match the finalized treasury recipient, stop and correct it before launch.
+- If any Timelock role or expected upgrade-holder check mismatches, stop and correct the role configuration before upgrades are possible. Timelock internal role and delay verification is a separate required read-only check because the current assertion script does not inspect it.
+- If the Admin Safe owners and 2-of-3 threshold cannot be operationally verified, stop. Do not deploy or begin the handoff ceremony.
+- Record the failure and independently review the correction and all resulting final-state reads before rerunning the complete assertion.
+
+## Discount lifecycle dependency
+
+- Root set must happen only after deployment, contract verification, and the initial authority handoff are complete.
+- Root freeze must happen only after independent verification of the root and associated snapshot/proofs. A wrong frozen root is irreversible in that registry and requires replacement or migration plus controller reconfiguration.
+- Discount activation must happen only after the root is frozen, the handoff assertion passes, the indexer is ready, frontend proof delivery is ready, and explicit launch approval is given.
+- Ordinary deployment must not activate the discount. `scripts/v3/deployV3.js` must leave the root unset, unfrozen, and inactive; root set, freeze, and activation remain separate reviewed operations.
+
+## Remaining blockers
+
+- [ ] Final Admin Safe address is `TBD`.
+- [ ] Final Safe owners and operationally verified 2-of-3 threshold are `TBD`.
+- [ ] Final deployer/treasury address is `TBD`.
+- [ ] Timelock is not deployed.
+- [ ] Timelock address is `TBD`.
+- [ ] Contract addresses are `TBD` until deployment.
+- [ ] Deploy-grade RPC is unresolved.
+- [ ] Blockscout verification is unresolved.
+- [ ] Mainnet indexer/subgraph is unresolved.
+- [ ] Frontend mainnet/discount cutover is unresolved.
+- [ ] Final launch review is still required.
+
+Arc mainnet is not ready to deploy while any blocker remains open. Completing this plan does not resolve the blockers by itself.
+
+## Non-goals and safety boundary
+
+- This document does not deploy contracts.
+- This document does not create a Safe.
+- This document does not deploy `TimelockController`.
+- This document does not submit transactions, call write functions, or sign anything.
+- This document does not transfer ownership or roles.
+- This document does not grant or revoke roles.
+- This document does not set prices.
+- This document does not set or freeze a Merkle root.
+- This document does not activate the discount.
+- This document does not switch the frontend to mainnet.
+- This document does not approve mainnet launch.
+- This document does not modify environment values, secrets, private keys, wallet credentials, or real deployment artifacts.
+
+## Related documents and tooling
+
+- Authority model: [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md)
+- Deployment preparation: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)
+- Launch checks: [`SECURITY_CHECKLIST.md`](./SECURITY_CHECKLIST.md)
+- Focused review: [`FOCUSED_SECURITY_REVIEW.md`](./FOCUSED_SECURITY_REVIEW.md)
+- Read-only handoff assertion: [`../../scripts/mainnet/assert-admin-handoff.js`](../../scripts/mainnet/assert-admin-handoff.js)
