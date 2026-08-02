@@ -24,6 +24,7 @@ Proof delivery evidence: [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELIVERY_PLAN.md).
 - [ ] Run the read-only `scripts/mainnet/assert-admin-handoff.js` and require its PASS result before public launch.
 - [ ] Confirm no production frontend switch occurs before deployed addresses and proofs are available.
 - [x] Confirm the inactive frontend helper performs only bundled static proof lookup, validates finalized metadata, and has no RPC, contract, or active UI integration.
+- [x] Confirm the isolated early-adopter UX shell is unmounted from the active app, disabled by default, informational only, and exposes no claim CTA.
 - [ ] Keep discount UI disabled and `registerWithDiscount` unwired until a separate reviewed integration passes every frontend cutover gate.
 - [ ] Before presenting a final discount action, confirm approved read paths verify root equality, frozen state, activation state, controller authorization, and already-used state; proof existence alone is insufficient.
 - [x] Confirm reusable DiscountRegistry ABI/schema/event-handler coverage exists and passes indexer codegen/build.

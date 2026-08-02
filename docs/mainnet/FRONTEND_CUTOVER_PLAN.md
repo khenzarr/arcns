@@ -10,7 +10,7 @@ Mainnet contract addresses, the mainnet subgraph endpoint, proof delivery, and V
 
 Proof artifact preparation is tracked separately in [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELIVERY_PLAN.md).
 
-An inactive typed helper now validates and looks up the bundled static proof artifact at `frontend/src/lib/discountProofs.ts`. It is not connected to components, hooks, active registration, or `registerWithDiscount`; it does not use RPC or establish claim availability. Discount UI and the production network selection remain unchanged.
+An inactive typed helper now validates and looks up the bundled static proof artifact at `frontend/src/lib/discountProofs.ts`. A separate `EarlyAdopterDiscountCard` UX shell exists only as an unmounted, disabled-by-default preview structure. Neither is connected to active registration, renewal, or `registerWithDiscount`; neither establishes claim availability. Discount UI and the production network selection remain unchanged.
 
 ## B. Required frontend inputs
 
@@ -71,6 +71,7 @@ This is a dry-run sequence only:
 8. Add the final mainnet subgraph endpoint.
 9. Add proof delivery integration.
 10. Keep discount UI inactive by default.
+    - The inactive shell may be reviewed only behind the explicit fail-closed flag; it must not expose a claim CTA.
 11. Deploy preview only.
 12. Run frontend smoke tests on preview.
 13. Verify the normal registration quote path.
@@ -104,7 +105,7 @@ Steps 11 and 20 are future release operations and are not performed by this plan
 | Indexer supports discount lifecycle/consumption events or fallback direct reads are defined | Synced query evidence or reviewed read-only fallback specification | `TBD` | Yes |
 | Activation has explicit approval | Recorded final launch approval after all prior gates | `TBD` | Yes |
 
-The inactive helper does not satisfy these runtime gates. Proof existence is not evidence that the on-chain root matches, the root is frozen, the campaign is active, the controller is authorized, or the wallet's claim is unused. A future reviewed UI must check those states through approved read paths before presenting a final discount action.
+The inactive helper and UX shell do not satisfy these runtime gates. Proof existence is not evidence that the on-chain root matches, the root is frozen, the campaign is active, the controller is authorized, or the wallet's claim is unused. A future reviewed UI must check those states through approved read paths before presenting a final discount action.
 
 ## F. Frontend smoke test checklist
 
@@ -146,7 +147,7 @@ The separate frontend PR must map final configuration to the repository's review
 - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` = `TBD` under the approved project configuration;
 - mainnet contract-address source/config = `TBD` (prefer a reviewed generated public config rather than individually invented variables);
 - proof delivery endpoint or bundled artifact selector = `TBD`;
-- discount UI feature flag, default off = `TBD`;
+- `NEXT_PUBLIC_ENABLE_EARLY_ADOPTER_DISCOUNT_UI` = omitted or any value other than the exact string `true` until every activation gate passes;
 - mainnet registration enable/maintenance flag, fail closed = `TBD`.
 
 ### Production cutover
