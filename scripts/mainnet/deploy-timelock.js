@@ -12,6 +12,7 @@
 const fs = require("fs");
 const path = require("path");
 const { ethers } = require("ethers");
+const { createRpcProvider, loadRpcConfig, sanitizeRpcError } = require("./lib/rpc-provider");
 
 const ARC_MAINNET_CHAIN_ID = 5042n;
 const REQUIRED_MIN_DELAY = 172800n;
@@ -69,19 +70,12 @@ function exactUnsignedInteger(value, expected, name) {
   return parsed;
 }
 
-function checkedRpcUrl(value) {
-  let parsed;
-  try {
-    parsed = new URL(value);
-  } catch (_) {
-    throw new Error("MAINNET_RPC_URL must be a valid HTTPS URL");
-  }
-  if (parsed.protocol !== "https:") throw new Error("MAINNET_RPC_URL must use HTTPS");
-  if (parsed.username || parsed.password) throw new Error("MAINNET_RPC_URL must not contain URL user credentials");
-  if (RADAR_PATTERN.test(value) || RADAR_PATTERN.test(parsed.hostname)) {
+function checkedRpcUrl(value, env = process.env) {
+  const rpc = loadRpcConfig({ ...env, MAINNET_RPC_URL: value }, "MAINNET_RPC_URL", { requireHttps: true });
+  if (RADAR_PATTERN.test(rpc.rpcUrl) || RADAR_PATTERN.test(rpc.parsed.hostname)) {
     throw new Error("MAINNET_RPC_URL identifies Radar/read-only fallback infrastructure and is not deploy-grade");
   }
-  return value;
+  return rpc;
 }
 
 function checkedPrivateKey(value) {
@@ -91,22 +85,15 @@ function checkedPrivateKey(value) {
   return value;
 }
 
-function maskRpcUrl(value) {
-  try {
-    const url = new URL(value);
-    return `${url.protocol}//${url.host}/***`;
-  } catch (_) {
-    return "<masked-invalid-url>";
-  }
-}
-
 function loadConfig(env = process.env) {
   const dryRunValue = String(env.TIMELOCK_DEPLOY_DRY_RUN || "0").trim();
   if (!/^[01]$/.test(dryRunValue)) throw new Error("TIMELOCK_DEPLOY_DRY_RUN must be 0 or 1");
   const dryRun = dryRunValue === "1";
 
-  const rpcUrl = checkedRpcUrl(requiredValue(env, "MAINNET_RPC_URL"));
-  const privateKey = checkedPrivateKey(requiredValue(env, "PRIVATE_KEY"));
+  const rpc = checkedRpcUrl(requiredValue(env, "MAINNET_RPC_URL"), env);
+  // A dry run must be usable without loading or handling a private key. The
+  // key is required only after all write-mode confirmations are present.
+  const privateKey = dryRun ? undefined : checkedPrivateKey(requiredValue(env, "PRIVATE_KEY"));
   const expectedChainId = exactUnsignedInteger(
     requiredValue(env, "EXPECTED_CHAIN_ID"),
     ARC_MAINNET_CHAIN_ID,
@@ -125,6 +112,8 @@ function loadConfig(env = process.env) {
   let expectedDeployer;
   if (String(env.DEPLOYER_ADDRESS || "").trim()) {
     expectedDeployer = checkedAddress(requiredValue(env, "DEPLOYER_ADDRESS"), "DEPLOYER_ADDRESS");
+  } else if (dryRun) {
+    throw new Error("DEPLOYER_ADDRESS is required for dry-run preflight because PRIVATE_KEY is not used");
   }
 
   if (!dryRun) {
@@ -143,8 +132,12 @@ function loadConfig(env = process.env) {
     expectedDeployer,
     minDelay,
     privateKey,
-    rpcMasked: maskRpcUrl(rpcUrl),
-    rpcUrl,
+    rpcMasked: rpc.rpcMasked,
+    authMode: rpc.authMode,
+    authProvided: rpc.authProvided,
+    authMasked: rpc.authMasked,
+    rpcConfig: rpc,
+    rpcUrl: rpc.rpcUrl,
   };
 }
 
@@ -244,14 +237,14 @@ function writeArtifact(record) {
 
 async function main() {
   const config = loadConfig();
-  const artifact = loadArtifact();
-  const derivedDeployer = ethers.computeAddress(config.privateKey);
+  const artifact = config.dryRun ? undefined : loadArtifact();
+  const derivedDeployer = config.dryRun ? config.expectedDeployer : ethers.computeAddress(config.privateKey);
   if (config.expectedDeployer && derivedDeployer !== config.expectedDeployer) {
     throw new Error(`PRIVATE_KEY derives ${derivedDeployer}, not DEPLOYER_ADDRESS ${config.expectedDeployer}`);
   }
 
   // Disable JSON-RPC batching for predictable ceremony reads.
-  const provider = new ethers.JsonRpcProvider(config.rpcUrl, config.expectedChainId, { batchMaxCount: 1 });
+  const provider = createRpcProvider(config.rpcConfig, config.expectedChainId);
   await runReadOnlyPreflight(config, provider, derivedDeployer);
 
   const constructorArgs = [config.minDelay, [config.adminSafe], [config.adminSafe], ethers.ZeroAddress];
@@ -311,6 +304,8 @@ async function main() {
       admin: ethers.ZeroAddress,
     },
     rpcMasked: config.rpcMasked,
+    authMode: config.authMode,
+    authProvided: config.authProvided,
     verificationStatus: "TBD",
   };
   writeArtifact(record);
@@ -319,9 +314,7 @@ async function main() {
 
 if (require.main === module) {
   main().catch((error) => {
-    const message = String(error && error.message ? error.message : error)
-      .replace(/https?:\/\/[^\s)]+/gi, "<masked-rpc-url>");
-    console.error(`FAIL: ${message}`);
+    console.error(`FAIL: ${sanitizeRpcError(error)}`);
     process.exit(1);
   });
 }
@@ -332,5 +325,4 @@ module.exports = {
   RPC_CONFIRMATION,
   loadConfig,
   main,
-  maskRpcUrl,
 };

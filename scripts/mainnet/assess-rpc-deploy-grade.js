@@ -9,6 +9,7 @@
  */
 
 const { ethers } = require("ethers");
+const { createRpcProvider, loadRpcConfig, sanitizeRpcError } = require("./lib/rpc-provider");
 
 const ARC_MAINNET_CHAIN_ID = 5042n;
 const MAX_BLOCK_AGE_SECONDS = 300;
@@ -61,37 +62,12 @@ function checkedHash(value, name) {
   return value;
 }
 
-function checkedRpcUrl(value) {
-  let parsed;
-  try {
-    parsed = new URL(value);
-  } catch (_) {
-    throw new Error("RPC_URL must be a valid HTTPS URL");
-  }
-  if (parsed.protocol !== "https:") throw new Error("RPC_URL must use HTTPS");
-  return { parsed, value };
-}
-
-function maskRpcUrl(value) {
-  try {
-    const url = new URL(value);
-    url.username = url.username ? "***" : "";
-    url.password = url.password ? "***" : "";
-    if (url.pathname !== "/") url.pathname = "/***";
-    if (url.search) url.search = "?***=masked";
-    return url.toString().replace(/\/$/, "");
-  } catch (_) {
-    return "<masked-invalid-rpc-url>";
-  }
-}
-
 function safeErrorMessage(error) {
-  return String(error?.shortMessage || error?.message || error || "unknown error")
-    .replace(/https?:\/\/[^\s)\]}]+/gi, "<masked-rpc-url>");
+  return sanitizeRpcError(error);
 }
 
 function loadConfig(env = process.env) {
-  const rpc = checkedRpcUrl(requiredValue(env, "RPC_URL"));
+  const rpc = loadRpcConfig(env, "RPC_URL", { requireHttps: true });
   const expectedChainIdValue = requiredValue(env, "EXPECTED_CHAIN_ID");
   if (!/^\d+$/.test(expectedChainIdValue) || BigInt(expectedChainIdValue) !== ARC_MAINNET_CHAIN_ID) {
     throw new Error(`EXPECTED_CHAIN_ID must equal ${ARC_MAINNET_CHAIN_ID}`);
@@ -102,9 +78,12 @@ function loadConfig(env = process.env) {
   const sampleContractAddress = optionalValue(env, "SAMPLE_CONTRACT_ADDRESS");
 
   return {
-    rpcUrl: rpc.value,
-    rpcMasked: maskRpcUrl(rpc.value),
-    isRadar: RADAR_PATTERN.test(rpc.value) || RADAR_PATTERN.test(rpc.parsed.hostname),
+    rpcUrl: rpc.rpcUrl,
+    rpcMasked: rpc.rpcMasked,
+    authMode: rpc.authMode,
+    authProvided: rpc.authProvided,
+    authConfig: rpc,
+    isRadar: RADAR_PATTERN.test(rpc.rpcUrl) || RADAR_PATTERN.test(rpc.parsed.hostname),
     expectedChainId: ARC_MAINNET_CHAIN_ID,
     deployerAddress: checkedAddress(requiredValue(env, "DEPLOYER_ADDRESS"), "DEPLOYER_ADDRESS"),
     adminSafeAddress: checkedAddress(requiredValue(env, "ADMIN_SAFE_ADDRESS"), "ADMIN_SAFE_ADDRESS"),
@@ -147,13 +126,11 @@ async function main() {
   console.log(`rpc: ${config.rpcMasked}`);
   console.log(`expectedChainId: ${config.expectedChainId}`);
   console.log(`providerClassification: ${config.isRadar ? "RADAR" : "OTHER"}`);
+  console.log(`authMode: ${config.authMode}`);
+  console.log(`authProvided: ${config.authProvided}`);
   console.log("batching: disabled (batchMaxCount=1)");
 
-  const provider = new ethers.JsonRpcProvider(
-    config.rpcUrl,
-    config.expectedChainId,
-    { staticNetwork: true, batchMaxCount: 1 }
-  );
+  const provider = createRpcProvider(config.authConfig, config.expectedChainId, { staticNetwork: true });
   const results = [];
   let latestBlockNumber;
 
@@ -391,10 +368,10 @@ async function main() {
     recommendation = "NOT_APPROVED";
     recommendationReason = "One or more critical mandatory read-only checks failed.";
   } else if (config.isRadar) {
-    recommendation = "CONDITIONAL_RISK_ACCEPTANCE_REQUIRED";
+    recommendation = "NOT_APPROVED";
     recommendationReason = config.allowRadarCandidate
-      ? "Radar candidacy was explicitly acknowledged, but provider provenance, ownership, support, limits, and SLA still require documented human risk acceptance."
-      : "Radar read capability does not resolve provider provenance, ownership, support, limits, or SLA; its deployment use remains blocked without explicit risk acceptance.";
+      ? "Radar candidacy acknowledgement does not override its failed deploy-grade assessment; deployment use remains rejected."
+      : "Radar failed deploy-grade assessment and remains rejected for deployment use.";
   } else if (verdict === "PASS_READ_ONLY_ASSESSMENT" && config.reviewedProviderApproved) {
     recommendation = "APPROVED";
     recommendationReason = "Read-only checks passed and the environment explicitly records separate reviewed-provider approval; retain independent human evidence.";
@@ -426,6 +403,5 @@ if (require.main === module) {
 module.exports = {
   loadConfig,
   main,
-  maskRpcUrl,
   safeErrorMessage,
 };

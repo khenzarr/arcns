@@ -37,6 +37,8 @@ Mainnet launch remains **NO-GO** and handoff remains pending. No address, transa
 
 `TBD` and any status other than Final/Approved are blocking where the final column says Yes. Provider URLs recorded as evidence must be masked; credentials and query values must never be copied here.
 
+Future deploy-grade RPC access may use `RPC_AUTH_MODE=none|bearer|x-api-key|custom`. Header tokens and custom header values are execution-time secrets only: do not put them in URLs, commit them, log them, paste them into PRs, or write them to artifacts. Authentication support does not change the unresolved/TBD provider approval gate.
+
 | Input | Required value | Status | Source / owner | Validation method | Blocks deploy? |
 |---|---|---|---|---|---|
 | Deployer EOA | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected; final verification pending | Deployment operator / final launch review | Independently verify address, operator control, and deployment-only authority boundary | Yes |
