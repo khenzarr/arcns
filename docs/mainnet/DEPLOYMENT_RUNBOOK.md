@@ -14,6 +14,8 @@ The separate frontend mainnet/discount cutover gates and rollback plan are track
 
 The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
 
+The mainnet Admin Safe `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` has non-empty bytecode and a read-only verified exact 2-of-3 owner configuration. `node scripts/mainnet/check-safe-config.js` returned `PASS` using Radar solely as a read-only RPC. This resolves only Safe creation/configuration; Timelock deployment, contract deployment, handoff, deployer revocation, and final launch review remain pending.
+
 Arc mainnet target: chain ID `5042`, deploy-grade RPC still to be finalized (the previously listed `https://rpc.blockdaemon.mainnet.arc.io` endpoint remains a candidate pending approval), explorer `https://arc-mainnet.cloud.blockscout.com`, native symbol `USDC`, USDC `0x3600000000000000000000000000000000000000`. The confirmed `https://radar-api-rpc.up.railway.app` endpoint is a read-only/testing fallback only and is not deployment-grade RPC.
 
 1. Confirm a separately approved deployer and treasury configuration; never place credentials in source.
