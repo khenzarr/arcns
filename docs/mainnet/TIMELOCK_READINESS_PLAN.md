@@ -2,6 +2,14 @@
 
 Status: readiness documentation and read-only tooling preparation only. This is not deployment approval.
 
+## Aşama 7C-2A tooling checkpoint (prepared, not executed)
+
+- `scripts/mainnet/deploy-timelock.js` is prepared as a mainnet-only, fail-closed Timelock deployment guard.
+- **Timelock remains not deployed.** Its mainnet address remains **TBD**.
+- No transaction, signature, role change, ownership change, or deployment artifact was produced in this phase.
+- Actual execution requires a separately approved deploy-grade RPC (Radar remains read-only testing infrastructure), a funded deployer, explicit operator approval, all exact script confirmation environment values, and a post-deployment `scripts/mainnet/check-timelock-config.js` **PASS**.
+- Mainnet launch remains **NO-GO** and handoff remains pending.
+
 ## A. Executive summary
 
 - This is a Timelock readiness plan, not a deployment approval.
