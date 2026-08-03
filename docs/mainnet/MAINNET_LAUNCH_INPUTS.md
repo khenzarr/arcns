@@ -18,14 +18,14 @@ Status: input register and readiness planning only. This document is not launch 
 
 | Input | Required value | Status | Source / owner | Validation method | Blocks deploy? |
 |---|---|---|---|---|---|
-| Deployer EOA | `TBD` | Blocked | Deployment operator / final launch review | Independently verify address, operator control, and deployment-only authority boundary | Yes |
+| Deployer EOA | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected; final verification pending | Deployment operator / final launch review | Independently verify address, operator control, and deployment-only authority boundary | Yes |
 | Deployer funding requirement | `TBD` | Blocked | Deployment operator / infrastructure owner | Reviewed gas estimate, fee buffer, and read-only balance check before ceremony | Yes |
-| Treasury recipient | Final deployer EOA address (`TBD`) | Blocked | Approved authority model / final launch review | Confirm exact equality with finalized deployer address and controller treasury read-back after deployment | Yes |
-| Admin Safe address | `TBD` | Blocked | Safe operators / final launch review | Independently verify chain, address, bytecode, owners, and threshold | Yes |
-| Admin Safe owner 1 | `TBD` | Blocked | Safe operators | Independent owner identity/address confirmation and Safe read-back | Yes |
-| Admin Safe owner 2 | `TBD` | Blocked | Safe operators | Independent owner identity/address confirmation and Safe read-back | Yes |
-| Admin Safe owner 3 | `TBD` | Blocked | Safe operators | Independent owner identity/address confirmation and Safe read-back | Yes |
-| Admin Safe threshold | `2-of-3` | Approved model; verification pending | [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md) | Read-only Safe threshold and owner-set verification | Yes |
+| Treasury recipient | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected; final verification pending | Approved authority model / final launch review | Confirm exact equality with finalized deployer address and controller treasury read-back after deployment | Yes |
+| Admin Safe address | `TBD` | Blocked | Safe operators / final launch review | Independently verify chain, address, bytecode, owners, and threshold; must not equal the deployer or an owner EOA | Yes |
+| Admin Safe owner 1 | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected; Safe verification pending | Safe operators | Independent owner identity/address confirmation and Safe read-back | Yes |
+| Admin Safe owner 2 | `0xB2F6CfD0960A1fCC532DE1BF2Aafcc3077B4c396` | Selected; Safe verification pending | Safe operators | Independent owner identity/address confirmation and Safe read-back | Yes |
+| Admin Safe owner 3 | `0x1e19c1c829A387c2246567c0df264D81310d7775` | Selected; Safe verification pending | Safe operators | Independent owner identity/address confirmation and Safe read-back | Yes |
+| Admin Safe threshold | `2-of-3` | Approved model; verification pending | [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md) | Read-only Safe threshold and exact owner-set verification | Yes |
 | Timelock minDelay | `172800` seconds (48 hours) | Approved input; deployed read-back pending | [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md) | Read-only `getMinDelay()` against final Timelock | Yes |
 | Timelock proposer | Admin Safe (`TBD` address) | Blocked | Approved authority model / Safe operators | Read-only Timelock role membership check | Yes |
 | Timelock canceller | Admin Safe (`TBD` address) | Blocked | Approved authority model / Safe operators | Read-only Timelock role membership check | Yes |
@@ -83,7 +83,7 @@ All values in this section remain `TBD` until produced by a reviewed future depl
 | Proof artifact | Generated and validated with 849 entries | Validator PASS against finalized snapshot/root | GO | Delivery integration and used-state checks remain incomplete |
 | DiscountRegistry contract logic | Focused logic review and tests completed | Reviewed contract behavior and final launch re-review | GO | Deployment and runtime configuration remain separate gates |
 | Launch tooling guards | Fail-closed guards and separated lifecycle scripts prepared | Code review and syntax/tests already recorded; final operator review | GO | Write-capable scripts have not been run here |
-| Admin Safe | Address, owners, and verification are `TBD` | Final 2-of-3 Safe address, owner set, threshold, chain, and bytecode evidence | NO-GO | Safe is not created by this phase |
+| Admin Safe | Owner inputs and 2-of-3 model selected; address and verification are `TBD` | Final 2-of-3 Safe address, exact owner set, threshold, chain, and bytecode evidence | NO-GO | Safe is not created by this phase; deployer EOA must not be used as its contract address |
 | Timelock | Not deployed; address and final bootstrap setup `TBD` | Final deployment plus 172800-second delay and complete role/admin reads | NO-GO | Timelock is not deployed by this phase |
 | Deployer revocation | Not executed or verified | Complete handoff evidence and read-only assertion PASS, plus checks outside script coverage | NO-GO | Deployer must retain no protocol authority |
 | Deploy-grade RPC | Not approved | Provider ownership, masked endpoint, repeated readiness evidence, preflight PASS, explicit approval | NO-GO | Radar remains read-only/testing fallback only |
@@ -111,6 +111,7 @@ Commands are recorded for future reviewed use. Environment values must be suppli
 | `node scripts/mainnet/check-blockscout-readiness.js` | Harmless JSON reachability and API compatibility classification | `ARC_MAINNET_EXPLORER_API_URL` as a real HTTPS candidate; no API key required by the checker | Read-only HTTP GET | When the explorer owner supplies a reviewed API candidate; no verification submission | No; final API candidate is `TBD` |
 | `npx hardhat run scripts/preflight-arc-mainnet.js --network arc_mainnet` | Assert chain `5042`, latest block, and known USDC bytecode/symbol/decimals | Configured `arc_mainnet` read provider, normally via transient `ARC_MAINNET_RPC_URL` | Read-only network calls | Provider evaluation and final pre-deployment preflight only | Conditional for read-only fallback; not evidence of deploy-grade approval |
 | `node scripts/mainnet/validate-discount-proof-artifact.js` | Validate finalized artifact metadata, count, and every Merkle proof | Version-controlled finalized snapshot and bundled proof artifact; no env, signer, or RPC | Read-only, local and network-free | Any review/CI context | Yes |
+| `node scripts/mainnet/check-safe-config.js` | Validate Safe chain, bytecode, exact owner set, threshold, and separation from owner EOAs | `SAFE_RPC_URL`, `EXPECTED_CHAIN_ID`, `ADMIN_SAFE_ADDRESS`, comma-separated `EXPECTED_SAFE_OWNERS`, and `EXPECTED_SAFE_THRESHOLD`; RPC output is masked | Read-only network calls; no signer | After Safe creation, before recording the address in launch inputs; may also validate the testnet reference | No for mainnet; Admin Safe address is `TBD` |
 | `npx hardhat run scripts/mainnet/assert-admin-handoff.js --network arc_mainnet` | Assert configured owners, roles, treasury, bytecode, and deployer revocation | Final expected Safe, Timelock, treasury, deployer, and all contract addresses, or reviewed artifact path; read provider | Read-only network calls | Only after final deployment and handoff, before public launch | No; final addresses/deployment/handoff are missing |
 | `npx hardhat run scripts/mainnet/discount-set-root.js --network arc_mainnet` | Set only the finalized DiscountRegistry Merkle root after state/owner guards | `CONFIRM_MAINNET_WRITE=YES`, final registry and expected owner, Arc mainnet provider and signer; canonical snapshot | **Write-capable; signs and submits a transaction** | Only in a separately approved post-deployment ceremony after verification and handoff prerequisites | No; forbidden in this task and prerequisites are incomplete |
 | `npx hardhat run scripts/mainnet/discount-freeze-root.js --network arc_mainnet` | Irreversibly freeze the finalized root after exact read-back guards | `CONFIRM_MAINNET_WRITE=YES`, final registry and expected owner, Arc mainnet provider and signer; exact root already set | **Write-capable and irreversible; signs and submits a transaction** | Only in a separate independently reviewed freeze ceremony | No; forbidden in this task and root is not set |
@@ -122,8 +123,8 @@ The read-only handoff assertion has documented coverage limits: Safe owners/thre
 
 ### Inputs missing
 
-- Final deployer EOA, funding requirement, and treasury address.
-- Final Admin Safe address, three owners, and verified 2-of-3 configuration.
+- Deployer funding requirement and final deployer/treasury operational verification.
+- Final Admin Safe address and verified exact selected-owner 2-of-3 configuration.
 - Final deploy-grade RPC provider/masked endpoint and approved Blockscout API/key/verification path.
 - Final indexer target and frontend preview, production, and rollback owners.
 
@@ -184,6 +185,7 @@ The read-only handoff assertion has documented coverage limits: Safe owners/thre
 ## Related plans
 
 - Deployment runbook: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)
+- Admin Safe readiness: [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md)
 - Authority model: [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md)
 - Handoff ceremony: [`HANDOFF_CEREMONY_PLAN.md`](./HANDOFF_CEREMONY_PLAN.md)
 - Infrastructure readiness: [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md)
