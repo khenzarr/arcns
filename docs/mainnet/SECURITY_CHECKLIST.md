@@ -5,7 +5,8 @@
 - [x] Guarded mainnet-only `scripts/mainnet/deploy-timelock.js` prepared.
 - [x] Script scope limited to Timelock deployment; no protocol ownership/role migration or follow-on configuration.
 - [x] Dry-run mode designed to perform preflight only and write no artifact.
-- [ ] Deploy-grade RPC selected and explicitly approved (Radar does not qualify).
+- [x] Read-only deploy-grade candidate assessment procedure prepared; a technical PASS is evidence only and cannot authorize deployment.
+- [ ] Deploy-grade RPC selected and explicitly approved. Radar may be assessed, but use for deployment requires separately recorded risk acceptance or a reviewed provider decision; the deployment guard remains unchanged.
 - [ ] Deployer funding rechecked immediately before an approved ceremony.
 - [ ] Explicit operator approval and exact confirmation environment values supplied.
 - [ ] Timelock deployed and address recorded (currently **TBD / not deployed**).
@@ -15,6 +16,8 @@
 Until every unchecked item is satisfied, mainnet launch remains **NO-GO** and handoff remains pending.
 
 Infrastructure acceptance evidence: [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
+
+Run `node scripts/mainnet/assess-rpc-deploy-grade.js` only with transient assessment inputs and no signer. Review both its read-only verdict and separate deploy-grade recommendation. Do not treat Radar or any other endpoint as approved solely because read checks pass. Until provider provenance, ownership, limits, support/SLA, redundancy, and explicit human approval are recorded, Timelock deployment and mainnet launch remain **NO-GO**.
 
 Indexer/subgraph readiness evidence: [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
 

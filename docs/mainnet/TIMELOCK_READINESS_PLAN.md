@@ -10,6 +10,14 @@ Status: readiness documentation and read-only tooling preparation only. This is 
 - Actual execution requires a separately approved deploy-grade RPC (Radar remains read-only testing infrastructure), a funded deployer, explicit operator approval, all exact script confirmation environment values, and a post-deployment `scripts/mainnet/check-timelock-config.js` **PASS**.
 - Mainnet launch remains **NO-GO** and handoff remains pending.
 
+## Aşama 7C-2B RPC assessment gate (read-only)
+
+- `scripts/mainnet/assess-rpc-deploy-grade.js` evaluates candidate RPC read capability without a signer, transaction submission, write call, or artifact write.
+- Run it with transient `RPC_URL`, `EXPECTED_CHAIN_ID=5042`, `DEPLOYER_ADDRESS`, and `ADMIN_SAFE_ADDRESS`; optional known receipt and contract addresses add capability evidence.
+- A read-only PASS is necessary evidence only. It does not authorize Timelock deployment or establish provider provenance, ownership, support, limits, or SLA.
+- Radar can be assessed, but deployment use requires separately recorded explicit risk acceptance or a reviewed provider decision. The existing Timelock deploy guard remains fail-closed against Radar in this phase.
+- Deploy-grade RPC remains `TBD`; Timelock deployment and mainnet launch remain **NO-GO**.
+
 ## A. Executive summary
 
 - This is a Timelock readiness plan, not a deployment approval.
@@ -33,7 +41,7 @@ Status: readiness documentation and read-only tooling preparation only. This is 
 | Executor | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Approved input; deployment pending | Must hold `EXECUTOR_ROLE`; do not configure an open executor without explicit review. |
 | Canceller | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Approved input; deployment pending | OpenZeppelin v5 grants `CANCELLER_ROLE` to constructor proposers. |
 | Deployer | `TBD` | Blocked | Confirm exact deployment operator and funding during the future ceremony. |
-| Deploy-grade RPC | `TBD` | Blocked | Radar must not be promoted from read-only/testing use. |
+| Deploy-grade RPC | `TBD` | Blocked | Read-only assessment does not approve a provider. Radar requires explicit risk acceptance or a separately reviewed provider decision, and remains rejected by the deployment guard in this phase. |
 | Timelock address | `TBD` | Blocked | Record only after deployment and read-only verification. |
 | Deployment tx hash | `TBD` | Blocked | Do not infer from any testnet deployment. |
 | Deployment block | `TBD` | Blocked | Record from the successful receipt. |

@@ -18,6 +18,10 @@ Status: input register and readiness planning only. This document is not launch 
 
 Mainnet launch remains **NO-GO** and handoff remains pending. No address, transaction, block, or deployment artifact was created by this tooling phase.
 
+## Aşama 7C-2B RPC assessment status
+
+`scripts/mainnet/assess-rpc-deploy-grade.js` provides a signer-free, transaction-free candidate capability assessment using transient `RPC_URL`, `EXPECTED_CHAIN_ID=5042`, `DEPLOYER_ADDRESS`, and `ADMIN_SAFE_ADDRESS`, with optional known receipt and contract inputs. Its output separates a read-only technical verdict from the deploy-grade recommendation. A technical PASS is never automatic deployment approval. Radar assessment evidence still requires explicit risk acceptance or a separately reviewed provider decision, and the Timelock deploy guard remains unchanged. The deploy-grade RPC input remains `TBD`; Timelock and mainnet launch remain **NO-GO**.
+
 ## A. Executive summary
 
 - This document is the canonical launch input register and Go/No-Go readiness matrix; it is not a deployment instruction or launch approval.
@@ -127,6 +131,7 @@ Commands are recorded for future reviewed use. Environment values must be suppli
 | Command | Purpose | Required env/input | Capability | Allowed to run | Currently runnable? |
 |---|---|---|---|---|---|
 | `node scripts/mainnet/check-rpc-readiness.js` | Repeated chain, latest-block, USDC, gas, and fee-data readiness checks | `ARC_MAINNET_RPC_URL` as a real HTTPS endpoint; output masks tokenized paths/query values | Read-only network calls | During provider evaluation or pre-deployment recheck; never as automatic provider approval | Conditional only; no deploy-grade RPC is finalized |
+| `node scripts/mainnet/assess-rpc-deploy-grade.js` | Assess chain/block freshness, account reads, fee/estimate capability, Safe calls/code, optional receipt/log/code support, and repeated block stability; print a separate verdict and recommendation | Transient `RPC_URL`, `EXPECTED_CHAIN_ID=5042`, deployer and Admin Safe addresses; optional reference receipt/contract addresses | Read-only network calls, no signer, no artifact write, batching disabled | Candidate assessment only; never as automatic deployment approval | Yes for assessment; deploy-grade RPC remains unresolved |
 | `node scripts/mainnet/check-blockscout-readiness.js` | Harmless JSON reachability and API compatibility classification | `ARC_MAINNET_EXPLORER_API_URL` as a real HTTPS candidate; no API key required by the checker | Read-only HTTP GET | When the explorer owner supplies a reviewed API candidate; no verification submission | No; final API candidate is `TBD` |
 | `npx hardhat run scripts/preflight-arc-mainnet.js --network arc_mainnet` | Assert chain `5042`, latest block, and known USDC bytecode/symbol/decimals | Configured `arc_mainnet` read provider, normally via transient `ARC_MAINNET_RPC_URL` | Read-only network calls | Provider evaluation and final pre-deployment preflight only | Conditional for read-only fallback; not evidence of deploy-grade approval |
 | `node scripts/mainnet/validate-discount-proof-artifact.js` | Validate finalized artifact metadata, count, and every Merkle proof | Version-controlled finalized snapshot and bundled proof artifact; no env, signer, or RPC | Read-only, local and network-free | Any review/CI context | Yes |
