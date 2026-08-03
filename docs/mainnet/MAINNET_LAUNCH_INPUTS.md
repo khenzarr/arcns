@@ -11,6 +11,7 @@ Status: input register and readiness planning only. This document is not launch 
 - Known network facts are Arc mainnet chain ID `5042` and USDC `0x3600000000000000000000000000000000000000`, symbol `USDC`, decimals `6`.
 - Final pricing is 1/2/3/4/5+ characters at 100/50/25/15/5 USDC per year.
 - The finalized early-adopter input is campaign `ARCNS_TESTNET_V3_EARLY_ADOPTER_2026_V1`, campaign bytes32 `0xae3c7462e46cc76b3e0349e7d211264ada95257da9d9d7a797abed70b7eb83e3`, snapshot block `54933646`, snapshot block hash `0x0a450d7fb8055de409084ddb9942f31431aa017a3b3241c4eb8e2e655b8c024d`, Merkle root `0xf18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e`, and 849 eligible wallets. These finalized data inputs are not evidence of any mainnet root operation or activation.
+- Timelock readiness and future read-only validation are tracked in [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md). The Timelock is the next authority blocker; it is not deployed, its address remains `TBD`, and mainnet remains **NO-GO**.
 
 ## B. Required pre-deployment inputs
 
@@ -114,6 +115,7 @@ Commands are recorded for future reviewed use. Environment values must be suppli
 | `npx hardhat run scripts/preflight-arc-mainnet.js --network arc_mainnet` | Assert chain `5042`, latest block, and known USDC bytecode/symbol/decimals | Configured `arc_mainnet` read provider, normally via transient `ARC_MAINNET_RPC_URL` | Read-only network calls | Provider evaluation and final pre-deployment preflight only | Conditional for read-only fallback; not evidence of deploy-grade approval |
 | `node scripts/mainnet/validate-discount-proof-artifact.js` | Validate finalized artifact metadata, count, and every Merkle proof | Version-controlled finalized snapshot and bundled proof artifact; no env, signer, or RPC | Read-only, local and network-free | Any review/CI context | Yes |
 | `node scripts/mainnet/check-safe-config.js` | Validate Safe chain, bytecode, exact owner set, threshold, and separation from owner EOAs | `SAFE_RPC_URL`, `EXPECTED_CHAIN_ID=5042`, verified Safe address, approved owners, and threshold `2`; Radar is read-only/testing only | Read-only network calls; no signer | Passed against the verified mainnet Safe | PASS; deploy-grade RPC remains TBD |
+| `node scripts/mainnet/check-timelock-config.js` | Validate Timelock chain, bytecode, delay, role constants, Safe roles, self-administration, and optional deployer-admin absence | Future deploy-grade/read provider, `EXPECTED_CHAIN_ID=5042`, final Timelock address, `EXPECTED_MIN_DELAY=172800`, verified Admin Safe, and optional deployer | Read-only network calls; no signer | Only after a future approved Timelock deployment | No; Timelock address is `TBD` |
 | `npx hardhat run scripts/mainnet/assert-admin-handoff.js --network arc_mainnet` | Assert configured owners, roles, treasury, bytecode, and deployer revocation | Final expected Safe, Timelock, treasury, deployer, and all contract addresses, or reviewed artifact path; read provider | Read-only network calls | Only after final deployment and handoff, before public launch | No; final addresses/deployment/handoff are missing |
 | `npx hardhat run scripts/mainnet/discount-set-root.js --network arc_mainnet` | Set only the finalized DiscountRegistry Merkle root after state/owner guards | `CONFIRM_MAINNET_WRITE=YES`, final registry and expected owner, Arc mainnet provider and signer; canonical snapshot | **Write-capable; signs and submits a transaction** | Only in a separately approved post-deployment ceremony after verification and handoff prerequisites | No; forbidden in this task and prerequisites are incomplete |
 | `npx hardhat run scripts/mainnet/discount-freeze-root.js --network arc_mainnet` | Irreversibly freeze the finalized root after exact read-back guards | `CONFIRM_MAINNET_WRITE=YES`, final registry and expected owner, Arc mainnet provider and signer; exact root already set | **Write-capable and irreversible; signs and submits a transaction** | Only in a separate independently reviewed freeze ceremony | No; forbidden in this task and root is not set |
@@ -188,6 +190,7 @@ The read-only handoff assertion has documented coverage limits: Safe owners/thre
 
 - Deployment runbook: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)
 - Admin Safe readiness: [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md)
+- Timelock readiness: [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md)
 - Authority model: [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md)
 - Handoff ceremony: [`HANDOFF_CEREMONY_PLAN.md`](./HANDOFF_CEREMONY_PLAN.md)
 - Infrastructure readiness: [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md)

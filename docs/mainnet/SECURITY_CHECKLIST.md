@@ -12,8 +12,11 @@ Consolidated launch inputs and Go/No-Go readiness: [`MAINNET_LAUNCH_INPUTS.md`](
 
 Admin Safe creation and read-only validation readiness: [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md).
 
+Timelock readiness and future read-only configuration validation: [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md).
+
 - [ ] Confirm every ownership, admin, upgrade, pause, treasury, and deployer-revocation item in [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md).
 - [x] Confirm the Admin Safe `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` is a separate Arc mainnet contract, not the deployer or an owner EOA; the read-only `scripts/mainnet/check-safe-config.js` returned `PASS` for the exact owner set and threshold `2`.
+- [ ] After a future approved Timelock deployment, run read-only `scripts/mainnet/check-timelock-config.js` and require PASS for chain `5042`, bytecode, `172800` delay, Safe proposer/executor/canceller roles, self-administration, and deployer-admin absence. The Timelock address remains `TBD`.
 - [ ] Execute and verify the separately reviewed future ceremony in [`HANDOFF_CEREMONY_PLAN.md`](./HANDOFF_CEREMONY_PLAN.md) before launch.
 - [ ] Confirm standard oracle reads are 100/50/25/15/5 USDC in p1..p5 order.
 - [ ] Confirm normal `register()` and `renew()` remain the standard paths.
@@ -36,6 +39,6 @@ Admin Safe creation and read-only validation readiness: [`ADMIN_SAFE_READINESS_P
 - [ ] Replace the dormant DiscountRegistry template with reviewed concrete data-source wiring after the final address and exact start block are available.
 - [ ] Deploy, fully sync, and health-check the reviewed mainnet subgraph before frontend cutover.
 
-Safe creation/configuration verification is complete. Timelock deployment, authority handoff, deployer revocation, deploy-grade RPC selection, Blockscout verification, contract deployment, final DiscountRegistry address/start-block wiring, mainnet indexer/subgraph deployment and sync, root/freeze/activation, final review, active discount integration, and frontend cutover remain unresolved launch blockers. The implemented handler/schema preparation and inactive static proof helper are not evidence of a deployed subgraph, usable discount, or frontend readiness. The production frontend remains testnet-bound. This checklist is not mainnet deployment approval.
+Safe creation/configuration verification is complete. Timelock deployment is the next authority blocker; its address remains `TBD`. Authority handoff, deployer revocation, deploy-grade RPC selection, Blockscout verification, contract deployment, final DiscountRegistry address/start-block wiring, mainnet indexer/subgraph deployment and sync, root/freeze/activation, final review, active discount integration, and frontend cutover remain unresolved launch blockers. The implemented handler/schema preparation and inactive static proof helper are not evidence of a deployed subgraph, usable discount, or frontend readiness. The production frontend remains testnet-bound, and mainnet remains **NO-GO**. This checklist is not mainnet deployment approval.
 
 No deploy/push/on-chain action was performed in this phase.

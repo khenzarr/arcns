@@ -6,6 +6,8 @@ The finalized launch authority model and unresolved administration blockers are 
 
 The future Safe / Timelock / deployer-revocation ceremony and its read-only verification inputs are documented in [`HANDOFF_CEREMONY_PLAN.md`](./HANDOFF_CEREMONY_PLAN.md).
 
+The Timelock input register, OpenZeppelin version behavior, future dry-run ceremony, and read-only checker are documented in [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md). Timelock deployment is the next authority blocker; it has not occurred, its address remains `TBD`, and mainnet remains **NO-GO**.
+
 Deploy-grade RPC acceptance and Blockscout verification blockers are tracked in [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
 
 Mainnet indexer/subgraph inputs, event coverage, and frontend readiness gates are tracked in [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
@@ -20,6 +22,7 @@ Arc mainnet target: chain ID `5042`, deploy-grade RPC still to be finalized (the
 
 1. Confirm a separately approved deployer and treasury configuration; never place credentials in source.
 2. Run `npx hardhat run scripts/preflight-arc-mainnet.js --network arc_mainnet` and confirm `eth_chainId`, USDC bytecode, `symbol() == USDC`, and `decimals() == 6`.
+   After a separately approved future Timelock deployment, run `node scripts/mainnet/check-timelock-config.js` with the final reviewed inputs and require its read-only PASS before any protocol deployment or handoff. It is not currently runnable because the Timelock address is `TBD`.
 3. Set `USDC_ADDRESS` explicitly. `scripts/v3/deployV3.js` refuses to deploy MockUSDC on non-local networks.
 4. To include early-adopter preparation, set only `DEPLOY_EARLY_ADOPTER_DISCOUNT_REGISTRY=true`. The script validates the version-controlled finalized manifest before any write, deploys exactly one shared registry from its campaign ID and snapshot block, authorizes both controllers, and leaves the root unset, unfrozen, and inactive. Any supplied campaign fact must exactly match the manifest.
 5. The future `arc_mainnet` deployment path configures its newly deployed oracle with p1..p5 = 100/50/25/15/5 USDC and immediately verifies every read. Independently validate it with `scripts/check-mainnet-prices.js` before launch. This preparation task did not execute that path or call `setPrices` on any network.
