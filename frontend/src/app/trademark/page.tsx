@@ -5,7 +5,22 @@ import LegalPage, {
   TESTNET_STATUS_NOTICE,
 } from "../../components/LegalPage";
 
-export const metadata: Metadata = { title: "Trademark / Brand Notice | ArcNS" };
+export const metadata: Metadata = {
+  title: "Trademark / Brand Notice",
+  description: "Brand and trademark notice for the independent ArcNS testnet project.",
+  alternates: { canonical: "/trademark" },
+  openGraph: {
+    type: "website",
+    url: "https://arcname.services/trademark",
+    title: "Trademark / Brand Notice | ArcNS",
+    description: "Brand and trademark notice for the independent ArcNS testnet project.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Trademark / Brand Notice | ArcNS",
+    description: "Brand and trademark notice for the independent ArcNS testnet project.",
+  },
+};
 
 export default function TrademarkPage() {
   return (

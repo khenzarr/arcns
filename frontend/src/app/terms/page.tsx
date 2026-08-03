@@ -6,7 +6,22 @@ import LegalPage, {
   TESTNET_STATUS_NOTICE,
 } from "../../components/LegalPage";
 
-export const metadata: Metadata = { title: "Terms of Use | ArcNS" };
+export const metadata: Metadata = {
+  title: "Terms of Use",
+  description: "Testnet-only terms for using the independent ArcNS public app.",
+  alternates: { canonical: "/terms" },
+  openGraph: {
+    type: "website",
+    url: "https://arcname.services/terms",
+    title: "Terms of Use | ArcNS",
+    description: "Testnet-only terms for using the independent ArcNS public app.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Terms of Use | ArcNS",
+    description: "Testnet-only terms for using the independent ArcNS public app.",
+  },
+};
 
 export default function TermsPage() {
   return (
