@@ -39,6 +39,36 @@ vi.mock("next/link", () => ({
 }));
 
 import { useReadContract } from "wagmi";
+import { parseResolveQuery } from "./page";
+
+describe("Resolve query validation", () => {
+  it("accepts and normalizes supported names", () => {
+    expect(parseResolveQuery("  Alice.ARC ")).toEqual({
+      label: "alice",
+      tld: "arc",
+      domain: "alice.arc",
+    });
+    expect(parseResolveQuery("alice.circle")).toEqual({
+      label: "alice",
+      tld: "circle",
+      domain: "alice.circle",
+    });
+  });
+
+  it.each(["", "-alice.arc", "alice-.arc", "ali_ce.arc"])(
+    "rejects malformed input %s",
+    input => expect(parseResolveQuery(input)).toEqual({ error: "invalid" }),
+  );
+
+  it.each(["alice", "a.b.arc", "alice..arc", ".arc"])(
+    "rejects multi-label input %s as unsupported subname syntax",
+    input => expect(parseResolveQuery(input)).toEqual({ error: "malformed" }),
+  );
+
+  it("rejects unsupported suffixes", () => {
+    expect(parseResolveQuery("alice.eth")).toEqual({ error: "unsupportedTld" });
+  });
+});
 
 // ─── Bug 2 — Resolve page state conflation ────────────────────────────────────
 //
@@ -57,9 +87,6 @@ describe("Bug 2 — Resolve page state conflation: unregistered name shows wrong
         if (args?.functionName === "nameExpires") {
           return { data: 0n, isLoading: false };
         }
-        if (args?.functionName === "owner") {
-          return { data: CONNECTED_WALLET, isLoading: false };
-        }
         return { data: undefined, isLoading: false };
       });
 
@@ -70,7 +97,7 @@ describe("Bug 2 — Resolve page state conflation: unregistered name shows wrong
 
       render(<ResolvePage />);
 
-      const input = screen.getByPlaceholderText(/alice\.arc/i);
+      const input = screen.getByPlaceholderText(/flowpay\.arc/i);
       const button = screen.getByRole("button", { name: /resolve/i });
 
       const { fireEvent } = await import("@testing-library/react");
@@ -78,8 +105,8 @@ describe("Bug 2 — Resolve page state conflation: unregistered name shows wrong
       fireEvent.click(button);
 
       await waitFor(() => {
-        const notRegisteredMsg = screen.queryByText(/Name not registered/i);
-        expect(notRegisteredMsg).not.toBeNull();
+        const notRegisteredMsgs = screen.queryAllByText(/Name not registered/i);
+        expect(notRegisteredMsgs.length).toBeGreaterThan(0);
       }, { timeout: 500 });
 
       // No write CTA should appear
@@ -130,7 +157,7 @@ async function renderAndResolve(opts: {
   const { default: ResolvePage } = await import("./page");
   const { unmount } = render(<ResolvePage />);
 
-  const input = screen.getByPlaceholderText(/alice\.arc/i);
+  const input = screen.getByPlaceholderText(/flowpay\.arc/i);
   const button = screen.getByRole("button", { name: /resolve/i });
   fireEvent.change(input, { target: { value: "alice.arc" } });
   fireEvent.click(button);
@@ -155,7 +182,7 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
       });
 
       await waitFor(() => {
-        const addrDisplay = screen.queryByText(NON_ZERO_ADDR);
+        const addrDisplay = screen.queryByText(/0x12345678…34567890/i);
         expect(addrDisplay).not.toBeNull();
       }, { timeout: 1000 });
 
@@ -181,15 +208,11 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
       });
 
       await waitFor(() => {
-        expect(screen.queryByText(/No receiving address set/i)).not.toBeNull();
+        expect(screen.queryByText(/No forward address set/i)).not.toBeNull();
       }, { timeout: 1000 });
 
       // New model: guidance message shown, no write button
-      const guidance = screen.queryByText(/Set this name as your Primary Name/i);
-      expect(guidance).not.toBeNull();
-
-      const myDomainsLink = screen.queryByText(/Go to My Domains/i);
-      expect(myDomainsLink).not.toBeNull();
+      expect(screen.queryByText(/Connected wallet owns this name/i)).not.toBeNull();
 
       // No write button
       const writeBtn = screen.queryByRole("button", { name: /Set to connected wallet/i });
@@ -213,11 +236,11 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
       });
 
       await waitFor(() => {
-        expect(screen.queryByText(/No receiving address set/i)).not.toBeNull();
+        expect(screen.queryByText(/No forward address set/i)).not.toBeNull();
       }, { timeout: 1000 });
 
       // No guidance for non-owner
-      expect(screen.queryByText(/Set this name as your Primary Name/i)).toBeNull();
+      expect(screen.queryByText(/Connected wallet does not own this name/i)).not.toBeNull();
       expect(screen.queryByRole("button", { name: /Set to connected wallet/i })).toBeNull();
 
       unmount();
@@ -248,8 +271,8 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
           let guidanceShown = false;
 
           await waitFor(() => {
-            noAddrShown = screen.queryByText(/No receiving address set/i) !== null;
-            guidanceShown = screen.queryByText(/Set this name as your Primary Name/i) !== null;
+            noAddrShown = screen.queryByText(/No forward address set/i) !== null;
+            guidanceShown = screen.queryByText(/Connected wallet owns this name/i) !== null;
             if (!noAddrShown || !guidanceShown) throw new Error("not yet");
           }, { timeout: 1000 }).catch(() => {});
 
@@ -287,14 +310,14 @@ describe("Preservation — Resolve page: registered-name behaviors for expiryTs 
           let noAddrShown = false;
 
           await waitFor(() => {
-            noAddrShown = screen.queryByText(/No receiving address set/i) !== null;
+            noAddrShown = screen.queryByText(/No forward address set/i) !== null;
             if (!noAddrShown) throw new Error("not yet");
           }, { timeout: 1000 }).catch(() => {});
 
           const ctaAbsent =
             screen.queryByRole("button", { name: /Set to connected wallet/i }) === null;
           const guidanceAbsent =
-            screen.queryByText(/Set this name as your Primary Name/i) === null;
+            screen.queryByText(/Connected wallet owns this name/i) === null;
 
           unmount();
           cleanup();
