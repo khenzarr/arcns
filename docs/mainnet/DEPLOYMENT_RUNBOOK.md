@@ -8,6 +8,14 @@ The future Safe / Timelock / deployer-revocation ceremony and its read-only veri
 
 The Timelock input register, OpenZeppelin version behavior, future dry-run ceremony, and read-only checker are documented in [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md). Timelock deployment is the next authority blocker; it has not occurred, its address remains `TBD`, and mainnet remains **NO-GO**.
 
+## Timelock-only ceremony gate (prepared, not executed)
+
+`scripts/mainnet/deploy-timelock.js` is prepared but has **not** been executed. It deploys only `ArcNSTimelock`; it does not migrate protocol ownership or roles or perform follow-on configuration. The Timelock address remains **TBD**.
+
+Write mode is forbidden until a deploy-grade Arc mainnet RPC is explicitly selected and approved (Radar does not qualify), the intended deployer is funded, an operator explicitly approves the ceremony, and every required exact confirmation environment value is supplied. This includes `CONFIRM_MAINNET_TIMELOCK_DEPLOY=I_UNDERSTAND_THIS_DEPLOYS_MAINNET_TIMELOCK`. Independently review the printed chain ID, deployer, balance, Admin Safe, delay, role recipients, masked RPC, and exact constructor arguments before execution. After a successful future deployment, `scripts/mainnet/check-timelock-config.js` must report **PASS** before any handoff activity.
+
+`TIMELOCK_DEPLOY_DRY_RUN=1` is preflight-only and must not deploy or write an artifact. Mainnet launch remains **NO-GO** and handoff remains pending.
+
 Deploy-grade RPC acceptance and Blockscout verification blockers are tracked in [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
 
 Mainnet indexer/subgraph inputs, event coverage, and frontend readiness gates are tracked in [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).

@@ -2,6 +2,22 @@
 
 Status: input register and readiness planning only. This document is not launch approval and does not execute any launch operation.
 
+## Aşama 7C-2A Timelock tooling status
+
+| Input | Required value / status |
+|---|---|
+| Guarded script | `scripts/mainnet/deploy-timelock.js` — prepared, not executed |
+| Timelock address | **TBD — not deployed** |
+| Delay | `172800` seconds |
+| Proposer / executor / canceller | Admin Safe `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` |
+| Deployment RPC | **TBD — deploy-grade endpoint unresolved; Radar is read-only only** |
+| Deployer funding | Required and rechecked at ceremony time |
+| Operator approval | Required before write mode |
+| Exact confirmation | `CONFIRM_MAINNET_TIMELOCK_DEPLOY=I_UNDERSTAND_THIS_DEPLOYS_MAINNET_TIMELOCK` |
+| Post-deployment check | `scripts/mainnet/check-timelock-config.js` must report **PASS** |
+
+Mainnet launch remains **NO-GO** and handoff remains pending. No address, transaction, block, or deployment artifact was created by this tooling phase.
+
 ## A. Executive summary
 
 - This document is the canonical launch input register and Go/No-Go readiness matrix; it is not a deployment instruction or launch approval.

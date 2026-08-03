@@ -2,6 +2,15 @@
 
 Status: operational planning only. This document describes a future ceremony; it does not execute a handoff or authorize mainnet launch.
 
+## Aşama 7C-2A Timelock prerequisite — pending
+
+- The guarded `scripts/mainnet/deploy-timelock.js` tooling is prepared but not executed.
+- Timelock is not deployed; its address remains **TBD**.
+- Handoff cannot begin until an approved deploy-grade RPC, funded deployer, explicit operator approval, exact deployment confirmation environment values, and a successful deployment receipt exist.
+- A post-deployment `scripts/mainnet/check-timelock-config.js` **PASS** is mandatory before this plan can advance.
+- Radar remains read-only testing infrastructure and is not an approved deployment endpoint.
+- Mainnet launch remains **NO-GO**; handoff remains pending.
+
 ## Executive summary
 
 - This is an operational plan, not an executed handoff.
@@ -46,7 +55,7 @@ The intended parameters for a separately reviewed future deployment are:
 | Proposers | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) |
 | Cancellers | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) |
 | Executors | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`), for launch simplicity |
-| Admin | Final bootstrap and role-admin setup is `TBD` and must be separately reviewed against the exact OpenZeppelin contract version before deployment. Use a safe pattern that avoids leaving an unnecessary standing bootstrap admin after the intended roles and Timelock self-administration are verified. Do not infer or apply a final admin parameter from this plan. |
+| Admin constructor argument | Zero address (`0x0000000000000000000000000000000000000000`); prevents an external bootstrap admin and leaves the Timelock self-administered under installed OpenZeppelin v5.6.1. Must be printed and independently reviewed at the future ceremony. |
 
 The Timelock is a smart contract, not a wallet. It has no private key, and nobody signs as the Timelock. The Admin Safe proposes, cancels, and executes eligible operations according to the finalized role setup; the Timelock contract enforces the configured delay and performs an authorized action after that delay.
 

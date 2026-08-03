@@ -1,5 +1,19 @@
 # Mainnet Security Checklist
 
+## Timelock ceremony preparation gate
+
+- [x] Guarded mainnet-only `scripts/mainnet/deploy-timelock.js` prepared.
+- [x] Script scope limited to Timelock deployment; no protocol ownership/role migration or follow-on configuration.
+- [x] Dry-run mode designed to perform preflight only and write no artifact.
+- [ ] Deploy-grade RPC selected and explicitly approved (Radar does not qualify).
+- [ ] Deployer funding rechecked immediately before an approved ceremony.
+- [ ] Explicit operator approval and exact confirmation environment values supplied.
+- [ ] Timelock deployed and address recorded (currently **TBD / not deployed**).
+- [ ] Post-deployment `scripts/mainnet/check-timelock-config.js` returns **PASS**.
+- [ ] Handoff completed.
+
+Until every unchecked item is satisfied, mainnet launch remains **NO-GO** and handoff remains pending.
+
 Infrastructure acceptance evidence: [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
 
 Indexer/subgraph readiness evidence: [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
