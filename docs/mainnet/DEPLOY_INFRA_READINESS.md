@@ -24,6 +24,10 @@ The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUN
 
 No secret or tokenized URL is recorded here. Deployment evidence must mask credentials and query strings.
 
+### Authenticated RPC handling (Aşama 7C-2C)
+
+Some future deploy-grade providers may require header authentication. The mainnet tooling accepts `RPC_AUTH_MODE=none|bearer|x-api-key|custom`; bearer mode uses `RPC_BEARER_TOKEN`, x-api-key mode uses `RPC_X_API_KEY`, and custom mode uses `RPC_AUTH_HEADER_NAME` plus `RPC_AUTH_HEADER_VALUE`. The default is `none`. Supply these values only through the transient execution environment or an approved secret manager. Never embed credentials in an RPC URL, commit or log tokens, paste them into pull requests, or write them to deployment artifacts. Tool output records only the masked RPC URL, auth mode, and whether auth was provided. Authenticated access does not approve a provider; deploy-grade RPC remains `TBD`.
+
 ## Deploy-grade RPC acceptance criteria
 
 An endpoint is not approved merely because a readiness script passes. Approval requires all of the following:

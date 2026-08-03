@@ -18,6 +18,10 @@ Status: readiness documentation and read-only tooling preparation only. This is 
 - Radar can be assessed, but deployment use requires separately recorded explicit risk acceptance or a reviewed provider decision. The existing Timelock deploy guard remains fail-closed against Radar in this phase.
 - Deploy-grade RPC remains `TBD`; Timelock deployment and mainnet launch remain **NO-GO**.
 
+### Aşama 7C-2C authenticated RPC preparation
+
+Future providers may require header authentication. The guarded scripts support `RPC_AUTH_MODE=none|bearer|x-api-key|custom` (default `none`) using transient `RPC_BEARER_TOKEN`, `RPC_X_API_KEY`, or custom header name/value environment variables. Credentials must never be placed in URLs, committed, logged, pasted into PRs, or written to artifacts. The scripts expose only masked RPC/auth metadata and do not weaken the Radar rejection, confirmation gates, signer boundary, or Timelock **NO-GO** status.
+
 ## A. Executive summary
 
 - This is a Timelock readiness plan, not a deployment approval.

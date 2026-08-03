@@ -17,6 +17,8 @@ Until every unchecked item is satisfied, mainnet launch remains **NO-GO** and ha
 
 Infrastructure acceptance evidence: [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
 
+- [ ] If the future deploy-grade RPC requires authentication, use only transient `RPC_AUTH_MODE=none|bearer|x-api-key|custom` environment inputs; never place tokens in URLs, commits, logs, PRs, or artifacts.
+
 Run `node scripts/mainnet/assess-rpc-deploy-grade.js` only with transient assessment inputs and no signer. Review both its read-only verdict and separate deploy-grade recommendation. Do not treat Radar or any other endpoint as approved solely because read checks pass. Until provider provenance, ownership, limits, support/SLA, redundancy, and explicit human approval are recorded, Timelock deployment and mainnet launch remain **NO-GO**.
 
 Indexer/subgraph readiness evidence: [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).

@@ -1,6 +1,7 @@
 "use strict";
 
 const { ethers } = require("ethers");
+const { createRpcProvider, loadRpcConfig, sanitizeRpcError } = require("./lib/rpc-provider");
 
 const TIMELOCK_ABI = [
   "function getMinDelay() view returns (uint256)",
@@ -54,28 +55,10 @@ function checkedAddress(value, name) {
   }
 }
 
-function maskRpcUrl(value) {
-  try {
-    const url = new URL(value);
-    return `${url.protocol}//${url.host}/***`;
-  } catch (_) {
-    return "<masked-invalid-url>";
-  }
-}
-
 function loadConfig(env = process.env) {
   for (const name of REQUIRED_ENV) requiredValue(env, name);
 
-  const rpcUrl = requiredValue(env, "TIMELOCK_RPC_URL");
-  let parsedRpc;
-  try {
-    parsedRpc = new URL(rpcUrl);
-  } catch (_) {
-    throw new Error("TIMELOCK_RPC_URL must be a valid HTTP(S) URL");
-  }
-  if (!/^https?:$/.test(parsedRpc.protocol)) {
-    throw new Error("TIMELOCK_RPC_URL must use HTTP or HTTPS");
-  }
+  const rpc = loadRpcConfig(env, "TIMELOCK_RPC_URL", { requireHttps: false });
 
   const allowValue = String(env.ALLOW_DEPLOYER_TIMELOCK_ADMIN || "0").trim();
   if (!/^[01]$/.test(allowValue)) {
@@ -96,7 +79,8 @@ function loadConfig(env = process.env) {
   }
 
   return {
-    rpcUrl,
+    rpcUrl: rpc.rpcUrl,
+    rpcConfig: rpc,
     expectedChainId: positiveInteger(requiredValue(env, "EXPECTED_CHAIN_ID"), "EXPECTED_CHAIN_ID"),
     timelockAddress,
     expectedMinDelay: nonNegativeInteger(requiredValue(env, "EXPECTED_MIN_DELAY"), "EXPECTED_MIN_DELAY"),
@@ -108,10 +92,11 @@ function loadConfig(env = process.env) {
 
 async function main() {
   const config = loadConfig();
-  console.log(`RPC: ${maskRpcUrl(config.rpcUrl)}`);
+  console.log(`RPC: ${config.rpcConfig.rpcMasked}`);
+  console.log(`Auth mode: ${config.rpcConfig.authMode}; auth provided: ${config.rpcConfig.authProvided}`);
   console.log("Timelock admin role model: OpenZeppelin v5 DEFAULT_ADMIN_ROLE (bytes32(0)); no TIMELOCK_ADMIN_ROLE() getter.");
 
-  const provider = new ethers.JsonRpcProvider(config.rpcUrl, config.expectedChainId, { batchMaxCount: 1 });
+  const provider = createRpcProvider(config.rpcConfig, config.expectedChainId);
   const network = await provider.getNetwork();
   if (network.chainId !== config.expectedChainId) {
     throw new Error(`Chain ID mismatch: expected ${config.expectedChainId}, received ${network.chainId}`);
@@ -160,9 +145,9 @@ async function main() {
 
 if (require.main === module) {
   main().catch((error) => {
-    console.error(`FAIL: ${error.message.replace(/https?:\/\/[^\s)]+/gi, "<masked-rpc-url>")}`);
+    console.error(`FAIL: ${sanitizeRpcError(error)}`);
     process.exit(1);
   });
 }
 
-module.exports = { loadConfig, main, maskRpcUrl, ROLE_HASHES };
+module.exports = { loadConfig, main, ROLE_HASHES };

@@ -1,6 +1,7 @@
 "use strict";
 
 const { ethers } = require("ethers");
+const { createRpcProvider, loadRpcConfig, sanitizeRpcError } = require("./lib/rpc-provider");
 
 const SAFE_ABI = [
   "function getOwners() view returns (address[])",
@@ -38,28 +39,10 @@ function checkedAddress(value, name) {
   }
 }
 
-function maskRpcUrl(value) {
-  try {
-    const url = new URL(value);
-    return `${url.protocol}//${url.host}/***`;
-  } catch (_) {
-    return "<masked-invalid-url>";
-  }
-}
-
 function loadConfig(env = process.env) {
   for (const name of REQUIRED_ENV) requiredValue(env, name);
 
-  const rpcUrl = requiredValue(env, "SAFE_RPC_URL");
-  let parsedRpc;
-  try {
-    parsedRpc = new URL(rpcUrl);
-  } catch (_) {
-    throw new Error("SAFE_RPC_URL must be a valid HTTP(S) URL");
-  }
-  if (!/^https?:$/.test(parsedRpc.protocol)) {
-    throw new Error("SAFE_RPC_URL must use HTTP or HTTPS");
-  }
+  const rpc = loadRpcConfig(env, "SAFE_RPC_URL", { requireHttps: false });
 
   const ownerEntries = requiredValue(env, "EXPECTED_SAFE_OWNERS").split(",").map((owner) => owner.trim());
   if (ownerEntries.some((owner) => !owner || PLACEHOLDER_PATTERN.test(owner))) {
@@ -84,7 +67,8 @@ function loadConfig(env = process.env) {
   }
 
   return {
-    rpcUrl,
+    rpcUrl: rpc.rpcUrl,
+    rpcConfig: rpc,
     expectedChainId: positiveInteger(requiredValue(env, "EXPECTED_CHAIN_ID"), "EXPECTED_CHAIN_ID"),
     safeAddress,
     owners,
@@ -94,10 +78,11 @@ function loadConfig(env = process.env) {
 
 async function main() {
   const config = loadConfig();
-  console.log(`RPC: ${maskRpcUrl(config.rpcUrl)}`);
+  console.log(`RPC: ${config.rpcConfig.rpcMasked}`);
+  console.log(`Auth mode: ${config.rpcConfig.authMode}; auth provided: ${config.rpcConfig.authProvided}`);
 
   // Disable batching for RPC providers that reject JSON-RPC batch requests.
-  const provider = new ethers.JsonRpcProvider(config.rpcUrl, config.expectedChainId, { batchMaxCount: 1 });
+  const provider = createRpcProvider(config.rpcConfig, config.expectedChainId);
   const network = await provider.getNetwork();
   if (network.chainId !== config.expectedChainId) {
     throw new Error(`Chain ID mismatch: expected ${config.expectedChainId}, received ${network.chainId}`);
@@ -128,9 +113,9 @@ async function main() {
 
 if (require.main === module) {
   main().catch((error) => {
-    console.error(`FAIL: ${error.message.replace(/https?:\/\/[^\s)]+/gi, "<masked-rpc-url>")}`);
+    console.error(`FAIL: ${sanitizeRpcError(error)}`);
     process.exit(1);
   });
 }
 
-module.exports = { loadConfig, main, maskRpcUrl };
+module.exports = { loadConfig, main };

@@ -18,6 +18,8 @@ Write mode is forbidden until a deploy-grade Arc mainnet RPC is explicitly selec
 
 Deploy-grade RPC acceptance and Blockscout verification blockers are tracked in [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
 
+For a future provider that requires access headers, supply `RPC_AUTH_MODE` as `none`, `bearer`, `x-api-key`, or `custom` at execution time only. Use the corresponding transient token/header environment variables; never put a token in the RPC URL or commit, log, paste, or artifact it. Authenticated connectivity is only technical capability evidence and does not resolve the deploy-grade approval blocker.
+
 Before considering any RPC for a future ceremony, run the read-only `node scripts/mainnet/assess-rpc-deploy-grade.js` procedure documented there. Supply only transient non-secret assessment inputs; optional known receipt and contract addresses improve evidence. A `PASS_READ_ONLY_ASSESSMENT` is not deployment approval. Provider provenance, operational ownership, limits, support/SLA, redundancy, and explicit human approval remain separate gates. Until those gates are recorded, deploy-grade RPC is unresolved, Timelock deployment is **NO-GO**, and mainnet launch is **NO-GO**.
 
 Mainnet indexer/subgraph inputs, event coverage, and frontend readiness gates are tracked in [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
