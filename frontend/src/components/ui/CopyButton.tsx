@@ -50,21 +50,22 @@ export function CopyButton({
   }, [value, copiedDuration]);
 
   return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      aria-label={copied ? "Copied" : ariaLabel}
-      className={cn(
-        "inline-flex items-center justify-center",
-        "w-7 h-7 rounded-[var(--arcns-radius-xs)]",
-        "transition-all duration-150",
-        "text-[var(--arcns-text-muted)] hover:text-[var(--arcns-text-secondary)]",
-        "hover:bg-[rgba(120,160,255,0.08)]",
-        "arcns-focus-ring",
-        className,
-      )}
-    >
-      {copied ? (
+    <>
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={copied ? "Copied" : ariaLabel}
+        className={cn(
+          "inline-flex items-center justify-center",
+          "w-7 h-7 rounded-[var(--arcns-radius-xs)]",
+          "transition-all duration-150",
+          "text-[var(--arcns-text-muted)] hover:text-[var(--arcns-text-secondary)]",
+          "hover:bg-[rgba(120,160,255,0.08)]",
+          "arcns-focus-ring",
+          className,
+        )}
+      >
+        {copied ? (
         /* Checkmark — CSS only */
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
           <path d="M2.5 7L5.5 10L11.5 4" stroke="#14F195" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
@@ -75,7 +76,11 @@ export function CopyButton({
           <rect x="4.5" y="1.5" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.25" />
           <path d="M1.5 5.5H3.5V12.5H10.5V10.5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
         </svg>
-      )}
-    </button>
+        )}
+      </button>
+      <span className="sr-only" role="status" aria-live="polite">
+        {copied ? "Copied" : ""}
+      </span>
+    </>
   );
 }

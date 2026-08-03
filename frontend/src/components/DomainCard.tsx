@@ -465,18 +465,18 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
       ) : nameState === "CHECKING" ? (
         checkPhase === 0 ? <div className="py-3" /> :
         checkPhase === 1 ? (
-          <div className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-muted)' }}>Validating…</div>
+          <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-muted)' }}>Validating…</div>
         ) : (
-          <div className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] animate-pulse" style={{ background: 'rgba(37,99,255,0.08)', color: '#8FB3FF' }}>
+          <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] animate-pulse" style={{ background: 'rgba(37,99,255,0.08)', color: '#8FB3FF' }}>
             Checking availability on Arc Testnet…
           </div>
         )
 
       ) : nameState === "AVAILABLE" ? (
         !isConnected ? (
-          <div className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to register</div>
+          <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to register. Use the Connect Wallet button in the header.</div>
         ) : isWrongNetwork ? (
-          <div className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
+          <div role="alert" aria-live="assertive" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
             ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to register
           </div>
         ) : isPriceLoading ? (
@@ -490,11 +490,11 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             className="w-full py-3.5 text-white rounded-[var(--arcns-radius-lg)] font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-150 hover:opacity-90 active:scale-[0.99] text-sm"
             style={{ background: 'var(--arcns-gradient-primary)' }}
           >
-            {reg.step === "approving"   ? "Approving USDC…"
-            : reg.step === "committing" ? "Submitting commitment…"
+            {reg.step === "approving"   ? "Confirm USDC approval in your wallet…"
+            : reg.step === "committing" ? "Confirm commitment in your wallet…"
             : reg.step === "waiting"    ? `Waiting… ${reg.waitProgress}%`
-            : reg.step === "ready"      ? "Ready to register…"
-            : reg.step === "registering"? "Registering on-chain…"
+            : reg.step === "ready"      ? "Commitment submitted · preparing registration…"
+            : reg.step === "registering"? "Confirm registration in your wallet…"
             : reg.step === "success"    ? "✓ Registered!"
             : `Register ${label}.${tld} · ${formatUSDC(totalCost)}`}
           </button>
@@ -503,9 +503,9 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
       ) : /* TAKEN */ (
         expiryState === "active" || expiryState === "expiring-soon" || expiryState === "grace" ? (
           !isConnected ? (
-            <div className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to renew</div>
+              <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to renew. Use the Connect Wallet button in the header.</div>
           ) : isWrongNetwork ? (
-            <div className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
+            <div role="alert" aria-live="assertive" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
               ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to renew
             </div>
           ) : isOwnerLoading ? (
@@ -532,8 +532,8 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
               className="w-full py-3.5 text-white rounded-[var(--arcns-radius-lg)] font-semibold disabled:opacity-50 transition-all duration-150 hover:opacity-90 active:scale-[0.99] text-sm"
               style={{ background: 'var(--arcns-warning)' }}
             >
-              {renew.step === "approving" ? "Approving USDC…"
-              : renew.step === "renewing" ? "Renewing…"
+              {renew.step === "approving" ? "Confirm USDC approval in your wallet…"
+              : renew.step === "renewing" ? "Confirm renewal in your wallet…"
               : renew.step === "success"  ? "✓ Renewed!"
               : isPriceLoading ? `Renew ${label}.${tld} · Loading…`
               : `Renew ${label}.${tld} · ${formatUSDC(totalCost)}`}
@@ -559,7 +559,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
 
       {/* Error display */}
       {activeError ? (
-        <div className="mt-3 text-sm rounded-[var(--arcns-radius-lg)] p-3 flex items-start gap-2 border" style={{ background: 'rgba(255,92,122,0.08)', borderColor: 'rgba(255,92,122,0.24)', color: 'var(--arcns-danger)' }}>
+        <div role="alert" aria-live="assertive" className="mt-3 text-sm rounded-[var(--arcns-radius-lg)] p-3 flex items-start gap-2 border" style={{ background: 'rgba(255,92,122,0.08)', borderColor: 'rgba(255,92,122,0.24)', color: 'var(--arcns-danger)' }}>
           <span>⚠</span>
           <span>{activeError}</span>
         </div>
@@ -567,7 +567,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
 
       {/* Success state */}
       {reg.step === "success" && reg.result ? (
-        <div className="mt-3 text-sm rounded-[var(--arcns-radius-lg)] p-3 flex items-start gap-2 border" style={{ background: 'rgba(20,241,149,0.08)', borderColor: 'rgba(20,241,149,0.24)', color: 'var(--arcns-green)' }}>
+        <div role="status" aria-live="polite" className="mt-3 text-sm rounded-[var(--arcns-radius-lg)] p-3 flex items-start gap-2 border" style={{ background: 'rgba(20,241,149,0.08)', borderColor: 'rgba(20,241,149,0.24)', color: 'var(--arcns-green)' }}>
           <span>✓</span>
           <div>
             <p className="font-medium">{reg.result.name}.{reg.result.tld} registered!</p>

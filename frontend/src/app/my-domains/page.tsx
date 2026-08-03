@@ -68,9 +68,11 @@ export default function MyDomainsPage() {
           key={t}
           type="button"
           role="tab"
+          id={`my-domains-tab-${t}`}
           aria-selected={active}
+          aria-controls={`my-domains-panel-${t}`}
           onClick={() => setTab(t)}
-          className="arcns-domains-tab"
+          className="arcns-domains-tab arcns-focus-ring"
           data-active={active ? "true" : "false"}
         >
           {t === "portfolio" ? "Portfolio" : "History"}
@@ -93,28 +95,25 @@ export default function MyDomainsPage() {
         </svg>
 
         <input
+          id="portfolio-search"
+          aria-label="Search your domains"
           value={portfolioSearch}
           onChange={event => setPortfolioSearch(event.target.value)}
           placeholder="Search your domains..."
         />
       </label>
 
-      <button type="button" className="arcns-domains-filter">
-        <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-          <path
-            d="M3 4.5H15L10.5 9.6V13.5L7.5 15V9.6L3 4.5Z"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </svg>
-        Filter
-      </button>
     </div>
   ) : null}
 </section>
 
-        <section className="arcns-domains-content">
+        <section
+          id={`my-domains-panel-${tab}`}
+          role="tabpanel"
+          aria-labelledby={`my-domains-tab-${tab}`}
+          className="arcns-domains-content"
+          tabIndex={0}
+        >
           {tab === "portfolio" ? (
   <Portfolio searchQuery={portfolioSearch} />
 ) : (
