@@ -12,6 +12,8 @@ Mainnet indexer/subgraph inputs, event coverage, and frontend readiness gates ar
 
 The separate frontend mainnet/discount cutover gates and rollback plan are tracked in [`FRONTEND_CUTOVER_PLAN.md`](./FRONTEND_CUTOVER_PLAN.md).
 
+The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
+
 Arc mainnet target: chain ID `5042`, deploy-grade RPC still to be finalized (the previously listed `https://rpc.blockdaemon.mainnet.arc.io` endpoint remains a candidate pending approval), explorer `https://arc-mainnet.cloud.blockscout.com`, native symbol `USDC`, USDC `0x3600000000000000000000000000000000000000`. The confirmed `https://radar-api-rpc.up.railway.app` endpoint is a read-only/testing fallback only and is not deployment-grade RPC.
 
 1. Confirm a separately approved deployer and treasury configuration; never place credentials in source.

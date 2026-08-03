@@ -11,6 +11,8 @@ Status: read-only infrastructure preparation. This document records acceptance c
 - Frontend mainnet/discount cutover readiness is tracked in [`FRONTEND_CUTOVER_PLAN.md`](./FRONTEND_CUTOVER_PLAN.md).
 - This document does not approve mainnet deployment.
 
+The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
+
 ## RPC endpoint classification
 
 | Endpoint | Classification | Evidence | Allowed use | Launch blocker? |

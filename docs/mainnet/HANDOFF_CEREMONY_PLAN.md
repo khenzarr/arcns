@@ -9,6 +9,8 @@ Status: operational planning only. This document describes a future ceremony; it
 - The approved launch model is a 2-of-3 Admin Safe, a 48-hour `TimelockController`, the deployer wallet as the launch treasury recipient, and the Admin Safe as emergency pause authority.
 - The deployer EOA is limited to deployment and bootstrap. After handoff it must retain no protocol authority and may remain only the treasury recipient if that remains the final reviewed launch choice.
 
+The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
+
 ## Required addresses checklist
 
 `TBD` is a blocker. No unknown address may be inferred from testnet, generated for this plan, or replaced with an unreviewed value.
