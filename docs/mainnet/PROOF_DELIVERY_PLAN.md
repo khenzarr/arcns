@@ -6,6 +6,8 @@
 
 The public proof delivery artifact is prepared for future frontend discount UX. This work does not activate the discount, enable discount UI, or approve mainnet launch. Proof delivery remains blocked until frontend integration, root freeze, contract deployment, indexer readiness, and launch approval are complete.
 
+The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
+
 ## B. Artifact details
 
 - **Path:** `frontend/public/discount-proofs/arcns-v3-early-adopter-2026.json`

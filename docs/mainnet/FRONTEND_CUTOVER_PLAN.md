@@ -10,6 +10,8 @@ Mainnet contract addresses, the mainnet subgraph endpoint, proof delivery, and V
 
 Proof artifact preparation is tracked separately in [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELIVERY_PLAN.md).
 
+The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
+
 An inactive typed helper now validates and looks up the bundled static proof artifact at `frontend/src/lib/discountProofs.ts`. A separate `EarlyAdopterDiscountCard` UX shell exists only as an unmounted, disabled-by-default preview structure. Neither is connected to active registration, renewal, or `registerWithDiscount`; neither establishes claim availability. Discount UI and the production network selection remain unchanged.
 
 ## B. Required frontend inputs

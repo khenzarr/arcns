@@ -6,6 +6,8 @@ The dependent frontend gates and rollback requirements are tracked in [`FRONTEND
 
 The static proof artifact and validation gates are tracked in [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELIVERY_PLAN.md).
 
+The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
+
 ## A. Executive summary
 
 The mainnet indexer/subgraph remains a **launch blocker** until a mainnet deployment has been configured with final addresses and start blocks, deployed, synchronized, queried successfully, and compared with direct chain reads. No mainnet subgraph endpoint is approved at this time.
