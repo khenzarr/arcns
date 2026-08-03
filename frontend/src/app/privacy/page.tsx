@@ -5,7 +5,22 @@ import LegalPage, {
   TESTNET_STATUS_NOTICE,
 } from "../../components/LegalPage";
 
-export const metadata: Metadata = { title: "Privacy Policy | ArcNS" };
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "Privacy information for the independent ArcNS public Arc Testnet app.",
+  alternates: { canonical: "/privacy" },
+  openGraph: {
+    type: "website",
+    url: "https://arcname.services/privacy",
+    title: "Privacy Policy | ArcNS",
+    description: "Privacy information for the independent ArcNS public Arc Testnet app.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Privacy Policy | ArcNS",
+    description: "Privacy information for the independent ArcNS public Arc Testnet app.",
+  },
+};
 
 export default function PrivacyPage() {
   return (

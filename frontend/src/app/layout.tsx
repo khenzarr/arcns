@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -14,11 +14,29 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ArcNS — Arc Name Service",
+  title: {
+    default: "ArcNS - Arc Name Services",
+    template: "%s | ArcNS",
+  },
   description:
-    "ArcNS is an independent name service built on Arc Testnet. Register and resolve human-readable .arc and .circle testnet names.",
+    "ArcNS (Arc Name Services) is an independent public testnet app for registering and resolving human-readable .arc and .circle names on Arc Testnet.",
   metadataBase: new URL("https://arcname.services"),
   alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "https://arcname.services/",
+    siteName: "ArcNS",
+    title: "ArcNS - Arc Name Services",
+    description:
+      "Register and resolve .arc and .circle names with ArcNS, an independent public app on Arc Testnet.",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary",
+    title: "ArcNS - Arc Name Services",
+    description:
+      "Register and resolve .arc and .circle names with ArcNS on Arc Testnet.",
+  },
   icons: { icon: "/icon.svg" },
 };
 
