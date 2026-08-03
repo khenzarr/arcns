@@ -10,7 +10,10 @@ Proof delivery evidence: [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELIVERY_PLAN.md).
 
 Consolidated launch inputs and Go/No-Go readiness: [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
 
+Admin Safe creation and read-only validation readiness: [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md).
+
 - [ ] Confirm every ownership, admin, upgrade, pause, treasury, and deployer-revocation item in [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md).
+- [ ] Confirm the Admin Safe is a separate Arc mainnet contract, not the deployer or an owner EOA, and run the read-only `scripts/mainnet/check-safe-config.js` with the selected owner set and threshold `2` before recording its address.
 - [ ] Execute and verify the separately reviewed future ceremony in [`HANDOFF_CEREMONY_PLAN.md`](./HANDOFF_CEREMONY_PLAN.md) before launch.
 - [ ] Confirm standard oracle reads are 100/50/25/15/5 USDC in p1..p5 order.
 - [ ] Confirm normal `register()` and `renew()` remain the standard paths.

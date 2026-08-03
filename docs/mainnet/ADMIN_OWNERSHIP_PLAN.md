@@ -4,13 +4,15 @@ Status: finalized administration and ownership plan for launch preparation only.
 
 ## Executive summary
 
-- ArcNS mainnet will use a 2-of-3 Admin Safe, following the same structural pattern as the testnet admin Safe. The final mainnet Safe address, owners, and threshold record are still launch blockers and must not be inferred from testnet values.
+- ArcNS mainnet will use a new 2-of-3 Admin Safe, following the same structural pattern as the testnet admin Safe. The three owner inputs are selected in [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md), but the final mainnet Safe address and read-only configuration verification remain launch blockers. The testnet Safe address must not be reused.
 - The deployer wallet will be the treasury recipient at launch as a deliberate operational simplification.
 - A standard 48-hour `TimelockController` is planned to hold controller and resolver upgrade authority. Its minimum delay will be `172800` seconds.
 - Emergency pause authority will be held by the Admin Safe.
 - The deployer EOA is for deployment and bootstrap only. After handoff, it must not retain admin, ownership, upgrade, root, freeze, activation, pause, oracle, resolver, registrar, registry, or discount-registry authority.
 
 The treasury recipient is not the protocol admin. Receiving protocol revenue does not, by itself, grant authority over contracts or roles.
+
+The selected deployer/treasury EOA may be one Safe owner, but it must not be recorded as the Admin Safe contract address. The Admin Safe must be a separate contract with verified bytecode, owners, and threshold on Arc mainnet.
 
 ## Final role ownership table
 
@@ -34,8 +36,8 @@ The treasury recipient is not the protocol admin. Receiving protocol revenue doe
 | DiscountRegistry owner | Admin Safe (address TBD) | Timelock migration may be considered only after launch is stable | Launch coordination includes controller authorization, root, freeze, and activation administration. | Yes — Safe address and handoff pending |
 | DiscountRegistry authorized `.arc` controller | Final deployed `.arc` controller address (TBD), authorized by DiscountRegistry owner | Same unless a reviewed controller migration occurs | Only the finalized controller may consume `.arc` campaign claims. | Yes — deployed controller address and authorization pending |
 | DiscountRegistry authorized `.circle` controller | Final deployed `.circle` controller address (TBD), authorized by DiscountRegistry owner | Same unless a reviewed controller migration occurs | Only the finalized controller may consume `.circle` campaign claims. | Yes — deployed controller address and authorization pending |
-| Treasury recipient | Deployer wallet (address TBD) | Treasury Safe recommended in a future reviewed migration | Operational simplicity at launch; this is revenue custody, not protocol administration. | Yes — final deployer/treasury address pending |
-| Deployer EOA | Deployment/bootstrap only; treasury recipient at launch | Treasury recipient only, if retained as the final launch choice | The deployer must have no lasting privileged protocol authority after handoff. | Yes — address and complete revoke verification pending |
+| Treasury recipient | Deployer wallet (`0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D`) | Treasury Safe recommended in a future reviewed migration | Operational simplicity at launch; this is revenue custody, not protocol administration. | Yes — final operational verification pending |
+| Deployer EOA | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D`; deployment/bootstrap only and treasury recipient at launch | Treasury recipient only, if retained as the final launch choice | The deployer must have no lasting privileged protocol authority after handoff. | Yes — operational and complete revoke verification pending |
 | Timelock proposer | Admin Safe (address TBD) | Same unless the authority model is deliberately revised | The Safe schedules reviewed critical operations. | Yes — Safe and Timelock deployment/configuration pending |
 | Timelock canceller | Admin Safe (address TBD) | Same unless the authority model is deliberately revised | The Safe can cancel unsafe or obsolete queued operations. | Yes — Safe and Timelock deployment/configuration pending |
 | Timelock executor | Admin Safe (address TBD) | May be changed later through a separately reviewed authority-model decision | A restricted executor is simpler for launch operations. | Yes — Safe and Timelock deployment/configuration pending |
@@ -94,8 +96,8 @@ The strictly read-only `scripts/mainnet/assert-admin-handoff.js` must verify the
 ## Launch blockers
 
 - [ ] Final mainnet Admin Safe address is not yet recorded.
-- [ ] Final Safe owner addresses and the 2-of-3 threshold are not yet recorded.
-- [ ] Final deployer/treasury address is not yet recorded in launch documentation.
+- [ ] Selected Safe owner addresses and the 2-of-3 threshold are not yet verified against a mainnet Safe.
+- [ ] Selected deployer/treasury address requires final operational verification.
 - [ ] Timelock is not deployed.
 - [ ] Timelock address is not known.
 - [ ] Role handoff and deployer revocation are not executed or verified.
@@ -125,6 +127,7 @@ Arc mainnet is not ready to deploy while any launch blocker above remains open.
 ## Related finalized preparation inputs
 
 - Mainnet pricing: [`PRICING.md`](./PRICING.md)
+- Admin Safe readiness: [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md)
 - Early-adopter snapshot: [`EARLY_ADOPTER_SNAPSHOT.md`](./EARLY_ADOPTER_SNAPSHOT.md)
 - Safe / Timelock / handoff ceremony: [`HANDOFF_CEREMONY_PLAN.md`](./HANDOFF_CEREMONY_PLAN.md)
 - Deployment preparation runbook: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)
