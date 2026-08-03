@@ -24,6 +24,7 @@ import { useRenew } from "../hooks/useRenew";
 import { useReceivingAddress } from "../hooks/useReceivingAddress";
 import { usePrimaryName } from "../hooks/usePrimaryName";
 import { namehash } from "../lib/namehash";
+import { CopyButton } from "./ui/CopyButton";
 import {
   formatExpiry,
   daysUntilExpiry,
@@ -82,28 +83,6 @@ function TldTile({ tld }: { tld: string }) {
   );
 }
 
-function CopyGlyph() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-      <rect
-        x="5"
-        y="5"
-        width="8"
-        height="8"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.4"
-      />
-      <path
-        d="M3 10.5H2.8C1.8 10.5 1 9.7 1 8.7V2.8C1 1.8 1.8 1 2.8 1H8.7C9.7 1 10.5 1.8 10.5 2.8V3"
-        stroke="currentColor"
-        strokeWidth="1.4"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 function ShieldGlyph() {
   return (
     <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -139,24 +118,8 @@ function ClockGlyph() {
   );
 }
 
-function MoreGlyph() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-      <circle cx="4" cy="9" r="1.25" fill="currentColor" />
-      <circle cx="9" cy="9" r="1.25" fill="currentColor" />
-      <circle cx="14" cy="9" r="1.25" fill="currentColor" />
-    </svg>
-  );
-}
-
 function shortAddress(addr: string) {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
-}
-
-function copyText(value: string) {
-  if (typeof navigator !== "undefined" && navigator.clipboard) {
-    navigator.clipboard.writeText(value).catch(() => undefined);
-  }
 }
 
 export default function Portfolio({
@@ -197,6 +160,8 @@ export default function Portfolio({
   if (!isConnected) {
     return (
       <div
+        role="status"
+        aria-live="polite"
         className="rounded-[28px] border px-6 py-16 text-center"
         style={{
           background:
@@ -220,7 +185,7 @@ export default function Portfolio({
           Connect your wallet
         </p>
         <p className="mt-1 text-sm" style={{ color: "var(--arcns-text-muted)" }}>
-          Connect to view your ArcNS portfolio.
+          Connect your wallet from the header to view your ArcNS portfolio.
         </p>
       </div>
     );
@@ -229,6 +194,9 @@ export default function Portfolio({
   if (isLoading) {
     return (
       <div
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
         className="overflow-hidden rounded-[28px] border"
         style={{
           background:
@@ -265,6 +233,8 @@ export default function Portfolio({
   if (error) {
     return (
       <div
+        role="alert"
+        aria-live="assertive"
         className="rounded-[28px] border p-5 text-sm"
         style={{
           background: "rgba(255,92,122,0.08)",
@@ -275,7 +245,7 @@ export default function Portfolio({
         {error}
         <button
           onClick={refetch}
-          className="ml-3 underline"
+          className="arcns-focus-ring ml-3 underline"
           style={{ color: "var(--arcns-danger)" }}
         >
           Retry
@@ -287,6 +257,8 @@ export default function Portfolio({
   if (domains.length === 0) {
     return (
       <div
+        role="status"
+        aria-live="polite"
         className="rounded-[28px] border px-6 py-16 text-center"
         style={{
           background:
@@ -332,7 +304,7 @@ export default function Portfolio({
         </div>
 
         {filteredDomains.length === 0 ? (
-          <div className="px-6 py-12 text-center">
+          <div role="status" aria-live="polite" className="px-6 py-12 text-center">
             <p className="font-semibold" style={{ color: "var(--arcns-text-primary)" }}>
               No matching domains
             </p>
@@ -614,15 +586,11 @@ function DomainRowWithAddr({
           >
             <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />
             <span className="truncate">{shortAddress(receivingAddress)}</span>
-            <button
-              type="button"
-              onClick={() => copyText(receivingAddress)}
-              className="shrink-0 opacity-70 transition-opacity hover:opacity-100"
+            <CopyButton
+              value={receivingAddress}
               aria-label="Copy receiving address"
-              style={{ color: "currentColor" }}
-            >
-              <CopyGlyph />
-            </button>
+              className="arcns-focus-ring h-7 w-7 shrink-0 border-0 p-0"
+            />
           </span>
         ) : addrState === "set" && isStale ? (
           <span
@@ -686,18 +654,6 @@ function DomainRowWithAddr({
           </button>
         ) : null}
 
-        <button
-          type="button"
-          className="flex h-11 w-11 items-center justify-center rounded-[var(--arcns-radius-md)] border transition-colors duration-150"
-          style={{
-            background: "rgba(11,18,36,0.72)",
-            borderColor: "rgba(120,160,255,0.18)",
-            color: "var(--arcns-text-secondary)",
-          }}
-          aria-label={`More actions for ${displayName}`}
-        >
-          <MoreGlyph />
-        </button>
       </div>
     </div>
   );
