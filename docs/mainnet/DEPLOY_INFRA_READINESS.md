@@ -18,7 +18,7 @@ The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUN
 | Endpoint | Classification | Evidence | Allowed use | Launch blocker? |
 |---|---|---|---|---|
 | Blockdaemon authorized RPC | Candidate / `TBD` | Public request returned `401`; an authorized endpoint has not passed the complete checklist | None until authorization, testing, and explicit approval | Yes |
-| Radar RPC | Read-only/testing fallback only | Extended three-attempt read check and Hardhat preflight passed on 2026-08-03: chain `5042`, latest block data, USDC code/metadata, gas price, fee history, and provider fee data; not approved for signing or deployment | Read-only diagnostics and fallback reads | Yes — a primary is still required |
+| Radar RPC | Read-only/testing fallback only; deploy-grade assessment pending review | Extended readiness checks passed on 2026-08-03. Aşama 7C-2B adds a broader read-only candidate assessment, but technical read success cannot establish provider provenance, ownership, support, limits, or SLA and is not deployment approval. | Read-only diagnostics and fallback reads | Yes — explicit risk acceptance or a separately reviewed provider decision is still required |
 | Thirdweb public endpoint | Not deploy-grade | Returned chain ID but failed deeper reads | None for signing/deployment | Yes |
 | Infura / Alchemy project endpoint | Candidate only | Prior demo/project paths were not deploy-ready; Arc access and complete checks remain unproven | None until project-specific approval and checks pass | Yes |
 
@@ -48,6 +48,12 @@ An endpoint is not approved merely because a readiness script passes. Approval r
 - [ ] The deployment ceremony stops if the primary fails or returns inconsistent chain data.
 
 Read-only extended check: `node scripts/mainnet/check-rpc-readiness.js`. A `readiness-passed` result is evidence only and is not automatic deploy-RPC approval.
+
+### Deploy-grade candidate assessment procedure
+
+Run `node scripts/mainnet/assess-rpc-deploy-grade.js` with transient `RPC_URL`, `EXPECTED_CHAIN_ID=5042`, `DEPLOYER_ADDRESS`, and `ADMIN_SAFE_ADDRESS`. `REFERENCE_TX_HASH`, `USDC_ADDRESS`, and `SAMPLE_CONTRACT_ADDRESS` may be supplied for additional receipt/code evidence. The script disables JSON-RPC batching and performs only provider reads: chain/block/freshness, balance/nonces, fee capability, harmless gas estimation, Safe bytecode/view calls, optional receipt/log/code probes, and repeated block observations. It creates no signer, submits no transaction, and writes no artifact.
+
+`PASS_READ_ONLY_ASSESSMENT` means only that the tested read path behaved consistently at assessment time. It does not approve deployment use. Radar may be assessed, but even a technical PASS requires separately recorded human risk acceptance or a reviewed provider decision. `ALLOW_RADAR_DEPLOY_GRADE_CANDIDATE=1` only records explicit candidate consideration; it does not produce automatic approval. Keep the guarded Timelock deploy script's Radar rejection unchanged unless a later, separately reviewed change is explicitly approved. Deploy-grade RPC remains unresolved, Timelock deployment remains **NO-GO**, and mainnet launch remains **NO-GO**.
 
 ## Blockscout verification readiness
 

@@ -12,11 +12,13 @@ The Timelock input register, OpenZeppelin version behavior, future dry-run cerem
 
 `scripts/mainnet/deploy-timelock.js` is prepared but has **not** been executed. It deploys only `ArcNSTimelock`; it does not migrate protocol ownership or roles or perform follow-on configuration. The Timelock address remains **TBD**.
 
-Write mode is forbidden until a deploy-grade Arc mainnet RPC is explicitly selected and approved (Radar does not qualify), the intended deployer is funded, an operator explicitly approves the ceremony, and every required exact confirmation environment value is supplied. This includes `CONFIRM_MAINNET_TIMELOCK_DEPLOY=I_UNDERSTAND_THIS_DEPLOYS_MAINNET_TIMELOCK`. Independently review the printed chain ID, deployer, balance, Admin Safe, delay, role recipients, masked RPC, and exact constructor arguments before execution. After a successful future deployment, `scripts/mainnet/check-timelock-config.js` must report **PASS** before any handoff activity.
+Write mode is forbidden until a deploy-grade Arc mainnet RPC is explicitly selected and approved, the intended deployer is funded, an operator explicitly approves the ceremony, and every required exact confirmation environment value is supplied. Radar remains rejected by the deployment guard; any future proposal to use it requires separately recorded explicit risk acceptance and a reviewed guard change. This includes `CONFIRM_MAINNET_TIMELOCK_DEPLOY=I_UNDERSTAND_THIS_DEPLOYS_MAINNET_TIMELOCK`. Independently review the printed chain ID, deployer, balance, Admin Safe, delay, role recipients, masked RPC, and exact constructor arguments before execution. After a successful future deployment, `scripts/mainnet/check-timelock-config.js` must report **PASS** before any handoff activity.
 
 `TIMELOCK_DEPLOY_DRY_RUN=1` is preflight-only and must not deploy or write an artifact. Mainnet launch remains **NO-GO** and handoff remains pending.
 
 Deploy-grade RPC acceptance and Blockscout verification blockers are tracked in [`DEPLOY_INFRA_READINESS.md`](./DEPLOY_INFRA_READINESS.md).
+
+Before considering any RPC for a future ceremony, run the read-only `node scripts/mainnet/assess-rpc-deploy-grade.js` procedure documented there. Supply only transient non-secret assessment inputs; optional known receipt and contract addresses improve evidence. A `PASS_READ_ONLY_ASSESSMENT` is not deployment approval. Provider provenance, operational ownership, limits, support/SLA, redundancy, and explicit human approval remain separate gates. Until those gates are recorded, deploy-grade RPC is unresolved, Timelock deployment is **NO-GO**, and mainnet launch is **NO-GO**.
 
 Mainnet indexer/subgraph inputs, event coverage, and frontend readiness gates are tracked in [`INDEXER_SUBGRAPH_PLAN.md`](./INDEXER_SUBGRAPH_PLAN.md).
 
