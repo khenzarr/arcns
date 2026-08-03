@@ -7,6 +7,7 @@ Status: finalized administration and ownership plan for launch preparation only.
 - ArcNS mainnet uses the verified new 2-of-3 Admin Safe `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`, following the same structural pattern as the testnet admin Safe. Safe creation and configuration verification are complete; the testnet Safe address must not be reused.
 - The deployer wallet will be the treasury recipient at launch as a deliberate operational simplification.
 - A standard 48-hour `TimelockController` is planned to hold controller and resolver upgrade authority. Its minimum delay will be `172800` seconds.
+- Timelock readiness is documented in [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md). It is the next authority blocker, is not deployed, and its address remains `TBD`; mainnet remains **NO-GO**.
 - Emergency pause authority will be held by the Admin Safe.
 - The deployer EOA is for deployment and bootstrap only. After handoff, it must not retain admin, ownership, upgrade, root, freeze, activation, pause, oracle, resolver, registrar, registry, or discount-registry authority.
 
@@ -91,7 +92,7 @@ These are future launch actions, not actions performed by this documentation pha
 
 Every transfer, grant, revoke, authorization, address assignment, and final role read must be independently reviewed against the finalized deployed addresses before mainnet activation.
 
-The strictly read-only `scripts/mainnet/assert-admin-handoff.js` must verify the finalized Safe, Timelock, treasury, deployed addresses, owners, roles, and deployer revocation before public launch. It does not execute the handoff and must not be treated as proof until run against the final deployment with independently reviewed expected values.
+The strictly read-only `scripts/mainnet/assert-admin-handoff.js` must verify the finalized Safe, Timelock, treasury, deployed addresses, owners, roles, and deployer revocation before public launch. The future read-only `scripts/mainnet/check-timelock-config.js` must separately verify Timelock delay, internal roles, self-administration, and optional deployer-admin absence after deployment. Neither checker executes the handoff, and neither must be treated as proof until run against final deployments with independently reviewed expected values.
 
 ## Launch blockers
 
@@ -128,6 +129,7 @@ Arc mainnet is not ready to deploy while any launch blocker above remains open.
 
 - Mainnet pricing: [`PRICING.md`](./PRICING.md)
 - Admin Safe readiness: [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md)
+- Timelock readiness: [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md)
 - Early-adopter snapshot: [`EARLY_ADOPTER_SNAPSHOT.md`](./EARLY_ADOPTER_SNAPSHOT.md)
 - Safe / Timelock / handoff ceremony: [`HANDOFF_CEREMONY_PLAN.md`](./HANDOFF_CEREMONY_PLAN.md)
 - Deployment preparation runbook: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)

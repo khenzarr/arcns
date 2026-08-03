@@ -9,7 +9,7 @@ Status: operational planning only. This document describes a future ceremony; it
 - The approved launch model is a 2-of-3 Admin Safe, a 48-hour `TimelockController`, the deployer wallet as the launch treasury recipient, and the Admin Safe as emergency pause authority.
 - The deployer EOA is limited to deployment and bootstrap. After handoff it must retain no protocol authority and may remain only the treasury recipient if that remains the final reviewed launch choice.
 
-The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md). Safe creation inputs and read-only validation gates are tracked in [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md).
+The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md). Safe creation inputs and read-only validation gates are tracked in [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md). Timelock inputs, exact version behavior, and future read-only checks are tracked in [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md); Timelock deployment is the next authority blocker and remains unexecuted.
 
 ## Required addresses checklist
 
@@ -74,6 +74,8 @@ The following is a numbered dry-run plan for a future ceremony. Every address, r
 18. Set each controller's treasury recipient to the deployer wallet if that remains the final launch choice.
 19. Verify that the deployer has no protocol authority after handoff and remains only the treasury recipient if that launch choice is retained.
 20. Run the read-only `scripts/mainnet/assert-admin-handoff.js` assertion and require its PASS result.
+
+Before protocol deployment or handoff, a future approved Timelock deployment must be followed by `node scripts/mainnet/check-timelock-config.js` with independently reviewed final inputs. The Timelock address remains `TBD`, so this checker is not currently runnable against mainnet.
 
 Deployment and handoff remain one incomplete launch operation until all required final-state reads and the assertion script pass.
 
@@ -177,8 +179,10 @@ Arc mainnet is not ready to deploy while any blocker remains open. Completing th
 
 - Authority model: [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md)
 - Admin Safe readiness: [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md)
+- Timelock readiness: [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md)
 - Deployment preparation: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)
 - Launch checks: [`SECURITY_CHECKLIST.md`](./SECURITY_CHECKLIST.md)
 - Focused review: [`FOCUSED_SECURITY_REVIEW.md`](./FOCUSED_SECURITY_REVIEW.md)
 - Read-only handoff assertion: [`../../scripts/mainnet/assert-admin-handoff.js`](../../scripts/mainnet/assert-admin-handoff.js)
 - Read-only Safe configuration check: [`../../scripts/mainnet/check-safe-config.js`](../../scripts/mainnet/check-safe-config.js)
+- Future read-only Timelock configuration check: [`../../scripts/mainnet/check-timelock-config.js`](../../scripts/mainnet/check-timelock-config.js)
