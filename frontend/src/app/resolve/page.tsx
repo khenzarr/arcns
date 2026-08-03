@@ -45,15 +45,29 @@ import { CopyButton } from "../../components/ui/CopyButton";
 import { TldBadge } from "../../components/ui/TldBadge";
 import { FooterIdentityLine } from "../../components/ui/FooterIdentityLine";
 
+export type ResolveQuery = { label: string; tld: SupportedTLD; domain: string };
+export type ResolveInputState = "pristine" | "invalid" | "malformed" | "unsupportedTld" | "valid";
+
+/** Resolve accepts exactly one ASCII label plus one supported suffix. */
+export function parseResolveQuery(raw: string): ResolveQuery | { error: Exclude<ResolveInputState, "pristine" | "valid"> } {
+  const value = raw.trim().toLowerCase();
+  if (!value) return { error: "invalid" };
+  const parts = value.split(".");
+  if (parts.length !== 2 || !parts[0]) return { error: "malformed" };
+  if (parts[1] !== "arc" && parts[1] !== "circle") return { error: "unsupportedTld" };
+  if (!isValidLabel(parts[0])) return { error: "invalid" };
+  return { label: parts[0], tld: parts[1], domain: `${parts[0]}.${parts[1]}` };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Forward resolution hook — preserved
 // ─────────────────────────────────────────────────────────────────────────────
 
-function useResolveAddress(domain: string) {
+function useResolveAddress(domain: string, enabled: boolean, retryKey: number) {
   const node = namehash(domain);
-  const enabled = domain.includes(".");
   const [data, setData] = useState<string | undefined>(undefined);
   const [isLoading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (!enabled) {
@@ -63,6 +77,7 @@ function useResolveAddress(domain: string) {
 
     let cancelled = false;
     setLoading(true);
+    setError(false);
 
     import("../../lib/publicClient").then(({ publicClient }) => {
       publicClient
@@ -81,6 +96,7 @@ function useResolveAddress(domain: string) {
         .catch(() => {
           if (!cancelled) {
             setData(undefined);
+            setError(true);
             setLoading(false);
           }
         });
@@ -89,9 +105,9 @@ function useResolveAddress(domain: string) {
     return () => {
       cancelled = true;
     };
-  }, [domain, node, enabled]);
+  }, [domain, node, enabled, retryKey]);
 
-  return { data, isLoading };
+  return { data, isLoading, isError: error };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -321,7 +337,7 @@ function DetailRow({
   explorerHref?: string;
 }) {
   return (
-    <div className="grid grid-cols-[150px_1fr] items-center gap-4 py-2">
+    <div className="grid grid-cols-1 gap-1 py-2 sm:grid-cols-[150px_1fr] sm:items-center sm:gap-4">
       <p className="text-sm" style={{ color: "var(--arcns-text-muted)" }}>
         {label}
       </p>
@@ -400,24 +416,31 @@ function RecordPill({
 export default function ResolvePage() {
   const [domain, setDomain] = useState("");
   const [queried, setQueried] = useState("");
+  const [queryError, setQueryError] = useState<"invalid" | "malformed" | "unsupportedTld" | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+
+  const parsedQuery = parseResolveQuery(queried);
+  const validQuery = "domain" in parsedQuery ? parsedQuery : null;
 
   const { address: connectedAddress } = useAccount();
-  const { data: resolvedAddr, isLoading } = useResolveAddress(queried);
+  const { data: resolvedAddr, isLoading, isError: addressError } = useResolveAddress(
+    validQuery?.domain ?? "",
+    !!validQuery,
+    retryKey,
+  );
 
-  const parts = queried.split(".");
-  const label = parts[0] ?? "";
-  const rawTld = parts[1] ?? "";
-  const tld = rawTld === "arc" || rawTld === "circle" ? (rawTld as SupportedTLD) : null;
+  const label = validQuery?.label ?? "";
+  const tld = validQuery?.tld ?? null;
   const registrar = tld === "circle" ? ADDR_CIRCLE_REGISTRAR : ADDR_ARC_REGISTRAR;
   const tokenId = label ? labelToTokenId(label) : 0n;
 
-  const { data: expiry, isPending: expiryLoading } = useReadContract({
+  const { data: expiry, isPending: expiryLoading, isError: expiryError, refetch: refetchExpiry } = useReadContract({
     address: registrar as `0x${string}`,
     abi: REGISTRAR_ABI,
     functionName: "nameExpires",
     args: [tokenId],
     query: {
-      enabled: !!tld && isValidLabel(label),
+      enabled: !!validQuery,
       staleTime: 30_000,
       refetchOnWindowFocus: false,
     },
@@ -427,11 +450,20 @@ export default function ResolvePage() {
   const expiryState = getExpiryState(expiryTs);
   const badge = expiryBadge(expiryState);
 
-  const handleResolve = () => setQueried(domain.trim().toLowerCase());
+  const handleResolve = () => {
+    const result = parseResolveQuery(domain);
+    if ("error" in result) {
+      setQueryError(result.error);
+      setQueried("");
+      return;
+    }
+    setQueryError(null);
+    setQueried(result.domain);
+  };
 
   const nodeBytes = queried ? (namehash(queried) as `0x${string}`) : undefined;
   const node = queried ? namehash(queried) : "";
-  const hasResult = !!queried && queried.includes(".");
+  const hasResult = !!validQuery;
   const addr = resolvedAddr as string | undefined;
 
   // Forward resolution: only true when a valid non-zero address is returned.
@@ -439,13 +471,13 @@ export default function ResolvePage() {
     !!addr && addr !== "0x0000000000000000000000000000000000000000" ? addr : undefined;
   const hasAddr = !!normalizedResolvedAddress;
 
-  const { data: ownerData, isPending: ownerLoading } = useReadContract({
+  const { data: ownerData, isPending: ownerLoading, isError: ownerError, refetch: refetchOwner } = useReadContract({
     ...REGISTRY_CONTRACT,
     functionName: "owner",
     args: nodeBytes ? [nodeBytes] : undefined,
     query: {
       // Public read — no wallet required. Enable whenever a valid domain is queried.
-      enabled: !!queried && queried.includes("."),
+      enabled: !!validQuery,
       staleTime: 30_000,
       refetchOnWindowFocus: false,
     },
@@ -454,14 +486,14 @@ export default function ResolvePage() {
   // registry.owner(node) returns the registrar contract address for registered
   // second-level names — not the user's wallet. The actual NFT holder is
   // tracked by registrar.ownerOf(tokenId). We read both and prefer ownerOf.
-  const { data: registrarOwnerData, isPending: registrarOwnerLoading } = useReadContract({
+  const { data: registrarOwnerData, isPending: registrarOwnerLoading, isError: registrarOwnerError, refetch: refetchRegistrarOwner } = useReadContract({
     address: registrar as `0x${string}`,
     abi: REGISTRAR_ABI,
     functionName: "ownerOf",
     args: [tokenId],
     query: {
       // ownerOf reverts for non-existent/expired tokens — wagmi returns undefined on revert.
-      enabled: !!tld && isValidLabel(label) && tokenId > 0n,
+      enabled: !!validQuery && tokenId > 0n,
       staleTime: 30_000,
       refetchOnWindowFocus: false,
       retry: false, // don't retry reverts
@@ -498,16 +530,13 @@ export default function ResolvePage() {
   // resolved address. Absence of a forward record ≠ unregistered.
   const hasOwner = !!ownerAddress;
   const hasExpiry = expiryTs > 0n;
-  const now = BigInt(Math.floor(Date.now() / 1000));
-  const isExpired = hasExpiry && expiryTs <= now;
-
   // Only conclude "unregistered" once all reads have settled and none
   // returned ownership or expiry data.
   const readsSettled =
     hasResult && !isLoading && !expiryLoading && !ownerLoading && !registrarOwnerLoading;
+  const readError = addressError || expiryError || ownerError || registrarOwnerError;
   const isRegistered = hasOwner || hasExpiry;
-  const isUnregistered = readsSettled && !isRegistered;
-  const isActive = isRegistered && !isExpired;
+  const isUnregistered = readsSettled && !readError && !isRegistered;
 
   const explorerTokenHref =
     tld && label
@@ -521,6 +550,12 @@ export default function ResolvePage() {
   const ownerExplorerHref = ownerAddress
     ? `https://testnet.arcscan.app/address/${ownerAddress}`
     : undefined;
+
+  const ownershipCopy = !connectedAddress
+    ? "Connect wallet to compare ownership."
+    : isOwner
+      ? "Connected wallet owns this name."
+      : "Connected wallet does not own this name.";
 
   return (
     <div
@@ -540,11 +575,11 @@ export default function ResolvePage() {
         }}
       />
 
-      <main className="relative z-10 mx-auto w-[min(1280px,calc(100vw-96px))] py-14">
+      <main className="relative z-10 mx-auto w-full max-w-[1044px] px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
         {/* Hero */}
         <section className="relative mb-7 min-h-[245px]">
           <div
-            className="pointer-events-none absolute left-[-76px] top-[-18px] hidden h-[260px] w-[300px] items-center justify-center lg:flex"
+            className="arcns-resolve-emblem pointer-events-none mx-auto flex items-center justify-center"
             aria-hidden="true"
           >
             <Image
@@ -562,7 +597,7 @@ export default function ResolvePage() {
             />
           </div>
 
-          <div className="relative z-10 ml-0 pt-7 lg:ml-[220px]">
+          <div className="relative z-10 text-center">
             <h1
               className="text-[clamp(3rem,6vw,5.5rem)] font-bold leading-[0.95] tracking-[-0.075em]"
               style={{
@@ -574,14 +609,14 @@ export default function ResolvePage() {
               Resolve
             </h1>
             <p
-              className="mt-5 max-w-[760px] text-2xl leading-relaxed"
+              className="mx-auto mt-5 max-w-[760px] text-2xl leading-relaxed"
               style={{ color: "var(--arcns-text-secondary)" }}
             >
               Inspect any ArcNS name and its on-chain identity records.
             </p>
 
             <section
-              className="relative mt-8 max-w-[980px] overflow-hidden rounded-[28px] border p-5"
+              className="relative mt-8 w-full overflow-hidden rounded-[28px] border p-4 sm:p-5"
               style={{
                 background:
                   "linear-gradient(180deg, rgba(11,18,36,0.82), rgba(8,14,31,0.76))",
@@ -611,6 +646,7 @@ export default function ResolvePage() {
                     className="min-w-0 flex-1 bg-transparent text-lg font-semibold outline-none"
                     style={{ color: "var(--arcns-text-primary)" }}
                     aria-label="Enter an ArcNS name to resolve"
+                    aria-describedby="resolve-feedback"
                   />
 
                   {tld ? (
@@ -637,8 +673,9 @@ export default function ResolvePage() {
                 </label>
 
                 <button
+                  type="button"
                   onClick={handleResolve}
-                  className="h-16 rounded-[var(--arcns-radius-lg)] px-10 text-lg font-bold text-white transition-all duration-150 hover:translate-y-[-1px] hover:opacity-95 active:scale-[0.98]"
+                  className="arcns-focus-ring h-16 rounded-[var(--arcns-radius-lg)] px-10 text-lg font-bold text-white transition-all duration-150 hover:translate-y-[-1px] hover:opacity-95 active:scale-[0.98]"
                   style={{
                     background: "var(--arcns-gradient-primary)",
                     boxShadow: "0 18px 45px rgba(37,99,255,0.30)",
@@ -647,13 +684,18 @@ export default function ResolvePage() {
                   Resolve
                 </button>
               </div>
+              <div id="resolve-feedback" className="mt-3 text-sm" role="status" aria-live="polite">
+                {queryError === "unsupportedTld" ? "Use a name ending in .arc or .circle." : null}
+                {queryError === "malformed" ? "Use one name label before .arc or .circle. Subnames are not supported here yet." : null}
+                {queryError === "invalid" ? "Only letters, numbers, hyphens, and underscores are allowed." : null}
+              </div>
             </section>
           </div>
         </section>
 
         {!hasResult ? (
           <section
-            className="mx-auto mt-10 max-w-[900px] rounded-[28px] border px-8 py-10 text-center"
+            className="mt-10 w-full rounded-[28px] border px-5 py-10 text-center sm:px-8"
             style={{
               background:
                 "linear-gradient(180deg, rgba(11,18,36,0.64), rgba(8,14,31,0.56))",
@@ -707,8 +749,23 @@ export default function ResolvePage() {
           </section>
         ) : null}
 
-        {hasResult ? (
-          <section className="space-y-6">
+        {hasResult && !readsSettled ? (
+          <section className="mt-10 w-full rounded-[28px] border px-5 py-10 text-center sm:px-8" role="status" aria-live="polite" aria-busy="true" style={{ background: "rgba(11,18,36,0.72)", borderColor: "rgba(120,160,255,0.20)" }}>
+            <h2 className="text-2xl font-bold" style={{ color: "var(--arcns-text-primary)" }}>Verifying {queried}…</h2>
+            <p className="mt-3 text-sm" style={{ color: "var(--arcns-text-secondary)" }}>Reading Arc testnet records.</p>
+          </section>
+        ) : null}
+
+        {hasResult && readsSettled && readError ? (
+          <section className="mt-10 w-full rounded-[28px] border px-5 py-10 text-center sm:px-8" role="alert" aria-live="assertive" style={{ background: "rgba(11,18,36,0.72)", borderColor: "rgba(255,92,122,0.28)" }}>
+            <h2 className="text-2xl font-bold" style={{ color: "var(--arcns-text-primary)" }}>We could not verify this name right now.</h2>
+            <p className="mt-3 text-sm" style={{ color: "var(--arcns-text-secondary)" }}>This does not mean the name is unregistered.</p>
+            <button type="button" onClick={() => { setRetryKey(key => key + 1); void refetchExpiry(); void refetchOwner(); void refetchRegistrarOwner(); }} className="arcns-focus-ring mt-6 rounded-[var(--arcns-radius-lg)] px-6 py-3 text-sm font-bold text-white" style={{ background: "var(--arcns-gradient-primary)" }}>Try again</button>
+          </section>
+        ) : null}
+
+        {hasResult && readsSettled && !readError ? (
+          <section className="space-y-6" role="status" aria-live="polite">
             {/* Main overview card */}
             <div
               className="grid gap-0 overflow-hidden rounded-[28px] border lg:grid-cols-[150px_1fr_250px]"
@@ -777,7 +834,9 @@ export default function ResolvePage() {
                         ? "Loading..."
                         : hasAddr
                           ? shortAddress(normalizedResolvedAddress!, 10, 8)
-                          : "No address record"
+                          : isUnregistered
+                            ? "No address record"
+                            : "Unavailable until reads settle"
                     }
                     valueColor={
                       hasAddr
@@ -790,7 +849,7 @@ export default function ResolvePage() {
 
                   <DetailRow
                     label="Owner"
-                    value={ownerAddress ? shortAddress(ownerAddress, 8, 6) : "Owner not available"}
+                    value={ownerAddress ? shortAddress(ownerAddress, 8, 6) : isUnregistered ? "Owner record not found" : "Unavailable until reads settle"}
                     valueColor={ownerAddress ? "var(--arcns-cyan)" : "var(--arcns-text-muted)"}
                     copyValue={ownerAddress}
                     explorerHref={ownerExplorerHref}
@@ -817,8 +876,8 @@ export default function ResolvePage() {
                         ? "Loading..."
                         : expiryTs > 0n
                           ? formatExpiry(expiryTs)
-                          : isUnregistered
-                            ? "Not registered"
+                        : isUnregistered
+                            ? "Name not registered"
                             : "—"
                     }
                     valueColor={
@@ -924,7 +983,7 @@ export default function ResolvePage() {
                     style={{ color: hasAddr ? "var(--arcns-green)" : "var(--arcns-text-muted)" }}
                   >
                     {hasAddr ? <StatusDot /> : null}
-                    {hasAddr ? "Resolved" : "Not set"}
+                    {hasAddr ? "Resolved address found" : "No forward address set"}
                   </span>
                 </div>
 
@@ -944,7 +1003,7 @@ export default function ResolvePage() {
                     style={{ color: hasAddr ? "var(--arcns-text-primary)" : "var(--arcns-text-muted)" }}
                     title={hasAddr ? normalizedResolvedAddress : undefined}
                   >
-                    {hasAddr ? shortAddress(normalizedResolvedAddress!, 12, 10) : "No address record"}
+                    {hasAddr ? shortAddress(normalizedResolvedAddress!, 12, 10) : isUnregistered ? "No address record" : "Unavailable until reads settle"}
                   </p>
 
                   {hasAddr ? <CopyButton value={normalizedResolvedAddress!} aria-label="Copy resolved address" /> : null}
@@ -1003,7 +1062,7 @@ export default function ResolvePage() {
                     style={{ color: ownerAddress ? "var(--arcns-green)" : "var(--arcns-text-muted)" }}
                   >
                     {ownerAddress ? <StatusDot /> : null}
-                    {ownerAddress ? "Verified" : "Unknown"}
+                    {ownerAddress ? "Owner record found" : "Owner record not found"}
                   </span>
                 </div>
 
@@ -1029,7 +1088,7 @@ export default function ResolvePage() {
                   {ownerAddress ? <CopyButton value={ownerAddress} aria-label="Copy owner address" /> : null}
                 </div>
 
-                <div className="mt-5 flex items-center justify-between">
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm" style={{ color: "var(--arcns-text-muted)" }}>
                     Connected wallet
                   </p>
@@ -1041,7 +1100,7 @@ export default function ResolvePage() {
                       color: isOwner ? "var(--arcns-green)" : "var(--arcns-text-muted)",
                     }}
                   >
-                    {isOwner ? "Owner" : "Not owner / unknown"}
+                    {ownershipCopy}
                   </span>
                 </div>
               </div>
@@ -1096,7 +1155,7 @@ export default function ResolvePage() {
                         : expiryTs > 0n
                           ? formatExpiry(expiryTs)
                           : isUnregistered
-                            ? "Not registered"
+                            ? "Name not registered"
                             : "—"}
                     </p>
                   </div>
@@ -1116,7 +1175,7 @@ export default function ResolvePage() {
                       }
                     >
                       {isUnregistered
-                        ? "Not registered"
+                        ? "Name not registered"
                         : isRegistered
                           ? badge.label
                           : "Loading…"}

@@ -110,15 +110,15 @@ export default function HomePage() {
 
         <div className="arcns-landing-inner">
           <div className="arcns-left-emblem" aria-hidden="true">
-  <Image
-  src="/arcns/arcns-emblem.svg"
-  alt=""
-  width={520}
-  height={520}
-  priority
-  className="arcns-left-emblem-img"
-/>
-</div>
+            <Image
+              src="/arcns/arcns-emblem.svg"
+              alt=""
+              width={520}
+              height={520}
+              priority
+              className="arcns-left-emblem-img"
+            />
+          </div>
 
           <div className="arcns-hero-copy">
             <div className="arcns-live-badge">
@@ -136,9 +136,9 @@ export default function HomePage() {
               <br />
               Receive an ERC-721 name NFT for your selected registration period.
             </p>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--arcns-text-secondary)]">
-              ArcNS is an independent name service built on Arc Testnet. <strong>.circle</strong> is an
-              ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.
+            <p className="arcns-hero-disclaimer">
+              Independent Arc Testnet app. <strong>.circle</strong> is an ArcNS testnet namespace; no Circle
+              affiliation or endorsement is implied.
             </p>
           </div>
 
