@@ -96,7 +96,8 @@ async function main() {
   const config = loadConfig();
   console.log(`RPC: ${maskRpcUrl(config.rpcUrl)}`);
 
-  const provider = new ethers.JsonRpcProvider(config.rpcUrl);
+  // Disable batching for RPC providers that reject JSON-RPC batch requests.
+  const provider = new ethers.JsonRpcProvider(config.rpcUrl, config.expectedChainId, { batchMaxCount: 1 });
   const network = await provider.getNetwork();
   if (network.chainId !== config.expectedChainId) {
     throw new Error(`Chain ID mismatch: expected ${config.expectedChainId}, received ${network.chainId}`);
