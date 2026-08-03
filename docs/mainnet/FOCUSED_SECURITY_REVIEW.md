@@ -12,7 +12,7 @@ Proof delivery preparation is tracked in [`PROOF_DELIVERY_PLAN.md`](./PROOF_DELI
 
 The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUNCH_INPUTS.md`](./MAINNET_LAUNCH_INPUTS.md).
 
-Remediation status: FSR-02 and FSR-06 are addressed by the Aşama 5A tooling guards. FSR-01 is partially addressed by a fail-closed read-only handoff assertion. FSR-04 is partially addressed by Aşama 6A reusable DiscountRegistry ABI/schema/mapping coverage; final address/start-block wiring, deployment, sync, and health verification remain launch actions and blockers.
+Remediation status: FSR-02 and FSR-06 are addressed by the Aşama 5A tooling guards. FSR-01 is partially addressed by the verified mainnet 2-of-3 Admin Safe and a fail-closed read-only handoff assertion; Timelock deployment, handoff, and deployer revocation remain unresolved. FSR-04 is partially addressed by Aşama 6A reusable DiscountRegistry ABI/schema/mapping coverage; final address/start-block wiring, deployment, sync, and health verification remain launch actions and blockers.
 
 This is an **internal focused review**, **not an external audit**. Mainnet deployment remains blocked until the blockers listed below are resolved and independently rechecked. No deployment, Arc on-chain write, signing, ownership transfer, role change, price update, Merkle-root update, campaign activation, production frontend switch, staging, commit, or push was performed by this review.
 
@@ -42,7 +42,7 @@ Deployment remains blocked by incomplete launch administration and infrastructur
 
 - **Severity:** BLOCKER
 - **Affected:** `scripts/v3/deployV3.js`, `docs/mainnet/ADMIN_OWNERSHIP_PLAN.md`, `docs/mainnet/DEPLOYMENT_RUNBOOK.md`
-- **Description:** The approved model requires a 2-of-3 Admin Safe, a 48-hour Timelock for controller/resolver upgrade authority, Safe-held pause authority, and complete removal of deployer protocol authority. The addresses are still TBD, the Timelock is not deployed, and `deployV3.js` initializes owners/admin roles to the deployer without performing or verifying the final handoff/revocation sequence.
+- **Description:** The approved 2-of-3 Admin Safe `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` is created and its exact owner set, threshold, chain, bytecode, and address separation are read-only verified. The Timelock and protocol contract addresses remain `TBD`, the Timelock is not deployed, and `deployV3.js` initializes owners/admin roles to the deployer without performing or verifying the final handoff/revocation sequence.
 - **Impact:** Running the current deploy script alone would leave the deployer with critical protocol authority and would not produce the approved launch state.
 - **Recommended fix:** Finalize and independently verify Safe owners/threshold/address and Timelock configuration; implement a separately reviewed handoff procedure or script with explicit role grants, ownership transfers, deployer revocations/renunciations, and final read-only assertions for every component. Treat deployment and handoff as one incomplete launch operation until all assertions pass.
 - **Code change required:** Yes, or a dedicated reviewed handoff/verification script.
@@ -186,7 +186,7 @@ Validation caveat: `test/v3/Integration.test.js` contains a smoke test that invo
 
 ## Required next actions
 
-1. Resolve FSR-01 and implement/read-review the complete Safe/Timelock handoff and deployer-revocation verification.
+1. Continue resolving FSR-01 by deploying and verifying the Timelock and implementing/read-reviewing the complete Safe/Timelock handoff and deployer-revocation verification; Safe creation/configuration is already read-only verified.
 2. Resolve FSR-02 and FSR-06 by pinning reviewed snapshot facts and splitting irreversible root freeze/activation into gated steps.
 3. Finalize deploy-grade RPC and Blockscout verification workflow.
 4. Prepare and review the mainnet indexer/subgraph deployment plan.
@@ -199,7 +199,7 @@ Validation caveat: `test/v3/Integration.test.js` contains a smoke test that invo
 - Arc on-chain write: not executed.
 - External signing: not executed.
 - Prices/root/activation/ownership/roles: not changed.
-- Safe/Timelock: not created or deployed.
+- Admin Safe: created and read-only configuration verified; Timelock: not deployed.
 - Environment/secrets/private keys/wallet credentials: not modified.
 - Deployment artifacts: not intentionally modified or created for Arc networks.
 - Production frontend: not switched.

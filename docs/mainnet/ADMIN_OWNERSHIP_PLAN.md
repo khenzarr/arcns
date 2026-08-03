@@ -4,7 +4,7 @@ Status: finalized administration and ownership plan for launch preparation only.
 
 ## Executive summary
 
-- ArcNS mainnet will use a new 2-of-3 Admin Safe, following the same structural pattern as the testnet admin Safe. The three owner inputs are selected in [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md), but the final mainnet Safe address and read-only configuration verification remain launch blockers. The testnet Safe address must not be reused.
+- ArcNS mainnet uses the verified new 2-of-3 Admin Safe `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`, following the same structural pattern as the testnet admin Safe. Safe creation and configuration verification are complete; the testnet Safe address must not be reused.
 - The deployer wallet will be the treasury recipient at launch as a deliberate operational simplification.
 - A standard 48-hour `TimelockController` is planned to hold controller and resolver upgrade authority. Its minimum delay will be `172800` seconds.
 - Emergency pause authority will be held by the Admin Safe.
@@ -20,27 +20,27 @@ The selected deployer/treasury EOA may be one Safe owner, but it must not be rec
 
 | Component / Role | Launch owner/admin | Later owner/admin if different | Reason | Launch blocker? |
 | ---------------- | ------------------ | ------------------------------ | ------ | --------------- |
-| Registry root owner | Admin Safe (address TBD) | Same | Root ownership is critical protocol authority and must be multisig-controlled. | Yes — Safe address and handoff pending |
-| `.arc` registrar owner | Admin Safe (address TBD) | Same | Registrar administration must not remain with the deployer. | Yes — Safe address and handoff pending |
-| `.circle` registrar owner | Admin Safe (address TBD) | Same | Registrar administration must not remain with the deployer. | Yes — Safe address and handoff pending |
-| `.arc` controller admin | Admin Safe (address TBD) | Same | Operational administration requires multisig approval. | Yes — Safe address and role handoff pending |
-| `.circle` controller admin | Admin Safe (address TBD) | Same | Operational administration requires multisig approval. | Yes — Safe address and role handoff pending |
+| Registry root owner | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Root ownership is critical protocol authority and must be multisig-controlled. | Yes — handoff pending |
+| `.arc` registrar owner | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Registrar administration must not remain with the deployer. | Yes — handoff pending |
+| `.circle` registrar owner | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Registrar administration must not remain with the deployer. | Yes — handoff pending |
+| `.arc` controller admin | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Operational administration requires multisig approval. | Yes — role handoff pending |
+| `.circle` controller admin | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Operational administration requires multisig approval. | Yes — role handoff pending |
 | `.arc` controller upgrader | 48-hour Timelock (address TBD) | Same | Upgrade operations require a visible 48-hour delay. | Yes — Timelock deployment and role handoff pending |
 | `.circle` controller upgrader | 48-hour Timelock (address TBD) | Same | Upgrade operations require a visible 48-hour delay. | Yes — Timelock deployment and role handoff pending |
-| `.arc` controller pauser | Admin Safe (address TBD) | Same | Emergency response must be prompt but protected by multisig approval. | Yes — Safe address and role handoff pending |
-| `.circle` controller pauser | Admin Safe (address TBD) | Same | Emergency response must be prompt but protected by multisig approval. | Yes — Safe address and role handoff pending |
-| Resolver admin | Admin Safe (address TBD) | Same | Resolver administration must be multisig-controlled. | Yes — Safe address and role handoff pending |
+| `.arc` controller pauser | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Emergency response must be prompt but protected by multisig approval. | Yes — role handoff pending |
+| `.circle` controller pauser | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Emergency response must be prompt but protected by multisig approval. | Yes — role handoff pending |
+| Resolver admin | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Resolver administration must be multisig-controlled. | Yes — role handoff pending |
 | Resolver upgrader | 48-hour Timelock (address TBD) | Same | Resolver upgrades require a visible 48-hour delay. | Yes — Timelock deployment and role handoff pending |
-| Reverse registrar owner | Admin Safe (address TBD) | Same | Reverse registrar ownership must not remain with the deployer. | Yes — Safe address and handoff pending |
-| PriceOracle owner | Admin Safe (address TBD) | 48-hour Timelock recommended after launch stabilization | Safe ownership simplifies launch coordination; later timelock custody reduces rapid-change risk. | Yes — Safe address and handoff pending |
-| DiscountRegistry owner | Admin Safe (address TBD) | Timelock migration may be considered only after launch is stable | Launch coordination includes controller authorization, root, freeze, and activation administration. | Yes — Safe address and handoff pending |
+| Reverse registrar owner | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same | Reverse registrar ownership must not remain with the deployer. | Yes — handoff pending |
+| PriceOracle owner | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | 48-hour Timelock recommended after launch stabilization | Safe ownership simplifies launch coordination; later timelock custody reduces rapid-change risk. | Yes — handoff pending |
+| DiscountRegistry owner | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Timelock migration may be considered only after launch is stable | Launch coordination includes controller authorization, root, freeze, and activation administration. | Yes — handoff pending |
 | DiscountRegistry authorized `.arc` controller | Final deployed `.arc` controller address (TBD), authorized by DiscountRegistry owner | Same unless a reviewed controller migration occurs | Only the finalized controller may consume `.arc` campaign claims. | Yes — deployed controller address and authorization pending |
 | DiscountRegistry authorized `.circle` controller | Final deployed `.circle` controller address (TBD), authorized by DiscountRegistry owner | Same unless a reviewed controller migration occurs | Only the finalized controller may consume `.circle` campaign claims. | Yes — deployed controller address and authorization pending |
 | Treasury recipient | Deployer wallet (`0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D`) | Treasury Safe recommended in a future reviewed migration | Operational simplicity at launch; this is revenue custody, not protocol administration. | Yes — final operational verification pending |
 | Deployer EOA | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D`; deployment/bootstrap only and treasury recipient at launch | Treasury recipient only, if retained as the final launch choice | The deployer must have no lasting privileged protocol authority after handoff. | Yes — operational and complete revoke verification pending |
-| Timelock proposer | Admin Safe (address TBD) | Same unless the authority model is deliberately revised | The Safe schedules reviewed critical operations. | Yes — Safe and Timelock deployment/configuration pending |
-| Timelock canceller | Admin Safe (address TBD) | Same unless the authority model is deliberately revised | The Safe can cancel unsafe or obsolete queued operations. | Yes — Safe and Timelock deployment/configuration pending |
-| Timelock executor | Admin Safe (address TBD) | May be changed later through a separately reviewed authority-model decision | A restricted executor is simpler for launch operations. | Yes — Safe and Timelock deployment/configuration pending |
+| Timelock proposer | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same unless the authority model is deliberately revised | The Safe schedules reviewed critical operations. | Yes — Timelock deployment/configuration pending |
+| Timelock canceller | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | Same unless the authority model is deliberately revised | The Safe can cancel unsafe or obsolete queued operations. | Yes — Timelock deployment/configuration pending |
+| Timelock executor | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) | May be changed later through a separately reviewed authority-model decision | A restricted executor is simpler for launch operations. | Yes — Timelock deployment/configuration pending |
 
 ## Treasury risk note
 
@@ -95,8 +95,8 @@ The strictly read-only `scripts/mainnet/assert-admin-handoff.js` must verify the
 
 ## Launch blockers
 
-- [ ] Final mainnet Admin Safe address is not yet recorded.
-- [ ] Selected Safe owner addresses and the 2-of-3 threshold are not yet verified against a mainnet Safe.
+- [x] Mainnet Admin Safe address is recorded and read-only verified.
+- [x] Selected Safe owner addresses and the 2-of-3 threshold are verified against the mainnet Safe.
 - [ ] Selected deployer/treasury address requires final operational verification.
 - [ ] Timelock is not deployed.
 - [ ] Timelock address is not known.

@@ -19,11 +19,11 @@ The consolidated launch inputs and Go/No-Go matrix are tracked in [`MAINNET_LAUN
 |---|---|---|---|
 | Deployer EOA | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected; final verification pending | Deployment/bootstrap only; no protocol authority after handoff. |
 | Treasury recipient | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected; final verification pending | Approved launch choice is the deployer wallet; treasury receipt is not protocol authority. |
-| Admin Safe address | `TBD` | Blocked | Must be the independently verified final mainnet Safe contract and must not equal the deployer or any owner EOA. |
-| Admin Safe owner 1 | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected; Safe verification pending | May also be the deployer/treasury EOA. |
-| Admin Safe owner 2 | `0xB2F6CfD0960A1fCC532DE1BF2Aafcc3077B4c396` | Selected; Safe verification pending | Exact owner-set read-back required. |
-| Admin Safe owner 3 | `0x1e19c1c829A387c2246567c0df264D81310d7775` | Selected; Safe verification pending | Exact owner-set read-back required. |
-| Admin Safe threshold | `2-of-3` | Approved model; verification pending | Final Safe configuration must be operationally verified before the ceremony. |
+| Admin Safe address | `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` | Created; read-only verified | Separate Arc mainnet contract; not equal to the deployer or any owner EOA. |
+| Admin Safe owner 1 | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Verified | Exact owner-set read-back matched; may also be the deployer/treasury EOA. |
+| Admin Safe owner 2 | `0xB2F6CfD0960A1fCC532DE1BF2Aafcc3077B4c396` | Verified | Exact owner-set read-back matched. |
+| Admin Safe owner 3 | `0x1e19c1c829A387c2246567c0df264D81310d7775` | Verified | Exact owner-set read-back matched. |
+| Admin Safe threshold | `2-of-3` | Verified | Read-only checker returned `PASS`. |
 | TimelockController address | `TBD` | Blocked | Timelock is not deployed. |
 | Timelock minDelay | `172800` seconds | Approved | Equivalent to 48 hours; deployed read-back must match. |
 | Registry address | `TBD` | Blocked | Unknown until mainnet deployment. |
@@ -43,9 +43,9 @@ The intended parameters for a separately reviewed future deployment are:
 | Parameter / role | Intended value |
 |---|---|
 | `minDelay` | `172800` seconds (48 hours) |
-| Proposers | Admin Safe (`TBD` address) |
-| Cancellers | Admin Safe (`TBD` address) |
-| Executors | Admin Safe (`TBD` address), for launch simplicity |
+| Proposers | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) |
+| Cancellers | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`) |
+| Executors | Admin Safe (`0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72`), for launch simplicity |
 | Admin | Final bootstrap and role-admin setup is `TBD` and must be separately reviewed against the exact OpenZeppelin contract version before deployment. Use a safe pattern that avoids leaving an unnecessary standing bootstrap admin after the intended roles and Timelock self-administration are verified. Do not infer or apply a final admin parameter from this plan. |
 
 The Timelock is a smart contract, not a wallet. It has no private key, and nobody signs as the Timelock. The Admin Safe proposes, cancels, and executes eligible operations according to the finalized role setup; the Timelock contract enforces the configured delay and performs an authorized action after that delay.
@@ -79,11 +79,11 @@ Deployment and handoff remain one incomplete launch operation until all required
 
 ## Read-only assertion script inputs
 
-The following names come directly from `scripts/mainnet/assert-admin-handoff.js`. The deployer and treasury inputs are selected but pending final verification; Safe, Timelock, and deployed-contract values remain `TBD`. Explicit deployed-contract variables take precedence; alternatively, `DEPLOYMENT_ARTIFACT_PATH` may point to a reviewed JSON file whose `contracts` object contains the corresponding camel-case keys. This plan does not create or modify that artifact.
+The following names come directly from `scripts/mainnet/assert-admin-handoff.js`. The deployer and treasury inputs are selected but pending final verification; the verified Safe address is recorded above, while Timelock and deployed-contract values remain `TBD`. Explicit deployed-contract variables take precedence; alternatively, `DEPLOYMENT_ARTIFACT_PATH` may point to a reviewed JSON file whose `contracts` object contains the corresponding camel-case keys. This plan does not create or modify that artifact.
 
 | Variable name | Expected value | Source of value | Known or TBD |
 |---|---|---|---|
-| `EXPECTED_ADMIN_SAFE_ADDRESS` | Final Admin Safe address | Independently verified Safe record | `TBD` |
+| `EXPECTED_ADMIN_SAFE_ADDRESS` | `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` | Independently verified Safe record | Verified |
 | `EXPECTED_TIMELOCK_ADDRESS` | Final TimelockController address | Verified Timelock deployment record | `TBD` |
 | `EXPECTED_TREASURY_RECIPIENT` | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected launch input; independently verify before use | Selected; final verification pending |
 | `EXPECTED_DEPLOYER_ADDRESS` | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Selected deployment operator input; independently verify before use | Selected; final verification pending |
@@ -107,7 +107,7 @@ The script's PASS result is necessary but not sufficient. It does **not** inspec
 PowerShell placeholder-only template using explicit contract addresses:
 
 ```powershell
-$env:EXPECTED_ADMIN_SAFE_ADDRESS = "<TBD_ADMIN_SAFE_ADDRESS>"
+$env:EXPECTED_ADMIN_SAFE_ADDRESS = "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72"
 $env:EXPECTED_TIMELOCK_ADDRESS = "<TBD_TIMELOCK_ADDRESS>"
 $env:EXPECTED_TREASURY_RECIPIENT = "<TBD_TREASURY_ADDRESS>"
 $env:EXPECTED_DEPLOYER_ADDRESS = "<TBD_DEPLOYER_ADDRESS>"
@@ -144,8 +144,8 @@ Do not run this template with placeholders. Before a future run, replace every p
 
 ## Remaining blockers
 
-- [ ] Final Admin Safe address is `TBD`.
-- [ ] Selected Safe owners and the 2-of-3 threshold are not yet verified against a mainnet Safe.
+- [x] Final Admin Safe address is recorded and read-only verified.
+- [x] Selected Safe owners and the 2-of-3 threshold are verified against the mainnet Safe.
 - [ ] Selected deployer/treasury address still requires final operational verification.
 - [ ] Timelock is not deployed.
 - [ ] Timelock address is `TBD`.
