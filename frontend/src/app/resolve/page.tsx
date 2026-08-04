@@ -585,6 +585,7 @@ export default function ResolvePage() {
             <Image
               src="/arcns/arcns-emblem.svg"
               alt=""
+              aria-hidden="true"
               width={250}
               height={250}
               priority
@@ -710,7 +711,13 @@ export default function ResolvePage() {
               }}
               aria-hidden="true"
             >
-              <Image src="/arcns/arcns-emblem.svg" alt="" width={40} height={40} />
+              <Image
+                src="/arcns/arcns-emblem.svg"
+                alt=""
+                aria-hidden="true"
+                width={40}
+                height={40}
+              />
             </div>
             <h2
               className="text-2xl font-bold"

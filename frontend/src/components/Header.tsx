@@ -163,6 +163,7 @@ export default function Header() {
             <Image
               src="/arcns/arcns-emblem.svg"
               alt=""
+              aria-hidden="true"
               width={28}
               height={28}
               priority

@@ -113,6 +113,7 @@ export default function HomePage() {
             <Image
               src="/arcns/arcns-emblem.svg"
               alt=""
+              aria-hidden="true"
               width={520}
               height={520}
               priority
