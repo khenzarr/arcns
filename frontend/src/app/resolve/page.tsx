@@ -44,9 +44,22 @@ import { isValidLabel } from "../../lib/domain";
 import { CopyButton } from "../../components/ui/CopyButton";
 import { TldBadge } from "../../components/ui/TldBadge";
 import { FooterIdentityLine } from "../../components/ui/FooterIdentityLine";
+import { JsonLd } from "../../components/JsonLd";
 
 export type ResolveQuery = { label: string; tld: SupportedTLD; domain: string };
 export type ResolveInputState = "pristine" | "invalid" | "malformed" | "unsupportedTld" | "valid";
+
+const resolvePageJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "https://arcname.services/resolve#webpage",
+  name: "ArcNS Resolve",
+  url: "https://arcname.services/resolve",
+  description: "Inspect ArcNS names and on-chain identity records on Arc Testnet.",
+  isPartOf: {
+    "@id": "https://arcname.services/#website",
+  },
+};
 
 /** Resolve accepts exactly one ASCII label plus one supported suffix. */
 export function parseResolveQuery(raw: string): ResolveQuery | { error: Exclude<ResolveInputState, "pristine" | "valid"> } {
@@ -565,6 +578,7 @@ export default function ResolvePage() {
           "radial-gradient(circle at 10% 12%, rgba(37,99,255,0.16), transparent 28%), radial-gradient(circle at 88% 10%, rgba(0,212,255,0.10), transparent 34%), linear-gradient(180deg, #050A18 0%, #071026 46%, #050A18 100%)",
       }}
     >
+      <JsonLd data={resolvePageJsonLd} />
       <div
         className="pointer-events-none absolute inset-0"
         aria-hidden="true"

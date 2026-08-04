@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import Image from "next/image";
 import SearchBar from "../components/SearchBar";
 import DomainCard from "../components/DomainCard";
+import { JsonLd } from "../components/JsonLd";
 import {
   isValidLabel,
   PRICING_TABLE,
@@ -84,6 +85,16 @@ const FEATURES = [
   },
 ] as const;
 
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": "https://arcname.services/#website",
+  name: "ArcNS",
+  alternateName: "Arc Name Services",
+  url: "https://arcname.services/",
+  description: "Human-readable .arc and .circle names on Arc Testnet.",
+};
+
 export default function HomePage() {
   const [pending, setPending] = useState<{ label: string; tld: SupportedTLD } | null>(null);
   const [committed, setCommitted] = useState<{ label: string; tld: SupportedTLD } | null>(null);
@@ -104,6 +115,7 @@ export default function HomePage() {
 
   return (
     <div className="arcns-landing-page">
+      <JsonLd data={websiteJsonLd} />
       <section className="arcns-landing-scene">
         <div className="arcns-landing-bg" aria-hidden="true" />
         <div className="arcns-orbit-lines" aria-hidden="true" />
