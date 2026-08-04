@@ -32,14 +32,15 @@ export default function MyDomainsPage() {
       <main className="arcns-domains-shell">
         <section className="arcns-domains-hero">
           <div className="arcns-domains-emblem" aria-hidden="true">
-  <Image
-    src="/arcns/arcns-emblem.svg"
-    alt=""
-    width={132}
-    height={132}
-    priority
-  />
-</div>
+            <Image
+              src="/arcns/arcns-emblem.svg"
+              alt=""
+              aria-hidden="true"
+              width={132}
+              height={132}
+              priority
+            />
+          </div>
 
           <div className="arcns-domains-title">
             <div className="arcns-domains-title-row">
