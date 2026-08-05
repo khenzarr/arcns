@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 type FooterLinkItem = {
   label: string;
@@ -192,7 +193,7 @@ export default function Footer() {
                     ArcNS
                   </p>
                   <p className="text-sm text-[var(--arcns-text-secondary)]">
-                    Human-readable names for Arc Testnet addresses.
+                    Human-readable names for addresses on Arc.
                   </p>
                 </div>
               </div>
@@ -204,7 +205,9 @@ export default function Footer() {
               </div>
 
               <div className="space-y-2 text-sm leading-6 text-[var(--arcns-text-secondary)]">
-                <p>Live on Arc Testnet · Pre-mainnet · External audit pending</p>
+                <p>
+                  Live on {NETWORK_DISPLAY.networkDisplayName} · {NETWORK_DISPLAY.environmentStatusLabel} · External audit pending
+                </p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
                   ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with,
                   endorsed by, or sponsored by Circle unless separately agreed in writing.

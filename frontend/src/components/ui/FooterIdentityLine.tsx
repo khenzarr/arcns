@@ -6,6 +6,7 @@
  */
 
 import React from "react";
+import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
 import { cn } from "./utils";
 
 interface FooterIdentityLineProps {
@@ -29,7 +30,9 @@ export function FooterIdentityLine({ className }: FooterIdentityLineProps) {
         {" · "}
         Identity for everything on Arc
         {" · "}
-        <span className="font-mono text-xs">Arc Testnet · Chain ID 5042002</span>
+        <span className="font-mono text-xs">
+          {NETWORK_DISPLAY.networkDisplayName} · {NETWORK_DISPLAY.chainIdLabel}
+        </span>
       </p>
     </footer>
   );

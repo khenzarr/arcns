@@ -12,6 +12,7 @@ import {
   type SupportedTLD,
 } from "../lib/normalization";
 import { ACTIVE_CHAIN_ID } from "../lib/chainConfig";
+import { NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 const DISPLAY_PRICING_TABLE = ACTIVE_CHAIN_ID === 5042
   ? MAINNET_PRICING.map((row) => ({ len: row.label, price: `${row.display.replace("/yr", "")} / year`, annual: row.annualUSDC }))
@@ -19,8 +20,8 @@ const DISPLAY_PRICING_TABLE = ACTIVE_CHAIN_ID === 5042
 
 const TRUST_ITEMS = [
   {
-    title: "Arc Testnet",
-    sub: "Chain ID 5042002",
+    title: NETWORK_DISPLAY.networkDisplayName,
+    sub: NETWORK_DISPLAY.chainIdLabel,
     accent: "var(--arcns-cyan)",
     icon: (
       <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -31,7 +32,7 @@ const TRUST_ITEMS = [
   },
   {
     title: "Pay with USDC",
-    sub: "Testnet USDC. On-chain.",
+    sub: `${NETWORK_DISPLAY.currencyDisplayName}. On-chain.`,
     accent: "#3BA3FF",
     icon: (
       <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -92,7 +93,7 @@ const websiteJsonLd = {
   name: "ArcNS",
   alternateName: "Arc Name Services",
   url: "https://arcname.services/",
-  description: "Human-readable .arc and .circle names on Arc Testnet.",
+  description: "Human-readable .arc and .circle names on Arc.",
 };
 
 export default function HomePage() {
@@ -136,11 +137,11 @@ export default function HomePage() {
           <div className="arcns-hero-copy">
             <div className="arcns-live-badge">
               <span className="arcns-pulse-dot" aria-hidden="true" />
-              Live on Arc Testnet · Chain ID 5042002
+              Live on {NETWORK_DISPLAY.networkDisplayName} · {NETWORK_DISPLAY.chainIdLabel}
             </div>
 
             <h1 className="arcns-hero-headline">
-              Human-readable names <span className="arcns-gradient-text">on Arc Testnet</span>
+              Human-readable names <span className="arcns-gradient-text">on Arc</span>
             </h1>
 
             <p className="arcns-hero-subtitle">
@@ -150,8 +151,8 @@ export default function HomePage() {
               Receive an ERC-721 name NFT for your selected registration period.
             </p>
             <p className="arcns-hero-disclaimer">
-              Independent Arc Testnet app. <strong>.circle</strong> is an ArcNS testnet namespace; no Circle
-              affiliation or endorsement is implied.
+              Independent ArcNS app for <strong>.arc</strong> and <strong>.circle</strong> names. Current network:{" "}
+              {NETWORK_DISPLAY.networkDisplayName}. No Circle affiliation or endorsement is implied.
             </p>
           </div>
 
