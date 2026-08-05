@@ -6,6 +6,7 @@
  */
 
 import React from "react";
+import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
 import { cn } from "./utils";
 
 export type NetworkVariant = "testnet" | "wrong-network";
@@ -19,7 +20,7 @@ interface NetworkBadgeProps {
 
 const variantConfig: Record<NetworkVariant, { label: string; style: React.CSSProperties }> = {
   testnet: {
-    label: "Arc Testnet",
+    label: NETWORK_DISPLAY.networkDisplayName,
     style: {
       background: "rgba(120, 160, 255, 0.10)",
       border: "1px solid rgba(120, 160, 255, 0.20)",
