@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   description:
     "ArcNS (Arc Name Services) is an independent public testnet app for registering and resolving human-readable .arc and .circle names on Arc Testnet.",
   metadataBase: new URL("https://arcname.services"),
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: "https://arcname.services/",
