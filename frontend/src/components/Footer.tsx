@@ -21,10 +21,10 @@ const FOOTER_SECTIONS: FooterSection[] = [
   {
     title: "ArcNS",
     links: [
-      { label: "Search Names", href: "/" },
+      { label: "Search Names", href: "/app" },
       { label: "My Domains", href: "/my-domains" },
       { label: "Resolve", href: "/resolve" },
-      { label: "Public Testnet App", href: "https://arcname.services", external: true },
+      { label: "Public Testnet App", href: "/app" },
       { label: "GitHub", href: GITHUB_REPO, external: true },
     ],
   },
@@ -140,7 +140,7 @@ function FooterLink({ item }: { item: FooterLinkItem }) {
           aria-hidden="true"
           className="text-[11px] text-[var(--arcns-text-muted)] transition group-hover:text-[var(--arcns-cyan)]"
         >
-          ↗
+          -&gt;
         </span>
       </a>
     );
@@ -206,7 +206,7 @@ export default function Footer() {
 
               <div className="space-y-2 text-sm leading-6 text-[var(--arcns-text-secondary)]">
                 <p>
-                  Live on {NETWORK_DISPLAY.networkDisplayName} · {NETWORK_DISPLAY.environmentStatusLabel} · External audit pending
+                  Live on {NETWORK_DISPLAY.networkDisplayName} - {NETWORK_DISPLAY.environmentStatusLabel} - External audit pending
                 </p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
                   ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with,

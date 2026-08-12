@@ -42,7 +42,7 @@ function WalletButton() {
           }}
           title={address}
         >
-          {address.slice(0, 6)}…{address.slice(-4)}
+          {address.slice(0, 6)}...{address.slice(-4)}
         </span>
 
         <button
@@ -70,11 +70,11 @@ function WalletButton() {
         <button
           onClick={() => connect({ connector: injectedConnector })}
           disabled={isPending}
-          aria-label={isPending ? "Connecting wallet…" : "Connect with MetaMask"}
+          aria-label={isPending ? "Connecting wallet..." : "Connect with MetaMask"}
           className="px-4 py-2 text-sm font-semibold text-white rounded-[var(--arcns-radius-md)] disabled:opacity-40 transition-all duration-150 hover:opacity-90 active:scale-[0.98]"
           style={{ background: "var(--arcns-gradient-primary)" }}
         >
-          {isPending ? "Connecting…" : "Connect Wallet"}
+          {isPending ? "Connecting..." : "Connect Wallet"}
         </button>
       ) : null}
 
@@ -82,7 +82,7 @@ function WalletButton() {
         <button
           onClick={() => connect({ connector: wcConnector })}
           disabled={isPending}
-          aria-label={isPending ? "Connecting wallet…" : "Connect with WalletConnect"}
+          aria-label={isPending ? "Connecting wallet..." : "Connect with WalletConnect"}
           className="px-4 py-2 text-sm font-semibold rounded-[var(--arcns-radius-md)] border disabled:opacity-40 transition-all duration-150 hover:border-[var(--arcns-border-strong)] hover:text-[var(--arcns-text-primary)]"
           style={{
             background: "transparent",
@@ -90,7 +90,7 @@ function WalletButton() {
             color: "var(--arcns-text-secondary)",
           }}
         >
-          {isPending ? "Connecting…" : "WalletConnect"}
+          {isPending ? "Connecting..." : "WalletConnect"}
         </button>
       ) : null}
     </div>
@@ -131,6 +131,19 @@ function NavLink({
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname() ?? "";
+  const isLanding = pathname === "/";
+  const navigation = isLanding
+    ? [
+        { href: "/#identity", label: "Why ArcNS" },
+        { href: "/#experience", label: "Experience" },
+        { href: "/#how", label: "How it works" },
+        { href: "/#resources", label: "Resources" },
+      ]
+    : [
+        { href: "/app", label: "Search" },
+        { href: "/my-domains", label: "My Domains" },
+        { href: "/resolve", label: "Resolve" },
+      ];
 
   return (
     <header
@@ -194,13 +207,15 @@ export default function Header() {
           className="hidden md:flex items-center gap-7"
           aria-label="Main navigation"
         >
-          <NavLink href="/">Search</NavLink>
-          <NavLink href="/my-domains">My Domains</NavLink>
-          <NavLink href="/resolve">Resolve</NavLink>
+          {navigation.map(item => <NavLink key={item.href} href={item.href}>{item.label}</NavLink>)}
         </nav>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          <WalletButton />
+          {isLanding ? (
+            <Link href="/app" className="arcns-header-launch arcns-focus-ring">Launch App <span aria-hidden="true">-&gt;</span></Link>
+          ) : (
+            <WalletButton />
+          )}
 
           <button
             className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-[var(--arcns-radius-sm)] border transition-all duration-150"
@@ -261,11 +276,7 @@ export default function Header() {
           }}
           aria-label="Mobile navigation"
         >
-          {[
-            { href: "/", label: "Search" },
-            { href: "/my-domains", label: "My Domains" },
-            { href: "/resolve", label: "Resolve" },
-          ].map(({ href, label }) => {
+          {navigation.map(({ href, label }) => {
             const isActive =
               href === "/" ? pathname === "/" : pathname.startsWith(href);
 
