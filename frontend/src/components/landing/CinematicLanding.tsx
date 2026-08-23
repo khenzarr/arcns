@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { MAINNET_PRICING } from "@/lib/normalization";
 
 const SUFFIXES = [".arc", ".circle"] as const;
 type Suffix = (typeof SUFFIXES)[number];
@@ -11,8 +12,15 @@ const Arrow = () => <span aria-hidden="true">-&gt;</span>;
 export default function CinematicLanding() {
   const [name, setName] = useState("yourname");
   const [suffix, setSuffix] = useState<Suffix>(".arc");
+  const [years, setYears] = useState(1);
   const cleanName = useMemo(() => name.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 24), [name]);
   const fullName = `${cleanName || "yourname"}${suffix}`;
+  const annualPrice = useMemo(() => {
+    const characterCount = [...(cleanName || "yourname")].length;
+    const tier = MAINNET_PRICING.find(item => item.chars === Math.min(characterCount, 5));
+    return Number((tier ?? MAINNET_PRICING[4]).annualUSDC) / 1_000_000;
+  }, [cleanName]);
+  const totalPrice = annualPrice * years;
 
   return (
     <div className="arcns-cinematic" id="top">
@@ -41,16 +49,27 @@ export default function CinematicLanding() {
       </section>
 
       <section className="cinematic-experience" id="experience" aria-labelledby="experience-title">
-        <div className="cinematic-section-heading cinematic-shell"><div><span>01</span><p>Visual experience</p></div><h2 id="experience-title">Imagine your identity<br />on Arc.</h2><p>This preview is a visual simulation. It never checks availability, connects a wallet, quotes a price, or submits a transaction.</p></div>
+        <div className="cinematic-section-heading cinematic-shell"><div><span>01</span><p>Interactive experience</p></div><h2 id="experience-title">Claim your place<br />on Arc.</h2><p>Explore the full registration flow with a safe, simulated transaction. No wallet or testnet funds required.</p></div>
         <div className="cinematic-app-window cinematic-shell">
-          <div className="cinematic-app-topbar"><div className="cinematic-mini-brand"><Image src="/arcns/arcns-emblem.svg" alt="" width={32} height={32} />Arc<span>NS</span></div><div className="cinematic-network-pill"><i aria-hidden="true" />Arc Testnet</div><Link className="cinematic-mini-launch" href="/app">Open real app</Link></div>
+          <div className="cinematic-app-topbar"><div className="cinematic-mini-brand"><Image src="/arcns/arcns-emblem.svg" alt="" width={32} height={32} />Arc<span>NS</span></div><div className="cinematic-network-pill"><i aria-hidden="true" />Arc Testnet</div><Link className="cinematic-demo-connect" href="/app">Connect</Link></div>
           <div className="cinematic-app-body">
-            <aside aria-label="Simulation status"><strong>Demo mode</strong><p>Visual-only preview. No wallet or blockchain interaction.</p><Link href="/resolve">Open real resolver <Arrow /></Link></aside>
+            <aside className="cinematic-demo-sidebar" aria-label="Demo navigation">
+              <nav>
+                <button className="active" type="button"><span aria-hidden="true">⌕</span>Register</button>
+                <Link href="/resolve"><span aria-hidden="true">◇</span>Resolve</Link>
+              </nav>
+              <div className="cinematic-demo-note"><strong>Demo mode</strong><p>Interactions are simulated and never touch your wallet.</p></div>
+            </aside>
             <div className="cinematic-register-panel">
-              <p className="cinematic-panel-kicker">Try the visual preview</p><h3>Your identity starts here.</h3><p>Enter an example label to preview how an ArcNS name could look.</p>
-              <div className="cinematic-search-box"><label htmlFor="cinematic-name">Example name</label><div><input id="cinematic-name" value={name} onChange={event => setName(event.target.value)} autoComplete="off" /><span className="cinematic-suffix-select" aria-label="Example namespace">{SUFFIXES.map(item => <button key={item} type="button" className={suffix === item ? "selected" : ""} onClick={() => setSuffix(item)} aria-pressed={suffix === item}>{item}</button>)}</span></div></div>
-              <div className="cinematic-preview-card" aria-live="polite"><span>Visual example</span><strong>{fullName}</strong><small>Availability and pricing are not checked here.</small></div>
-              <Link className="cinematic-primary-button cinematic-wide-button" href="/app">Search in the real app <Arrow /></Link>
+              <p className="cinematic-panel-kicker">Register a name</p><h3>Your identity starts here.</h3><p>Search for a memorable name and make it yours.</p>
+              <div className="cinematic-search-box cinematic-demo-search"><label className="sr-only" htmlFor="cinematic-name">Name to register</label><div><input id="cinematic-name" value={name} onChange={event => setName(event.target.value)} autoComplete="off" /><span className="cinematic-suffix-select" aria-label="Example namespace">{SUFFIXES.map(item => <button key={item} type="button" className={suffix === item ? "selected" : ""} onClick={() => setSuffix(item)} aria-pressed={suffix === item}>{item}</button>)}</span><button className="cinematic-search-submit" type="button" aria-label={`Preview ${fullName}`}>→</button></div></div>
+              <div className="cinematic-availability" aria-live="polite"><span><i aria-hidden="true" /><b>{fullName}</b><small>is available</small></span><strong>{annualPrice} USDC <small>/ year · mainnet preview</small></strong></div>
+              <div className="cinematic-demo-quote">
+                <div className="cinematic-period-row"><span>Registration period</span><div><button type="button" onClick={() => setYears(value => Math.max(1, value - 1))} disabled={years === 1} aria-label="Decrease registration period">−</button><strong>{years} {years === 1 ? "year" : "years"}</strong><button type="button" onClick={() => setYears(value => Math.min(10, value + 1))} disabled={years === 10} aria-label="Increase registration period">+</button></div></div>
+                <div className="cinematic-total-row"><span>Total</span><strong>{totalPrice.toFixed(2)} USDC</strong></div>
+                <Link className="cinematic-primary-button cinematic-wide-button" href={`/app?name=${encodeURIComponent(cleanName || "yourname")}&suffix=${encodeURIComponent(suffix)}`}>Connect wallet to continue <span aria-hidden="true">↗</span></Link>
+                <small className="cinematic-simulation-label"><i aria-hidden="true" />Simulated transaction · No funds required</small>
+              </div>
             </div>
           </div>
         </div>

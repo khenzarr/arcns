@@ -157,7 +157,7 @@ export default function Header() {
         WebkitBackdropFilter: "blur(20px)",
       }}
     >
-      <div className="w-full px-8 lg:px-16 h-16 flex items-center justify-between gap-4">
+      <div className="w-full px-2 sm:px-8 lg:px-16 h-16 flex items-center justify-between gap-2 sm:gap-4">
         <Link
           href="/"
           className="flex items-center gap-3 flex-shrink-0 group"
