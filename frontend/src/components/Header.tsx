@@ -141,8 +141,10 @@ export default function Header() {
       ]
     : [
         { href: "/app", label: "Search" },
+        { href: "/send", label: "Send" },
         { href: "/my-domains", label: "My Domains" },
         { href: "/resolve", label: "Resolve" },
+        { href: "/developers/integrate", label: "Developers" },
       ];
 
   return (
@@ -204,7 +206,7 @@ export default function Header() {
         </Link>
 
         <nav
-          className="hidden md:flex items-center gap-7"
+          className="hidden lg:flex items-center gap-5 xl:gap-7"
           aria-label="Main navigation"
         >
           {navigation.map(item => <NavLink key={item.href} href={item.href}>{item.label}</NavLink>)}
@@ -218,7 +220,7 @@ export default function Header() {
           )}
 
           <button
-            className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-[var(--arcns-radius-sm)] border transition-all duration-150"
+            className="lg:hidden flex flex-col justify-center items-center w-9 h-9 gap-1.5 rounded-[var(--arcns-radius-sm)] border transition-all duration-150"
             style={{
               background: "transparent",
               borderColor: mobileMenuOpen
@@ -269,7 +271,7 @@ export default function Header() {
       {mobileMenuOpen ? (
         <nav
           id="mobile-nav"
-          className="md:hidden border-t px-4 py-3 flex flex-col gap-1"
+          className="lg:hidden border-t px-4 py-3 flex flex-col gap-1"
           style={{
             background: "rgba(5, 10, 24, 0.96)",
             borderColor: "var(--arcns-border-default)",

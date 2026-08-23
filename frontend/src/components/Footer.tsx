@@ -22,6 +22,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
     title: "ArcNS",
     links: [
       { label: "Search Names", href: "/app" },
+      { label: "Send Assets", href: "/send" },
       { label: "My Domains", href: "/my-domains" },
       { label: "Resolve", href: "/resolve" },
       { label: "Public Testnet App", href: "/app" },
@@ -68,8 +69,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
       },
       {
         label: "Integration Docs",
-        href: `${GITHUB_REPO}/tree/master/docs/integration`,
-        external: true,
+        href: "/developers/integrate",
       },
       {
         label: "Public Adapter",
