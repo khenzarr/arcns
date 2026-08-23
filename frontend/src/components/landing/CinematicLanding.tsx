@@ -59,7 +59,7 @@ export default function CinematicLanding() {
       <section className="cinematic-identity cinematic-shell" id="identity" aria-labelledby="identity-title">
         <div className="cinematic-section-heading cinematic-compact"><div><span>02</span><p>Identity layer</p></div><h2 id="identity-title">More than<br />an address.</h2></div>
         <div className="cinematic-feature-grid">
-          <article className="cinematic-feature-main"><span aria-hidden="true">ID</span><p>Human-readable identity</p><h3>Use a memorable name instead of a long hexadecimal address.</h3><div><span>0x9c90...ACBC</span><b aria-hidden="true">-&gt;</b><strong>yourname.arc</strong></div></article>
+          <article className="cinematic-feature-main"><span aria-hidden="true">ID</span><p>Human-readable identity</p><h3>Use a memorable name instead of a long hexadecimal address.</h3><div><span>0x9c90...ACBC</span><b aria-hidden="true">-&gt;</b><strong>yourname.arc</strong></div><Link className="cinematic-text-link" href="/send">Send assets to a name <Arrow /></Link></article>
           <article><span aria-hidden="true">NFT</span><p>Onchain ownership</p><h3>Registered names are represented by ERC-721 ownership for the selected registration period.</h3></article>
           <article><span aria-hidden="true">OPEN</span><p>Forward and reverse resolution</p><h3>Use the production app to configure and inspect name records on Arc Testnet.</h3></article>
         </div>
@@ -69,7 +69,7 @@ export default function CinematicLanding() {
         <div className="cinematic-section-heading cinematic-light"><div><span>03</span><p>How it works</p></div><h2 id="how-title">From search to testnet identity<br />in three steps.</h2></div>
         <div className="cinematic-steps"><article><b>01</b><span aria-hidden="true">FIND</span><h3>Find a name</h3><p>Search the real application for an available <code>.arc</code> or <code>.circle</code> name.</p></article><article><b>02</b><span aria-hidden="true">SET</span><h3>Register on testnet</h3><p>Review the verified in-app quote and confirm the testnet registration flow.</p></article><article><b>03</b><span aria-hidden="true">OK</span><h3>Resolve it</h3><p>Inspect ownership and configure supported records using ArcNS application tools.</p></article></div>
         <div className="cinematic-closing"><div><Image src="/arcns/arcns-emblem.svg" alt="" width={100} height={100} /><h2>Make yourself<br /><em>recognizable.</em></h2></div><Link className="cinematic-primary-button cinematic-pale-button" href="/app">Launch App <Arrow /></Link></div>
-        <nav className="cinematic-resource-links" id="resources" aria-label="ArcNS resources"><Link href="/app">Search names</Link><Link href="/resolve">Resolve</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/trademark">Trademark</Link></nav>
+        <nav className="cinematic-resource-links" id="resources" aria-label="ArcNS resources"><Link href="/app">Search names</Link><Link href="/send">Send assets</Link><Link href="/resolve">Resolve</Link><Link href="/developers/integrate">Integrate ArcNS</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/trademark">Trademark</Link></nav>
       </div></section>
     </div>
   );
