@@ -136,9 +136,10 @@ describe("errors — hook error flow", () => {
     expect(category).toBe("USER_REJECTION");
   });
 
-  it("chain mismatch message is ArcNS-branded", () => {
+  it("chain mismatch message points users to Arc", () => {
     const msg = userFacingMessage(ARC_ERR.CHAIN_MISMATCH);
-    expect(msg).toContain("Arc Testnet");
+    expect(msg).toContain("Arc");
+    expect(msg).not.toContain("Testnet");
     expect(msg.toLowerCase()).not.toContain("ens");
   });
 

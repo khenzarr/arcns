@@ -267,7 +267,7 @@ describe("Preservation — SuccessModal: confirmation line behavior on non-buggy
 // Written BEFORE any fix is applied.
 // FAILS on unfixed code — failure confirms the bug exists.
 //
-// Bug: The gradient header <p> sub-headline is static ("Your domain is live on Arc Testnet")
+// Bug: The gradient header <p> sub-headline is static ("Your name is live on Arc")
 // and never reacts to resolvedToWallet. Even when resolvedToWallet = true (addr confirmed),
 // the sub-headline does not update to reflect the resolved state.
 //
@@ -279,7 +279,7 @@ describe("Bug 1 (arcns-ux-polish) — SuccessModal sub-headline does not reflect
   });
 
   it(
-    "sub-headline should read 'Registered and resolving to your wallet' when resolvedToWallet=true (FAILS on unfixed code — sub-headline still reads 'Your domain is live on Arc Testnet')",
+    "sub-headline should read 'Registered and resolving to your wallet' when resolvedToWallet=true",
     async () => {
       // Mock useReadContract to return connectedAddress immediately so resolvedToWallet = true
       (useReadContract as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -303,10 +303,10 @@ describe("Bug 1 (arcns-ux-polish) — SuccessModal sub-headline does not reflect
       // EXPECTED (correct) behavior: sub-headline should read resolution-confirmed copy.
       //
       // On UNFIXED code: this assertion FAILS because the <p> sub-headline is hardcoded
-      // to "Your domain is live on Arc Testnet" and never branches on resolvedToWallet.
+      // to the default launch message and never branches on resolvedToWallet.
       //
       // Counterexample: SuccessModal({ resolvedToWallet: true })
-      // → sub-headline reads "Your domain is live on Arc Testnet" — BUG CONFIRMED.
+      // → sub-headline reads the default launch message — BUG CONFIRMED.
       const resolvedSubHeadline = screen.queryByText(/Registered and resolving to your wallet/i);
       expect(resolvedSubHeadline).not.toBeNull();
 
@@ -330,13 +330,13 @@ describe("Preservation (arcns-ux-polish) — SuccessModal sub-headline and secon
   });
 
   it(
-    "sub-headline reads 'Your domain is live on Arc Testnet' when resolvedToWallet=false (addr=ZERO_ADDRESS) — preservation",
+    "sub-headline reads 'Your name is live on Arc' when resolvedToWallet=false (addr=ZERO_ADDRESS) — preservation",
     async () => {
       /**
        * Validates: Requirements 2.2
        *
        * Preservation case: addr is ZERO_ADDRESS → resolvedToWallet = false.
-       * The sub-headline must remain "Your domain is live on Arc Testnet".
+       * The sub-headline must remain "Your name is live on Arc".
        * This is the non-buggy path — must pass on unfixed code.
        */
       (useReadContract as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -352,7 +352,7 @@ describe("Preservation (arcns-ux-polish) — SuccessModal sub-headline and secon
 
       await new Promise((r) => setTimeout(r, 20));
 
-      const subHeadline = screen.queryByText(/Your domain is live on Arc Testnet/i);
+      const subHeadline = screen.queryByText(/Your name is live on Arc/i);
       expect(subHeadline).not.toBeNull();
 
       unmount();

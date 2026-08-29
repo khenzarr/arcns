@@ -1,18 +1,10 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-<defs>
-  <linearGradient id="arcGrad" x1="256" y1="58" x2="256" y2="432" gradientUnits="userSpaceOnUse">
-    <stop offset="0" stop-color="#150A7A"/>
-    <stop offset="0.48" stop-color="#2563FF"/>
-    <stop offset="1" stop-color="#00E6FF"/>
-  </linearGradient>
-  <linearGradient id="nodeGrad" x1="256" y1="150" x2="256" y2="380" gradientUnits="userSpaceOnUse">
-    <stop offset="0" stop-color="#00E6FF"/>
-    <stop offset="1" stop-color="#2563FF"/>
-  </linearGradient>
-</defs>
-<path d="M111 394 C102 267 153 111 256 58 C359 111 410 267 401 394" stroke="url(#arcGrad)" stroke-width="46" stroke-linecap="round"/>
-<path d="M68 419 C147 374 209 366 256 366 C303 366 365 374 444 419" stroke="url(#arcGrad)" stroke-width="23" stroke-linecap="round"/>
-<circle cx="256" cy="174" r="28" fill="url(#nodeGrad)"/>
-<rect x="244" y="199" width="24" height="115" rx="12" fill="url(#nodeGrad)"/>
-<circle cx="256" cy="366" r="36" fill="white" stroke="url(#nodeGrad)" stroke-width="16"/>
+  <defs>
+    <linearGradient id="flashnames-icon" x1="126" y1="82" x2="390" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C5CFF"/><stop offset="0.48" stop-color="#2463FF"/><stop offset="1" stop-color="#00E6FF"/>
+    </linearGradient>
+  </defs>
+  <rect x="38" y="38" width="436" height="436" rx="132" fill="#071126" stroke="url(#flashnames-icon)" stroke-opacity="0.42" stroke-width="4"/>
+  <path d="M300 82L142 286H246L208 430L370 216H266L300 82Z" fill="url(#flashnames-icon)"/>
+  <circle cx="142" cy="287" r="17" fill="#AFC7FF"/><circle cx="370" cy="216" r="17" fill="#00E6FF"/><circle cx="208" cy="430" r="13" fill="#00E6FF"/>
 </svg>

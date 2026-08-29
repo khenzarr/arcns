@@ -24,6 +24,6 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
       },
     ],
-    sitemap: "https://arcname.services/sitemap.xml",
+    sitemap: "https://flashnames.space/sitemap.xml",
   };
 }

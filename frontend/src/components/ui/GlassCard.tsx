@@ -1,8 +1,8 @@
 /**
- * GlassCard.tsx — ArcNS frosted glass card surface.
+ * GlassCard.tsx — FlashNames frosted glass card surface.
  *
  * Purely visual wrapper. No business logic.
- * Uses ArcNS design tokens from globals.css.
+ * Uses FlashNames design tokens from globals.css.
  */
 
 import React from "react";

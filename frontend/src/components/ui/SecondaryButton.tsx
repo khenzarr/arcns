@@ -1,5 +1,5 @@
 /**
- * SecondaryButton.tsx — ArcNS outline / ghost button.
+ * SecondaryButton.tsx — FlashNames outline / ghost button.
  *
  * Purely visual. No navigation or business logic.
  * Supports all standard button props.

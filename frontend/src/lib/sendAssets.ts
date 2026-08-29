@@ -1,4 +1,5 @@
 import { formatUnits, getAddress, isAddress, parseUnits } from "viem";
+import { ADDR_USDC } from "./generated-contracts";
 
 export type SendAsset = {
   address: `0x${string}`;
@@ -8,29 +9,32 @@ export type SendAsset = {
   provenance: "circle" | "detected" | "custom";
 };
 
-export const ARC_TESTNET_SEND_ASSETS: readonly SendAsset[] = [
+const configuredCircleAssets: SendAsset[] = [
   {
-    address: "0x3600000000000000000000000000000000000000",
+    address: ADDR_USDC,
     symbol: "USDC",
     name: "USD Coin",
     decimals: 6,
     provenance: "circle",
   },
-  {
-    address: "0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a",
-    symbol: "EURC",
-    name: "Euro Coin",
-    decimals: 6,
-    provenance: "circle",
-  },
-  {
-    address: "0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF",
-    symbol: "cirBTC",
-    name: "Circle Wrapped Bitcoin",
-    decimals: 8,
-    provenance: "circle",
-  },
+];
+
+const optionalCircleAssets = [
+  { address: process.env.NEXT_PUBLIC_EURC_ADDRESS, symbol: "EURC", name: "Euro Coin", decimals: 6 },
+  { address: process.env.NEXT_PUBLIC_CIRBTC_ADDRESS, symbol: "cirBTC", name: "Circle Wrapped Bitcoin", decimals: 8 },
 ] as const;
+
+for (const asset of optionalCircleAssets) {
+  if (asset.address && isAddress(asset.address)) {
+    configuredCircleAssets.push({
+      ...asset,
+      address: getAddress(asset.address),
+      provenance: "circle",
+    });
+  }
+}
+
+export const DEFAULT_SEND_ASSETS: readonly SendAsset[] = configuredCircleAssets;
 
 export type ResolutionResult = {
   input: string;
@@ -41,7 +45,7 @@ export type ResolutionResult = {
 
 type FetchLike = typeof fetch;
 
-export function isArcNSName(value: string): boolean {
+export function isFlashNamesName(value: string): boolean {
   const normalized = value.trim().toLowerCase();
   return normalized.endsWith(".arc") || normalized.endsWith(".circle");
 }
@@ -61,7 +65,7 @@ export async function resolveSendRecipient(
     };
   }
 
-  if (!isArcNSName(input)) {
+  if (!isFlashNamesName(input)) {
     throw new Error("Enter a valid 0x address, .arc name, or .circle name.");
   }
 
@@ -75,7 +79,7 @@ export async function resolveSendRecipient(
   };
 
   if (!response.ok || body.status !== "ok" || !body.address || !isAddress(body.address)) {
-    throw new Error(body.hint || "This ArcNS name does not have a receiving address.");
+    throw new Error(body.hint || "This FlashNames name does not have a receiving address.");
   }
 
   return {

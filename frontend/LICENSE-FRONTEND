@@ -1,8 +1,8 @@
 Business Source License 1.1
 
-Licensor:             ArcNS contributors
-Licensed Work:        ArcNS Frontend
-                      The Licensed Work is (c) 2026 ArcNS contributors
+Licensor:             FlashNames contributors
+Licensed Work:        FlashNames Frontend
+                      The Licensed Work is (c) 2026 FlashNames contributors
 Change Date:          2030-04-26
 Change License:       MIT License
 
@@ -18,12 +18,12 @@ of it, for the following purposes without restriction:
   - Internal testing and local development
   - Non-commercial experimentation and personal projects
   - Hackathon participation and grant demonstrations
-  - Building integrations that consume the ArcNS protocol or public API
+  - Building integrations that consume the FlashNames protocol or public API
     (i.e. calling the deployed contracts or the hosted resolution API)
 
 You may NOT use the Licensed Work, or any substantial portion of it, to
 operate a competing commercial naming service or to deploy a production
-service that replicates the core functionality of the ArcNS frontend for
+service that replicates the core functionality of the FlashNames frontend for
 commercial gain, without a separate written license from the Licensor.
 
 -----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 {
-  "name": "arcns-subgraph",
+  "name": "flashnames-subgraph",
   "version": "2.0.0",
-  "description": "ArcNS v3 canonical subgraph — target: arcnslatest",
+  "description": "FlashNames canonical subgraph — legacy testnet target: arcnslatest",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",

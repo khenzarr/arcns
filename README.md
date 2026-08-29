@@ -1,21 +1,21 @@
-# ArcNS — Arc Name Service
+# FlashNames
 
-**Independent decentralized naming service built on Arc Testnet.**
+**An independent decentralized naming protocol built on Arc.**
 
-ArcNS maps human-readable names ending in `.arc` and `.circle` to on-chain addresses, issues names as ERC-721 NFTs for selected registration periods, and lets any address set a verified primary name.
+FlashNames maps human-readable names ending in `.arc` and `.circle` to onchain addresses, issues names as ERC-721 NFTs for selected registration periods, and lets any address set a verified primary name.
 
-ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with, endorsed by, or sponsored by Circle unless separately agreed in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.
+FlashNames is an independent naming protocol built on Arc. FlashNames is not affiliated with, endorsed by, sponsored by, or operated by Circle or the Arc team unless separately agreed in writing. Arc™ is a trademark of Circle Internet Group, Inc. and/or its affiliates.
 
-> `.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.
+> The `.circle` namespace offered through FlashNames does not imply Circle endorsement, sponsorship, affiliation, or ownership.
 
 Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. No off-chain infrastructure is required to read or verify a name.
 
 ---
 
-## What ArcNS Enables
+## What FlashNames Enables
 
 - **Human-readable identity** — register `alice.arc` or `bob.circle` and point it to any EVM address
-- **USDC-native registration** — pay with USDC on Arc Testnet; no native gas token required for name purchases
+- **USDC-native registration** — pay with USDC on Arc; no native gas token required for name purchases
 - **On-chain resolution** — forward resolution (`name → address`) and reverse resolution (`address → primary name`) are both fully on-chain
 - **NFT ownership** — every registered name is an ERC-721 token with on-chain SVG metadata
 - **Primary name** — any address can set a verified primary name; the protocol enforces forward-confirmation so stale records are detectable
@@ -26,7 +26,7 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 
 ## Current Status
 
-**Live on Arc Testnet · Demo-ready · Pre-mainnet**
+**Mainnet cutover candidate · Legacy testnet deployment retained for history**
 
 | Component | Status |
 |-----------|--------|
@@ -37,11 +37,11 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 | Live smoke tests | 10 flows verified on-chain |
 | External security audit | Not yet completed — required before mainnet |
 
-The protocol is fully functional on testnet. Mainnet deployment is gated on an external security audit and operational hardening. See [Mainnet Gap Report](docs/final/MAINNET_GAP_REPORT.md) for the full checklist.
+The existing testnet deployment remains unchanged while the FlashNames mainnet cutover is prepared and reviewed. Mainnet contract addresses must be generated into the frontend after deployment and before this cutover is merged. See [FlashNames Mainnet Cutover](docs/mainnet/FLASHNAMES_MAINNET_CUTOVER.md).
 
-**Public testnet app:** https://arcname.services
+**Canonical mainnet app:** https://flashnames.space
 
-**Previous Vercel URL (legacy):** https://arcns-app.vercel.app
+**Legacy compatibility host:** https://arcname.services
 
 **Grant reviewer entry point:** [docs/grants/CIRCLE_GRANT_README.md](docs/grants/CIRCLE_GRANT_README.md)
 
@@ -75,7 +75,7 @@ The indexed data layer powers registrations/renewals history, transfers, resolve
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        ArcNS Protocol                           │
+│                      FlashNames Protocol                        │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │   ArcNSRegistry (non-upgradeable)                               │
@@ -166,7 +166,7 @@ Pricing is computed by the PriceOracle in USDC with 6 decimal places. Duration i
 ## Repo Structure
 
 ```
-arcns/
+flashnames/
 ├── contracts/v3/              ← Active canonical contracts
 │   ├── controller/            ArcNSController (UUPS)
 │   ├── registrar/             BaseRegistrar, PriceOracle, ReverseRegistrar
@@ -330,7 +330,7 @@ See [Subgraph Guide](docs/final/SUBGRAPH_GUIDE.md) for the full deployment flow.
 - Harden and publicly deploy the resolution adapter API
 - Deliver ArcScan integration package to the ArcScan team
 - Deliver wallet integration package to wallet vendors
-- Publish official MetaMask Snap for ArcNS resolution
+- Publish a FlashNames resolution Snap for MetaMask
 
 Estimated scope: 6–10 weeks depending on audit timeline.
 
@@ -351,7 +351,7 @@ Estimated scope: 6–10 weeks depending on audit timeline.
 
 ## Contributing / Collaboration
 
-ArcNS is in active pre-mainnet development. If you are an ecosystem partner, grant reviewer, auditor, or integration team:
+FlashNames is preparing for mainnet. If you are an ecosystem partner, grant reviewer, auditor, or integration team:
 
 - **Audit inquiries:** See [AUDIT_SCOPE.md](docs/final/AUDIT_SCOPE.md) for scope and [THREAT_MODEL_SUMMARY.md](docs/final/THREAT_MODEL_SUMMARY.md) for the threat model.
 - **Explorer integration:** See [arcscan-integration-package.md](docs/integration/arcscan-integration-package.md).
@@ -370,5 +370,5 @@ ArcNS is in active pre-mainnet development. If you are an ecosystem partner, gra
 | All other files | [MIT](LICENSE) |
 
 See [NOTICE](NOTICE) for licences, branding, and reserved-name terms.
-The ArcNS name and branding are reserved identifiers of the ArcNS project.
+The FlashNames name and branding are reserved identifiers of the FlashNames project.
 Use in forks, derivative deployments, or confusingly similar products requires separate permission.

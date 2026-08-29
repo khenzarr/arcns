@@ -1,0 +1,23 @@
+<svg width="1600" height="520" viewBox="0 0 1600 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="flashnames-mark" x1="112" y1="86" x2="438" y2="432" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C5CFF"/>
+      <stop offset="0.48" stop-color="#2463FF"/>
+      <stop offset="1" stop-color="#00E6FF"/>
+    </linearGradient>
+    <linearGradient id="flashnames-word" x1="640" y1="148" x2="1410" y2="354" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.58" stop-color="#DCE8FF"/>
+      <stop offset="1" stop-color="#87EFFF"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(54 36)">
+    <rect x="20" y="20" width="408" height="408" rx="124" fill="#071126" stroke="url(#flashnames-mark)" stroke-opacity="0.42" stroke-width="4"/>
+    <path d="M269 62L121 256H219L183 394L335 192H237L269 62Z" fill="url(#flashnames-mark)"/>
+    <circle cx="121" cy="256" r="16" fill="#AFC7FF"/>
+    <circle cx="335" cy="192" r="16" fill="#00E6FF"/>
+    <circle cx="183" cy="394" r="12" fill="#00E6FF"/>
+  </g>
+  <text x="565" y="284" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="184" font-weight="650" letter-spacing="-9" fill="url(#flashnames-word)">FlashNames</text>
+  <text x="582" y="372" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="500" letter-spacing="13" fill="#8292AE">BUILT ON ARC</text>
+</svg>

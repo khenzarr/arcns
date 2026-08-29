@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 type FooterLinkItem = {
   label: string;
@@ -15,17 +14,17 @@ type FooterSection = {
   links: FooterLinkItem[];
 };
 
-const GITHUB_REPO = "https://github.com/khenzarr/arcns";
+const GITHUB_REPO = "https://github.com/khenzarr/flashnames";
 
 const FOOTER_SECTIONS: FooterSection[] = [
   {
-    title: "ArcNS",
+    title: "FlashNames",
     links: [
       { label: "Search Names", href: "/app" },
       { label: "Send Assets", href: "/send" },
       { label: "My Domains", href: "/my-domains" },
       { label: "Resolve", href: "/resolve" },
-      { label: "Public Testnet App", href: "/app" },
+      { label: "Launch App", href: "/app" },
       { label: "GitHub", href: GITHUB_REPO, external: true },
     ],
   },
@@ -43,7 +42,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
         external: true,
       },
       {
-        label: "Mainnet Gap Report",
+        label: "Launch Readiness",
         href: `${GITHUB_REPO}/blob/master/docs/final/MAINNET_GAP_REPORT.md`,
         external: true,
       },
@@ -82,7 +81,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
         external: true,
       },
       {
-        label: "BENS / Blockscout Roadmap",
+        label: "Explorer Integration",
         href: `${GITHUB_REPO}/blob/master/docs/integration/GOLDSKY_ARCNS_INTEGRATION_PLAN.md`,
         external: true,
       },
@@ -91,7 +90,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
   {
     title: "Community",
     links: [
-      { label: "X / Twitter", href: "https://x.com/arc_name", external: true },
+      { label: "X / Twitter", disabled: true, note: "At launch" },
       { label: "Feedback", href: `${GITHUB_REPO}/issues`, external: true },
       {
         label: "Grant Updates",
@@ -181,8 +180,8 @@ export default function Footer() {
               <div className="flex items-center gap-4">
                 <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-[var(--arcns-border-strong)] bg-[linear-gradient(180deg,rgba(11,18,36,0.92),rgba(8,14,31,0.82))] shadow-[0_0_30px_rgba(0,212,255,0.14)]">
                   <Image
-                    src="/arcns/arcns-emblem.svg"
-                    alt="ArcNS emblem"
+                    src="/flashnames/flashnames-emblem.svg"
+                    alt="FlashNames emblem"
                     fill
                     sizes="56px"
                     className="object-contain p-2"
@@ -190,7 +189,7 @@ export default function Footer() {
                 </div>
                 <div>
                   <p className="font-space-grotesk text-2xl font-bold tracking-[-0.04em] text-[var(--arcns-text-primary)]">
-                    ArcNS
+                    FlashNames
                   </p>
                   <p className="text-sm text-[var(--arcns-text-secondary)]">
                     Human-readable names for addresses on Arc.
@@ -206,14 +205,15 @@ export default function Footer() {
 
               <div className="space-y-2 text-sm leading-6 text-[var(--arcns-text-secondary)]">
                 <p>
-                  Live on {NETWORK_DISPLAY.networkDisplayName} - {NETWORK_DISPLAY.environmentStatusLabel} - External audit pending
+                  An independent naming protocol built on Arc.
                 </p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
-                  ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with,
-                  endorsed by, or sponsored by Circle unless separately agreed in writing.
+                  FlashNames is not affiliated with, endorsed by, sponsored by, or operated by Circle or the Arc team
+                  unless separately agreed in writing.
                 </p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
-                  Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.
+                  Arc™ is a trademark of Circle Internet Group, Inc. and/or its affiliates. All other trademarks are
+                  the property of their respective owners.
                 </p>
               </div>
             </div>

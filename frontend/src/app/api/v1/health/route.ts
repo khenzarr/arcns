@@ -1,7 +1,7 @@
 /**
  * GET /api/v1/health
  *
- * ArcNS public adapter health endpoint.
+ * FlashNames public adapter health endpoint.
  *
  * ─── Response schema ─────────────────────────────────────────────────────────
  *

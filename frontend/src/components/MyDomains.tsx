@@ -175,7 +175,7 @@ export default function MyDomains() {
     // Hard guard: only proceed if the selection is a verified owned domain.
     if (!isOwnedSelection || !selectedDomain) return;
 
-    console.log("[ArcNS:primaryName] pre-submit diagnostic", {
+    console.log("[FlashNames:primaryName] pre-submit diagnostic", {
       selectedDomain,
       isOwnedSelection,
       isCurrentPrimary: isAlreadyPrimary,

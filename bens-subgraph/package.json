@@ -1,7 +1,7 @@
 {
-  "name": "arcns-bens-subgraph",
+  "name": "flashnames-bens-subgraph",
   "version": "1.0.0",
-  "description": "ArcNS BENS-compatible subgraph — ENS-like schema for Blockscout/BENS integration",
+  "description": "FlashNames BENS-compatible subgraph for Blockscout integration",
   "scripts": {
     "codegen": "graph codegen",
     "build": "graph build",

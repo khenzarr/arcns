@@ -1,5 +1,5 @@
 /**
- * ArcNS Domain Validation & State Machine
+ * FlashNames Domain Validation & State Machine
  * Single source of truth for all domain name logic.
  *
  * State machine:

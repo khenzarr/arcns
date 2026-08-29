@@ -1,5 +1,5 @@
 /**
- * StatusBadge.tsx — ArcNS domain and resolver state badges.
+ * StatusBadge.tsx — FlashNames domain and resolver state badges.
  *
  * Text-based — does not rely on color alone for meaning.
  * All variants include a visible text label.

@@ -2,7 +2,7 @@
 /**
  * TransactionHistory.tsx — v3 transaction history UI.
  *
- * Phase 7 visual redesign: ArcNS brandkit applied.
+ * Phase 7 visual redesign: FlashNames brandkit applied.
  *
  * LOGIC IS UNCHANGED:
  *   - useAccount hook untouched
@@ -153,7 +153,7 @@ export default function TransactionHistory() {
                 <td className="px-4 py-3 text-right">
                   {/* ArcScan link — UNCHANGED */}
                   <a
-                    href={`https://testnet.arcscan.app/tx/${row.transactionHash}`}
+                    href={`https://arc-mainnet.cloud.blockscout.com/tx/${row.transactionHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-xs transition-opacity hover:opacity-80"

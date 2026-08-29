@@ -1,5 +1,5 @@
 /**
- * IconButton.tsx — ArcNS icon-only button.
+ * IconButton.tsx — FlashNames icon-only button.
  *
  * Requires aria-label for accessibility.
  * No icon library dependency — accepts children (any SVG or element).

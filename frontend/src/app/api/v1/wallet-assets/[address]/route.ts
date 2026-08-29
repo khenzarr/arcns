@@ -3,7 +3,7 @@ import { getAddress, isAddress } from "viem";
 import { normalizeIndexedWalletAssets } from "../../../../../lib/walletAssets";
 import { v1Headers } from "../../../../../lib/adapterHelpers";
 
-const ARC_EXPLORER_URL = process.env.NEXT_PUBLIC_BLOCK_EXPLORER_URL || "https://testnet.arcscan.app";
+const ARC_EXPLORER_URL = process.env.NEXT_PUBLIC_BLOCK_EXPLORER_URL || "https://arc-mainnet.cloud.blockscout.com";
 
 export async function GET(
   _request: NextRequest,

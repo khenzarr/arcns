@@ -1,13 +1,13 @@
 /**
- * Display-only labels for the current public ArcNS environment.
+ * Display-only labels for the FlashNames mainnet experience.
  *
  * These values must not be used to configure wallets, RPCs, contracts,
  * transaction flows, or any other runtime network behavior.
  */
 export const NETWORK_DISPLAY = {
-  networkDisplayName: "Arc Testnet",
-  networkShortLabel: "Testnet",
-  chainIdLabel: "Chain ID 5042002",
-  currencyDisplayName: "Testnet USDC",
-  environmentStatusLabel: "Pre-mainnet",
+  networkDisplayName: "Arc",
+  networkShortLabel: "Arc",
+  chainIdLabel: "Mainnet",
+  currencyDisplayName: "USDC",
+  environmentStatusLabel: "Live",
 } as const;

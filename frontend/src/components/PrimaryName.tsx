@@ -1,6 +1,6 @@
 "use client";
 /**
- * PrimaryName.tsx — ArcNS primary name panel.
+ * PrimaryName.tsx — FlashNames primary name panel.
  *
  * Product-level visual redesign with custom branded dropdown.
  *
@@ -328,7 +328,7 @@ export default function PrimaryName() {
   const handleSet = async () => {
     if (!isOwnedSelection || !selectedDomain) return;
 
-    console.log("[ArcNS:primaryName] pre-submit diagnostic", {
+    console.log("[FlashNames:primaryName] pre-submit diagnostic", {
       selectedDomain,
       isOwnedSelection,
       isCurrentPrimary: isAlreadyPrimary,
@@ -559,7 +559,7 @@ export default function PrimaryName() {
           </button>
 
           <p className="text-sm leading-relaxed" style={{ color: "var(--arcns-text-muted)" }}>
-            This name will represent you across ArcNS and supported apps.
+            This name will represent you across FlashNames and supported apps.
           </p>
         </div>
       </div>

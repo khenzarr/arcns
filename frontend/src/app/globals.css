@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   ArcNS Design Tokens — Brandkit v2.1
+   FlashNames Design Tokens — Brandkit v2.1
    Deep navy / ink navy palette · Electric cyan + Arc blue accents
    ───────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* ── ArcNS brand tokens ──────────────────────────────────────────────────── */
+  /* ── FlashNames brand tokens ─────────────────────────────────────────────── */
 
   /* Backgrounds */
   --arcns-bg-primary:   #050A18;
@@ -59,25 +59,25 @@
   --arcns-shadow-glow-soft:   0 0 32px rgba(0, 212, 255, 0.16);
   --arcns-shadow-glow-active: 0 0 44px rgba(0, 212, 255, 0.28);
 
-  /* ── Semantic component tokens (mapped to ArcNS brand) ───────────────────── */
+  /* ── Semantic component tokens (mapped to FlashNames brand) ──────────────── */
 
-  /* Surface layers — updated to ArcNS navy palette */
+  /* Surface layers — FlashNames navy palette */
   --color-surface-base:     var(--arcns-bg-primary);
   --color-surface-card:     var(--arcns-bg-surface);
   --color-surface-elevated: var(--arcns-bg-elevated);
   --color-surface-overlay:  #131C30;
 
-  /* Borders — updated to ArcNS border system */
+  /* Borders — FlashNames border system */
   --color-border-subtle: var(--arcns-border-default);
   --color-border-accent: rgba(37, 99, 255, 0.42);
 
-  /* Accent palette — updated to ArcNS brand colors */
+  /* Accent palette — FlashNames brand colors */
   --color-accent-primary:       var(--arcns-blue);
   --color-accent-primary-hover: #1A4FE0;
   --color-accent-secondary:     #6366f1;
   --color-accent-cyan:          var(--arcns-cyan);
 
-  /* Semantic states — updated to ArcNS palette */
+  /* Semantic states — FlashNames palette */
   --color-success:         var(--arcns-green);
   --color-success-surface: rgba(20, 241, 149, 0.10);
   --color-success-border:  rgba(20, 241, 149, 0.24);
@@ -87,13 +87,13 @@
   --color-error-surface:   rgba(255, 92, 122, 0.10);
   --color-error-border:    rgba(255, 92, 122, 0.24);
 
-  /* Text — updated to ArcNS text palette */
+  /* Text — FlashNames text palette */
   --color-text-primary:   var(--arcns-text-primary);
   --color-text-secondary: var(--arcns-text-secondary);
   --color-text-tertiary:  var(--arcns-text-muted);
   --color-text-accent:    var(--arcns-cyan);
 
-  /* Legacy RGB tokens — updated to ArcNS base */
+  /* Legacy RGB tokens — mapped to the FlashNames base */
   --foreground-rgb: 246, 248, 255;
   --background-rgb: 5, 10, 24;
 
@@ -113,7 +113,7 @@ body {
   box-sizing: border-box;
 }
 
-/* ── ArcNS utility classes ───────────────────────────────────────────────────── */
+/* ── FlashNames utility classes ──────────────────────────────────────────────── */
 
 /* Glass card surface — frosted navy with border glow */
 .arcns-glass {
@@ -231,7 +231,7 @@ select.arcns-select option {
 @media (prefers-reduced-motion:reduce) { .arcns-cinematic .cinematic-orbit,.arcns-cinematic .cinematic-core-pulse,.arcns-cinematic .cinematic-eyebrow span,.arcns-cinematic .cinematic-network-pill i { animation:none!important }.arcns-cinematic .cinematic-primary-button:hover { transform:none } }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   ArcNS Home/Search — Cinematic Mockup Layout
+   FlashNames Home/Search — Cinematic Mockup Layout
    ───────────────────────────────────────────────────────────────────────────── */
 
 .arcns-landing-page {
@@ -895,7 +895,7 @@ select.arcns-select option {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   ArcNS My Domains — Product Dashboard Shell
+   FlashNames My Domains — Product Dashboard Shell
    ───────────────────────────────────────────────────────────────────────────── */
 
 .arcns-domains-page {

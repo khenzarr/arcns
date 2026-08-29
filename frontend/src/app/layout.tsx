@@ -15,26 +15,26 @@ const spaceGrotesk = Space_Grotesk({
 
 export const metadata: Metadata = {
   title: {
-    default: "ArcNS - Arc Name Services",
-    template: "%s | ArcNS",
+    default: "FlashNames - Human-readable names built on Arc",
+    template: "%s | FlashNames",
   },
   description:
-    "ArcNS (Arc Name Services) is an independent public testnet app for registering and resolving human-readable .arc and .circle names on Arc Testnet.",
-  metadataBase: new URL("https://arcname.services"),
+    "FlashNames is an independent naming protocol for registering and resolving human-readable .arc and .circle names, built on Arc.",
+  metadataBase: new URL("https://flashnames.space"),
   openGraph: {
     type: "website",
-    url: "https://arcname.services/",
-    siteName: "ArcNS",
-    title: "ArcNS - Arc Name Services",
+    url: "https://flashnames.space/",
+    siteName: "FlashNames",
+    title: "FlashNames - Human-readable names built on Arc",
     description:
-      "Register and resolve .arc and .circle names with ArcNS, an independent public app on Arc Testnet.",
+      "Register and resolve .arc and .circle names with FlashNames, an independent naming protocol built on Arc.",
     locale: "en_US",
   },
   twitter: {
     card: "summary",
-    title: "ArcNS - Arc Name Services",
+    title: "FlashNames - Human-readable names built on Arc",
     description:
-      "Register and resolve .arc and .circle names with ArcNS on Arc Testnet.",
+      "Register and resolve .arc and .circle names with FlashNames, built on Arc.",
   },
   icons: { icon: "/icon.svg" },
 };

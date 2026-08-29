@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://arcname.services";
+const BASE_URL = "https://flashnames.space";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();

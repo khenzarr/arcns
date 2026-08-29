@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "My Domains",
-  description: "Manage your ArcNS wallet portfolio and testnet name records.",
+  description: "Manage your FlashNames wallet portfolio and onchain name records.",
   alternates: { canonical: "/my-domains" },
   robots: { index: false, follow: true },
   openGraph: {
     type: "website",
-    url: "https://arcname.services/my-domains",
-    title: "My Domains | ArcNS",
-    description: "Manage your ArcNS wallet portfolio and testnet name records.",
+    url: "https://flashnames.space/my-domains",
+    title: "My Domains | FlashNames",
+    description: "Manage your FlashNames wallet portfolio and onchain name records.",
   },
   twitter: {
     card: "summary",
-    title: "My Domains | ArcNS",
-    description: "Manage your ArcNS wallet portfolio and testnet name records.",
+    title: "My Domains | FlashNames",
+    description: "Manage your FlashNames wallet portfolio and onchain name records.",
   },
 };
 

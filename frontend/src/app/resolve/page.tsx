@@ -1,6 +1,6 @@
 "use client";
 /**
- * resolve/page.tsx — ArcNS Resolve / Identity Inspector.
+ * resolve/page.tsx — FlashNames Resolve / Identity Inspector.
  *
  * Mockup-aligned product layout.
  *
@@ -52,12 +52,12 @@ export type ResolveInputState = "pristine" | "invalid" | "malformed" | "unsuppor
 const resolvePageJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  "@id": "https://arcname.services/resolve#webpage",
-  name: "ArcNS Resolve",
-  url: "https://arcname.services/resolve",
-  description: "Inspect ArcNS names and on-chain identity records on Arc Testnet.",
+  "@id": "https://flashnames.space/resolve#webpage",
+  name: "FlashNames Resolve",
+  url: "https://flashnames.space/resolve",
+  description: "Inspect FlashNames names and onchain identity records on Arc.",
   isPartOf: {
-    "@id": "https://arcname.services/#website",
+    "@id": "https://flashnames.space/#website",
   },
 };
 
@@ -553,15 +553,15 @@ export default function ResolvePage() {
 
   const explorerTokenHref =
     tld && label
-      ? `https://testnet.arcscan.app/token/${registrar}?a=${tokenId}`
-      : "https://testnet.arcscan.app";
+      ? `https://arc-mainnet.cloud.blockscout.com/token/${registrar}?a=${tokenId}`
+      : "https://arc-mainnet.cloud.blockscout.com";
 
   const resolvedExplorerHref = hasAddr
-    ? `https://testnet.arcscan.app/address/${normalizedResolvedAddress}`
+    ? `https://arc-mainnet.cloud.blockscout.com/address/${normalizedResolvedAddress}`
     : undefined;
 
   const ownerExplorerHref = ownerAddress
-    ? `https://testnet.arcscan.app/address/${ownerAddress}`
+    ? `https://arc-mainnet.cloud.blockscout.com/address/${ownerAddress}`
     : undefined;
 
   const ownershipCopy = !connectedAddress
@@ -597,7 +597,7 @@ export default function ResolvePage() {
             aria-hidden="true"
           >
             <Image
-              src="/arcns/arcns-emblem.svg"
+              src="/flashnames/flashnames-emblem.svg"
               alt=""
               aria-hidden="true"
               width={250}
@@ -627,7 +627,7 @@ export default function ResolvePage() {
               className="mx-auto mt-5 max-w-[760px] text-2xl leading-relaxed"
               style={{ color: "var(--arcns-text-secondary)" }}
             >
-              Inspect any ArcNS name and its on-chain identity records.
+              Inspect any FlashNames name and its onchain identity records.
             </p>
 
             <section
@@ -660,7 +660,7 @@ export default function ResolvePage() {
                     placeholder="flowpay.arc"
                     className="min-w-0 flex-1 bg-transparent text-lg font-semibold outline-none"
                     style={{ color: "var(--arcns-text-primary)" }}
-                    aria-label="Enter an ArcNS name to resolve"
+                    aria-label="Enter a FlashNames name to resolve"
                     aria-describedby="resolve-feedback"
                   />
 
@@ -726,7 +726,7 @@ export default function ResolvePage() {
               aria-hidden="true"
             >
               <Image
-                src="/arcns/arcns-emblem.svg"
+                src="/flashnames/flashnames-emblem.svg"
                 alt=""
                 aria-hidden="true"
                 width={40}
@@ -773,7 +773,7 @@ export default function ResolvePage() {
         {hasResult && !readsSettled ? (
           <section className="mt-10 w-full rounded-[28px] border px-5 py-10 text-center sm:px-8" role="status" aria-live="polite" aria-busy="true" style={{ background: "rgba(11,18,36,0.72)", borderColor: "rgba(120,160,255,0.20)" }}>
             <h2 className="text-2xl font-bold" style={{ color: "var(--arcns-text-primary)" }}>Verifying {queried}…</h2>
-            <p className="mt-3 text-sm" style={{ color: "var(--arcns-text-secondary)" }}>Reading Arc testnet records.</p>
+            <p className="mt-3 text-sm" style={{ color: "var(--arcns-text-secondary)" }}>Reading records on Arc.</p>
           </section>
         ) : null}
 
@@ -881,12 +881,12 @@ export default function ResolvePage() {
                     value={shortAddress(ADDR_RESOLVER, 8, 6)}
                     valueColor="var(--arcns-cyan)"
                     copyValue={ADDR_RESOLVER}
-                    explorerHref={`https://testnet.arcscan.app/address/${ADDR_RESOLVER}`}
+                    explorerHref={`https://arc-mainnet.cloud.blockscout.com/address/${ADDR_RESOLVER}`}
                   />
 
                   <DetailRow
                     label="Protocol"
-                    value="ArcNS · USDC-powered"
+                    value="FlashNames · USDC-powered"
                     valueColor="var(--arcns-text-secondary)"
                   />
 
@@ -955,7 +955,7 @@ export default function ResolvePage() {
                 ) : null}
 
                 {hasAddr ? (
-                  <MiniAction href={`https://testnet.arcscan.app/address/${normalizedResolvedAddress}`}>
+                  <MiniAction href={`https://arc-mainnet.cloud.blockscout.com/address/${normalizedResolvedAddress}`}>
                     Open in Explorer <ExternalIcon />
                   </MiniAction>
                 ) : null}
@@ -1208,7 +1208,7 @@ export default function ResolvePage() {
                       Registrar
                     </p>
                     <a
-                      href={`https://testnet.arcscan.app/address/${registrar}`}
+                      href={`https://arc-mainnet.cloud.blockscout.com/address/${registrar}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-sm font-bold"

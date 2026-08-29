@@ -1,5 +1,5 @@
 /**
- * PrimaryBadge.tsx — ArcNS "Primary" identity badge.
+ * PrimaryBadge.tsx — FlashNames "Primary" identity badge.
  *
  * Used to indicate a domain is set as the wallet's primary name.
  * No business logic. No icon library dependency.

@@ -77,8 +77,8 @@ export default function SuccessModal({ result, reverseRecord = false, onClose, o
     ? "0xb156d9726661E92C541e3a267ee8710Fdcd24969"
     : "0xBdfF2790Dd72E86C3510Cc8374EaC5E2E0659c5e";
 
-  const arcScanTxUrl  = `https://testnet.arcscan.app/tx/${result.txHash}`;
-  const arcScanNFTUrl = `https://testnet.arcscan.app/token/${registrarAddr}?a=${tokenId}`;
+  const arcScanTxUrl  = `https://arc-mainnet.cloud.blockscout.com/tx/${result.txHash}`;
+  const arcScanNFTUrl = `https://arc-mainnet.cloud.blockscout.com/token/${registrarAddr}?a=${tokenId}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(`${result.name}.${tld}`);
@@ -103,7 +103,7 @@ export default function SuccessModal({ result, reverseRecord = false, onClose, o
           </div>
           <h2 className="text-xl font-bold text-white">Registration Successful!</h2>
           <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            {resolvedToWallet ? "Registered and resolving to your wallet" : "Your domain is live on Arc Testnet"}
+            {resolvedToWallet ? "Registered and resolving to your wallet" : "Your name is live on Arc"}
           </p>
         </div>
 

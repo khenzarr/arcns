@@ -1,5 +1,5 @@
 /**
- * index.ts — ArcNS shared UI component barrel export.
+ * index.ts — FlashNames shared UI component barrel export.
  *
  * Import from "@/components/ui" for clean imports across the app.
  */

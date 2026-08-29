@@ -1,5 +1,5 @@
 /**
- * PageHeader.tsx — ArcNS page title + subtitle block.
+ * PageHeader.tsx — FlashNames page title + subtitle block.
  *
  * Uses display font (Space Grotesk) for the title.
  * Accepts optional badge and action slot.

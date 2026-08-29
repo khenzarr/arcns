@@ -1,8 +1,8 @@
 /**
  * GET /api/v1/resolve/address/[address]
  *
- * Canonical ArcNS public resolution adapter — reverse resolution.
- * Resolves an EVM address to its verified primary ArcNS name.
+ * Canonical FlashNames public resolution adapter — reverse resolution.
+ * Resolves an EVM address to its verified primary FlashNames name.
  *
  * ─── Response schema ─────────────────────────────────────────────────────────
  *

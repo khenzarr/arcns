@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Search and Register Names",
-  description: "Search, register, and manage .arc and .circle names in the independent ArcNS application on Arc Testnet.",
+  description: "Search, register, and manage .arc and .circle names with FlashNames, an independent naming protocol built on Arc.",
   alternates: { canonical: "/app" },
   robots: { index: false, follow: true },
 };

@@ -1,5 +1,5 @@
 /**
- * NetworkBadge.tsx — ArcNS network state badge.
+ * NetworkBadge.tsx — FlashNames network state badge.
  *
  * Variants: testnet (default), wrong-network.
  * No business logic. No wallet calls.

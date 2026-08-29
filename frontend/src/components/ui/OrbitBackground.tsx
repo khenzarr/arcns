@@ -1,5 +1,5 @@
 /**
- * OrbitBackground.tsx — ArcNS decorative orbit/arc motif.
+ * OrbitBackground.tsx — FlashNames decorative orbit motif.
  *
  * Purely visual. pointer-events-none. aria-hidden.
  * Uses inline SVG — no external file dependency.

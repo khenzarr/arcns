@@ -1,5 +1,5 @@
 /**
- * namehash.ts — low-level ArcNS hashing helpers only.
+ * namehash.ts — low-level FlashNames hashing helpers only.
  *
  * Responsibilities:
  *   - labelHash(label): keccak256 of a UTF-8 label string
@@ -25,7 +25,7 @@ export function labelHash(label: string): `0x${string}` {
 }
 
 /**
- * ArcNS namehash — implements EIP-137 pattern.
+ * FlashNames namehash — implements the EIP-137 pattern.
  * Input must already be normalized (lowercase, trimmed).
  */
 export function namehash(name: string): `0x${string}` {

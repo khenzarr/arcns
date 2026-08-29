@@ -1,5 +1,5 @@
 /**
- * middleware.ts — ArcNS public adapter rate limiting
+ * middleware.ts — FlashNames public adapter rate limiting
  *
  * Applies a sliding-window rate limit to all /api/v1/* requests.
  * Runs at the Next.js middleware layer (before serverless functions).
@@ -110,7 +110,7 @@ export function middleware(req: NextRequest) {
     headers.set("Retry-After", String(result.resetAt - Math.floor(Date.now() / 1000)));
     headers.set("Content-Type", "application/json");
     headers.set("Access-Control-Allow-Origin", "*");
-    headers.set("X-ArcNS-Version", "v1");
+    headers.set("X-FlashNames-Version", "v1");
 
     return new NextResponse(
       JSON.stringify({

@@ -2,23 +2,23 @@ import type { Metadata } from "next";
 import LegalPage, {
   CIRCLE_NAMESPACE_NOTICE,
   INDEPENDENT_PROJECT_NOTICE,
-  TESTNET_STATUS_NOTICE,
+  SERVICE_STATUS_NOTICE,
 } from "../../components/LegalPage";
 
 export const metadata: Metadata = {
   title: "Trademark / Brand Notice",
-  description: "Brand and trademark notice for the independent ArcNS testnet project.",
+  description: "Brand and trademark notice for the independent FlashNames protocol.",
   alternates: { canonical: "/trademark" },
   openGraph: {
     type: "website",
-    url: "https://arcname.services/trademark",
-    title: "Trademark / Brand Notice | ArcNS",
-    description: "Brand and trademark notice for the independent ArcNS testnet project.",
+    url: "https://flashnames.space/trademark",
+    title: "Trademark / Brand Notice | FlashNames",
+    description: "Brand and trademark notice for the independent FlashNames protocol.",
   },
   twitter: {
     card: "summary",
-    title: "Trademark / Brand Notice | ArcNS",
-    description: "Brand and trademark notice for the independent ArcNS testnet project.",
+    title: "Trademark / Brand Notice | FlashNames",
+    description: "Brand and trademark notice for the independent FlashNames protocol.",
   },
 };
 
@@ -26,34 +26,34 @@ export default function TrademarkPage() {
   return (
     <LegalPage
       title="Trademark / Brand Notice"
-      summary="This notice distinguishes the independent ArcNS project from third-party Arc and Circle brands and does not grant permission to use any party’s marks."
+      summary="This notice distinguishes the independent FlashNames protocol from third-party Arc and Circle brands and does not grant permission to use any party’s marks."
       sections={[
         {
           title: "Arc and Circle attribution",
           content: <p>{INDEPENDENT_PROJECT_NOTICE}</p>,
         },
         {
-          title: ".circle testnet namespace",
+          title: ".circle namespace",
           content: <p>{CIRCLE_NAMESPACE_NOTICE}</p>,
         },
         {
           title: "No ownership or endorsement claim",
           content: (
             <p>
-              The ArcNS project claims no ownership of the Arc or Circle names, marks, logos, or other brand assets.
-              References to Arc Testnet and Circle are descriptive only and do not state or imply partnership,
+              The FlashNames project claims no ownership of the Arc or Circle names, marks, logos, or other brand
+              assets. References to Arc and Circle are descriptive only and do not state or imply partnership,
               approval, endorsement, sponsorship, or official status.
             </p>
           ),
         },
         {
-          title: "Testnet status and no promises",
+          title: "Service status and no promises",
           content: (
             <>
-              <p>{TESTNET_STATUS_NOTICE}</p>
+              <p>{SERVICE_STATUS_NOTICE}</p>
               <p>
-                Nothing in ArcNS branding is a promise of mainnet launch, financial value, legal right, continued
-                availability, or future recognition of a testnet name.
+                Nothing in FlashNames branding is a promise of financial value, legal right, continued availability,
+                or perpetual recognition of a name.
               </p>
             </>
           ),

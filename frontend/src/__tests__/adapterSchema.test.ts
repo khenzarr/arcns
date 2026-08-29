@@ -1,7 +1,7 @@
 /**
  * adapterSchema.test.ts
  *
- * Tests for the v1 ArcNS adapter response schema and error code contracts.
+ * Tests for the v1 FlashNames adapter response schema and error code contracts.
  *
  * Covers:
  *   - parseName() → AdapterError shape (status/code/hint)
@@ -93,9 +93,9 @@ describe("v1Headers", () => {
     expect(h["Access-Control-Allow-Origin"]).toBe("*");
   });
 
-  it("includes X-ArcNS-Version: v1", () => {
+  it("includes X-FlashNames-Version: v1", () => {
     const h = v1Headers();
-    expect(h["X-ArcNS-Version"]).toBe("v1");
+    expect(h["X-FlashNames-Version"]).toBe("v1");
   });
 
   it("sets Cache-Control with provided max-age", () => {

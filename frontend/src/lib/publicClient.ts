@@ -6,19 +6,18 @@
  * a single node outage or txpool congestion.
  */
 import { createPublicClient, http, fallback } from "viem";
-import { arcTestnet } from "./chains";
-
-const PRIMARY_RPC   = process.env.NEXT_PUBLIC_RPC_URL          ?? "https://rpc.testnet.arc.network";
-const SECONDARY_RPC = process.env.NEXT_PUBLIC_RPC_URL_2        ?? "https://rpc.blockdaemon.testnet.arc.network";
-const TERTIARY_RPC  = process.env.NEXT_PUBLIC_RPC_URL_3        ?? "https://rpc.quicknode.testnet.arc.network";
+import { DEPLOYED_FALLBACK_RPC_URLS, deployedChain } from "./chains";
 
 const TIMEOUT_MS = 10_000;
 
 export const publicClient = createPublicClient({
-  chain: arcTestnet,
-  transport: fallback([
-    http(PRIMARY_RPC,   { timeout: TIMEOUT_MS, retryCount: 3, retryDelay: 1_000 }),
-    http(SECONDARY_RPC, { timeout: TIMEOUT_MS, retryCount: 2, retryDelay: 1_000 }),
-    http(TERTIARY_RPC,  { timeout: TIMEOUT_MS, retryCount: 2, retryDelay: 1_000 }),
-  ], { rank: false }),
+  chain: deployedChain,
+  transport: fallback(
+    DEPLOYED_FALLBACK_RPC_URLS.map((rpc, index) => http(rpc, {
+      timeout: TIMEOUT_MS,
+      retryCount: index === 0 ? 3 : 2,
+      retryDelay: 1_000,
+    })),
+    { rank: false },
+  ),
 });

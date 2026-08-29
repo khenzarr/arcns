@@ -1,5 +1,5 @@
 /**
- * PrimaryButton.tsx — ArcNS gradient CTA button.
+ * PrimaryButton.tsx — FlashNames gradient CTA button.
  *
  * Purely visual. No navigation or business logic.
  * Supports all standard button props + optional loading state.

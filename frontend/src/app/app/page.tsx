@@ -6,21 +6,20 @@ import SearchBar from "../../components/SearchBar";
 import DomainCard from "../../components/DomainCard";
 import {
   isValidLabel,
-  PRICING_TABLE,
   MAINNET_PRICING,
   type SupportedTLD,
 } from "../../lib/normalization";
-import { ACTIVE_CHAIN_ID } from "../../lib/chainConfig";
-import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
 
-const DISPLAY_PRICING_TABLE = ACTIVE_CHAIN_ID === 5042
-  ? MAINNET_PRICING.map((row) => ({ len: row.label, price: `${row.display.replace("/yr", "")} / year`, annual: row.annualUSDC }))
-  : PRICING_TABLE;
+const DISPLAY_PRICING_TABLE = MAINNET_PRICING.map((row) => ({
+  len: row.label,
+  price: `${row.display.replace("/yr", "")} / year`,
+  annual: row.annualUSDC,
+}));
 
 const TRUST_ITEMS = [
   {
-    title: NETWORK_DISPLAY.networkDisplayName,
-    sub: NETWORK_DISPLAY.chainIdLabel,
+    title: "Built on Arc",
+    sub: "Fast, open and on-chain.",
     accent: "var(--arcns-cyan)",
     icon: (
       <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -31,7 +30,7 @@ const TRUST_ITEMS = [
   },
   {
     title: "Pay with USDC",
-    sub: `${NETWORK_DISPLAY.currencyDisplayName}. On-chain.`,
+    sub: "Stable pricing. On-chain.",
     accent: "#3BA3FF",
     icon: (
       <svg viewBox="0 0 28 28" fill="none" aria-hidden="true">
@@ -94,6 +93,9 @@ export default function AppPage() {
   }, []);
 
   const handleInput = useCallback((label: string, tld: SupportedTLD) => {
+    // Any edit invalidates the last committed query. This prevents a result
+    // card from surviving after the input is cleared or becomes invalid.
+    setCommitted(null);
     if (isValidLabel(label)) {
       setPending({ label, tld });
     } else {
@@ -112,7 +114,7 @@ export default function AppPage() {
         <div className="arcns-landing-inner">
           <div className="arcns-left-emblem" aria-hidden="true">
             <Image
-              src="/arcns/arcns-emblem.svg"
+              src="/flashnames/flashnames-emblem.svg"
               alt=""
               aria-hidden="true"
               width={520}
@@ -123,11 +125,6 @@ export default function AppPage() {
           </div>
 
           <div className="arcns-hero-copy">
-            <div className="arcns-live-badge">
-              <span className="arcns-pulse-dot" aria-hidden="true" />
-              Live on {NETWORK_DISPLAY.networkDisplayName} - {NETWORK_DISPLAY.chainIdLabel}
-            </div>
-
             <h1 className="arcns-hero-headline">
               Human-readable names <span className="arcns-gradient-text">on Arc</span>
             </h1>
@@ -139,8 +136,7 @@ export default function AppPage() {
               Receive an ERC-721 name NFT for your selected registration period.
             </p>
             <p className="arcns-hero-disclaimer">
-              Independent ArcNS app for <strong>.arc</strong> and <strong>.circle</strong> names. Current network:{" "}
-              {NETWORK_DISPLAY.networkDisplayName}. No Circle affiliation or endorsement is implied.
+              FlashNames is an independent naming protocol built on Arc. No Circle affiliation or endorsement is implied.
             </p>
           </div>
 
