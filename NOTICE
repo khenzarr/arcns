@@ -1,46 +1,38 @@
-ArcNS — Arc Name Service
-Copyright (c) 2026 ArcNS contributors
+FlashNames
+Copyright (c) 2026 FlashNames contributors
 
 -----------------------------------------------------------------------------
 
 Project Independence and Third-Party Marks
 
-ArcNS is an independent name service built on Arc Testnet. ArcNS is not
-affiliated with, endorsed by, or sponsored by Circle unless separately agreed
-in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its
-affiliates.
+FlashNames is an independent naming protocol built on Arc. FlashNames is not
+affiliated with, endorsed by, sponsored by, or operated by Circle or the Arc
+team unless separately agreed in writing. Arc is a trademark of Circle Internet
+Group, Inc. and/or its affiliates. All other trademarks are the property of
+their respective owners.
 
-The ArcNS project claims no ownership of the Arc or Circle names, marks, logos,
-or other brand assets. References to Arc Testnet and Circle are descriptive and
+The FlashNames project claims no ownership of the Arc or Circle names, marks,
+logos, or other brand assets. References to Arc and Circle are descriptive and
 do not claim official status, endorsement, sponsorship, partnership, or approval.
 
-".circle" is an ArcNS testnet namespace and does not imply Circle endorsement,
+The ".circle" namespace offered through FlashNames does not imply Circle endorsement,
 sponsorship, affiliation, or ownership.
-
-ArcNS is live on Arc Testnet for testing and demonstration. No mainnet or public
-launch, financial result, legal outcome, or continued service is promised.
-
------------------------------------------------------------------------------
 
 Branding and Reserved Names
 
-"ArcNS", "Arc Name Service", and associated logos and visual identifiers are
-reserved names and branding of the ArcNS project.
+"FlashNames" and associated logos and visual identifiers are reserved names
+and branding of the FlashNames project.
 
-Use of the ArcNS name, branding, or visual identifiers in:
+Use of the FlashNames name, branding, or visual identifiers in:
   - forks or derivative deployments of this software
   - competing or confusingly similar naming services
-  - products or services that imply official affiliation with the ArcNS project
+  - products or services that imply official affiliation with the FlashNames project
 
-requires separate written permission from the ArcNS contributors.
+requires separate written permission from FlashNames contributors.
 
 This restriction applies regardless of the code license under which a fork
 or derivative work is distributed. The code license grants rights to the
-source code; it does not grant rights to the ArcNS name or branding.
-
-Note: The ArcNS name is not currently registered as a formal trademark.
-This notice asserts the project's rights and intent to protect its identity.
-Formal trademark registration may be pursued in the future.
+source code; it does not grant rights to the FlashNames name or branding.
 
 -----------------------------------------------------------------------------
 

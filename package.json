@@ -1,5 +1,5 @@
 {
-  "name": "arcns",
+  "name": "flashnames",
   "license": "UNLICENSED",
   "scripts": {
     "codegen": "graph codegen",

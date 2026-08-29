@@ -1,7 +1,7 @@
 /**
  * explorerAdapter.ts — Blockscout / explorer compatibility layer
  *
- * Provides ArcNS resolution for block explorers that support
+ * Provides FlashNames resolution for block explorers that support
  * the name service metadata API format.
  *
  * Endpoints consumed by Blockscout:

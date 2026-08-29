@@ -6,7 +6,7 @@ import { useAccount, useWriteContract } from "wagmi";
 import { publicClient } from "../../lib/publicClient";
 import { DEPLOYED_CHAIN_ID } from "../../lib/generated-contracts";
 import {
-  ARC_TESTNET_SEND_ASSETS,
+  DEFAULT_SEND_ASSETS,
   formatAssetBalance,
   parseSendAmount,
   resolveSendRecipient,
@@ -35,8 +35,8 @@ function tokenTone(symbol: string) {
 export default function SendAssetPanel() {
   const { address, chainId, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
-  const [assets, setAssets] = useState<SendAsset[]>([...ARC_TESTNET_SEND_ASSETS]);
-  const [selectedAddress, setSelectedAddress] = useState<string>(ARC_TESTNET_SEND_ASSETS[0].address);
+  const [assets, setAssets] = useState<SendAsset[]>([...DEFAULT_SEND_ASSETS]);
+  const [selectedAddress, setSelectedAddress] = useState<string>(DEFAULT_SEND_ASSETS[0].address);
   const [recipientInput, setRecipientInput] = useState("");
   const [resolution, setResolution] = useState<ResolutionResult | null>(null);
   const [amount, setAmount] = useState("");
@@ -192,7 +192,7 @@ export default function SendAssetPanel() {
     setError(null);
     setTxHash(null);
     if (!isConnected || !address) return setError("Connect your wallet before preparing a transfer.");
-    if (chainId !== DEPLOYED_CHAIN_ID) return setError(`Switch your wallet to Arc Testnet (Chain ID ${DEPLOYED_CHAIN_ID}).`);
+    if (chainId !== DEPLOYED_CHAIN_ID) return setError(`Switch your wallet to Arc (Chain ID ${DEPLOYED_CHAIN_ID}).`);
 
     const recipient = resolution && resolution.input.trim().toLowerCase() === recipientInput.trim().toLowerCase()
       ? resolution
@@ -346,7 +346,7 @@ export default function SendAssetPanel() {
 
         {txHash ? <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.07] p-4 text-sm text-emerald-200">Transfer confirmed. <a className="font-semibold underline underline-offset-4" href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noopener noreferrer">View transaction</a></div> : null}
 
-        <div className="flex items-start gap-3 border-t border-white/10 pt-5 text-xs leading-5 text-[var(--arcns-text-muted)]"><span aria-hidden="true" className="mt-0.5 text-[var(--arcns-cyan)]">◇</span><p>Always verify the resolved address in the review step. Transfers are irreversible. Custom tokens are read directly from the contract and are not verified or endorsed by ArcNS.</p></div>
+        <div className="flex items-start gap-3 border-t border-white/10 pt-5 text-xs leading-5 text-[var(--arcns-text-muted)]"><span aria-hidden="true" className="mt-0.5 text-[var(--arcns-cyan)]">◇</span><p>Always verify the resolved address in the review step. Transfers are irreversible. Custom tokens are read directly from the contract and are not verified or endorsed by FlashNames.</p></div>
       </div>
     </section>
   );

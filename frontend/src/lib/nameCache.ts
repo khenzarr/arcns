@@ -1,5 +1,5 @@
 /**
- * ArcNS Name Cache
+ * FlashNames Name Cache
  * In-memory + localStorage cache for availability results.
  *
  * Architecture:

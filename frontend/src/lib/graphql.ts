@@ -1,5 +1,5 @@
 /**
- * graphql.ts — ArcNS subgraph client.
+ * graphql.ts — FlashNames subgraph client.
  *
  * Target subgraph: arcnslatest (Arc testnet, v3 canonical)
  *

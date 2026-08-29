@@ -4,9 +4,9 @@
  *
  * Responsibilities:
  *   - WagmiProvider + QueryClientProvider (WalletConnect + MetaMask-first)
- *   - Arc Testnet chain enforcement (reactive, not boot-time blocking)
+ *   - deployed Arc chain enforcement (reactive, not boot-time blocking)
  *   - Clean v3 runtime wiring — no v2 proxy checks, no hidden v2 assumptions
- *   - QueryClient configured for Arc Testnet read patterns
+ *   - QueryClient configured for Arc read patterns
  *
  * Chain enforcement strategy:
  *   - Enforced reactively when wallet connects (via useAccount().chainId in ChainGuard)
@@ -18,7 +18,7 @@ import { useState } from "react";
 import { WagmiProvider, useAccount } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { wagmiConfig } from "../lib/wagmiConfig";
-import { DEPLOYED_CHAIN_ID, DEPLOYED_NETWORK } from "../lib/generated-contracts";
+import { DEPLOYED_CHAIN_ID } from "../lib/generated-contracts";
 
 // ─── Chain guard banner ───────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ function ChainGuardBanner() {
         fontFamily: "monospace", textAlign: "center",
       }}
     >
-      ⚠ Wrong network (Chain ID {chainId}). Please switch your wallet to Arc Testnet
+      ⚠ Wrong network (Chain ID {chainId}). Please switch your wallet to Arc
       (Chain ID {DEPLOYED_CHAIN_ID}). Write transactions are blocked until you switch.
     </div>
   );
@@ -50,7 +50,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
-        // Arc Testnet has fast finality — 15s stale time is reasonable
+        // Arc has fast finality — 15s stale time is reasonable
         staleTime:            15_000,
         // Retry once on failure — Arc RPC can have transient issues
         retry:                1,

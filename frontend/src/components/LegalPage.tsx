@@ -7,16 +7,16 @@ type LegalSection = {
 };
 
 export const INDEPENDENT_PROJECT_NOTICE =
-  "ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with, endorsed by, or sponsored by Circle unless separately agreed in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.";
+  "FlashNames is an independent naming protocol built on Arc. FlashNames is not affiliated with, endorsed by, sponsored by, or operated by Circle or the Arc team unless separately agreed in writing. Arc™ is a trademark of Circle Internet Group, Inc. and/or its affiliates.";
 
 export const CIRCLE_NAMESPACE_NOTICE =
-  "`.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.";
+  "The `.circle` namespace offered through FlashNames does not imply Circle endorsement, sponsorship, affiliation, or ownership.";
 
 export const REGISTRATION_NOTICE =
   "Names are ERC-721 NFTs with registration periods and renewal requirements. Registration expires unless renewed before the applicable expiry date.";
 
-export const TESTNET_STATUS_NOTICE =
-  "ArcNS is live on Arc Testnet for testing and demonstration. Mainnet deployment is gated on external audit, mainnet USDC configuration, operational hardening, and final legal/brand review.";
+export const SERVICE_STATUS_NOTICE =
+  "FlashNames provides non-custodial naming and resolution tools built on Arc. Blockchain transactions are irreversible and remain subject to network, wallet, smart-contract, and infrastructure risks.";
 
 export default function LegalPage({
   title,
@@ -37,7 +37,7 @@ export default function LegalPage({
           {title}
         </h1>
         <p className="mt-4 leading-7">{summary}</p>
-        <p className="mt-3 text-sm text-[var(--arcns-text-muted)]">Last updated: August 1, 2026</p>
+        <p className="mt-3 text-sm text-[var(--arcns-text-muted)]">Last updated: August 29, 2026</p>
 
         <div className="mt-10 space-y-9">
           {sections.map(section => (
@@ -52,7 +52,7 @@ export default function LegalPage({
 
         <div className="mt-10 border-t border-white/10 pt-6 text-sm">
           <Link className="text-[var(--arcns-cyan)] hover:underline" href="/">
-            Return to ArcNS
+            Return to FlashNames
           </Link>
         </div>
       </article>

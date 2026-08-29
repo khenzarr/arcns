@@ -1,10 +1,10 @@
 /**
- * errors.ts — ArcNS error classification and user-facing message mapping.
+ * errors.ts — FlashNames error classification and user-facing message mapping.
  *
  * Responsibilities:
  *   - Error code constants (no ENS wording)
  *   - Infra failure vs semantic failure separation
- *   - User-facing message mapping (clean, actionable, ArcNS-branded)
+ *   - User-facing message mapping (clean, actionable, FlashNames-branded)
  *   - Error classification helpers
  *
  * Two failure categories:
@@ -194,7 +194,7 @@ export function classifyRawError(e: unknown): { code: ArcErrorCode; category: Fa
 // ─── User-facing messages ─────────────────────────────────────────────────────
 
 /**
- * Returns a clean, actionable, ArcNS-branded user-facing message for an error code.
+ * Returns a clean, actionable, FlashNames-branded user-facing message for an error code.
  * No ENS wording. No raw Solidity revert strings.
  */
 export function userFacingMessage(code: ArcErrorCode): string {
@@ -204,7 +204,7 @@ export function userFacingMessage(code: ArcErrorCode): string {
       return "Transaction cancelled.";
 
     case ARC_ERR.TXPOOL_FULL:
-      return "Arc Testnet is busy — transaction pool is full. Wait a moment and try again.";
+      return "Arc is busy — transaction pool is full. Wait a moment and try again.";
 
     case ARC_ERR.RECEIPT_TIMEOUT:
       return "Transaction submitted but confirmation is taking longer than expected. Check ArcScan for your transaction, then retry if needed.";
@@ -220,18 +220,18 @@ export function userFacingMessage(code: ArcErrorCode): string {
       return "Wallet nonce conflict detected. Refresh the page and try again.";
 
     case ARC_ERR.INSUFFICIENT_FUNDS:
-      return "Insufficient USDC balance. Please fund your wallet on Arc Testnet.";
+      return "Insufficient USDC balance. Please fund your wallet on Arc.";
 
     case ARC_ERR.RPC_SUBMISSION_FAILED:
     case ARC_ERR.RPC_RESOURCE_NOT_AVAILABLE:
     case ARC_ERR.MEMPOOL_PROPAGATION_FAILURE:
-      return "Arc Testnet RPC is temporarily unavailable. Try again in a moment.";
+      return "Arc RPC is temporarily unavailable. Try again in a moment.";
 
     case ARC_ERR.GAS_ESTIMATION_FAILED:
-      return "Transaction could not be estimated. The Arc Testnet RPC may be slow — please retry.";
+      return "Transaction could not be estimated. The Arc RPC may be slow — please retry.";
 
     case ARC_ERR.CHAIN_MISMATCH:
-      return "Wrong network — please switch your wallet to Arc Testnet (Chain ID 5042002).";
+      return "Wrong network — please switch your wallet to Arc.";
 
     case ARC_ERR.COMMITMENT_TOO_NEW:
       return "Commitment is not yet mature. Please wait a moment and retry.";

@@ -1,5 +1,5 @@
 /**
- * adapterHelpers.ts — shared helpers for the ArcNS public resolution adapter.
+ * adapterHelpers.ts — shared helpers for the FlashNames public resolution adapter.
  *
  * Used exclusively by the /api/v1/resolve/* routes.
  * Not used by the frontend UI directly — those use graphql.ts + hooks.
@@ -114,7 +114,7 @@ export interface ParsedName {
 // ─── Name parsing ─────────────────────────────────────────────────────────────
 
 /**
- * Parse and validate a full ArcNS name string.
+ * Parse and validate a full FlashNames name string.
  * Returns ParsedName on success, AdapterError on failure.
  */
 export function parseName(raw: string): ParsedName | AdapterError {
@@ -129,7 +129,7 @@ export function parseName(raw: string): ParsedName | AdapterError {
     return {
       status: "error",
       code:   "INVALID_NAME",
-      hint:   "Name must include a TLD. ArcNS supports: .arc, .circle",
+      hint:   "Name must include a TLD. FlashNames supports: .arc, .circle",
     };
   }
 
@@ -140,7 +140,7 @@ export function parseName(raw: string): ParsedName | AdapterError {
     return {
       status: "error",
       code:   "UNSUPPORTED_TLD",
-      hint:   `Unsupported TLD ".${tld}". ArcNS supports: .arc, .circle`,
+      hint:   `Unsupported TLD ".${tld}". FlashNames supports: .arc, .circle`,
     };
   }
 
@@ -207,7 +207,7 @@ export function v1Headers(cacheMaxAge = 30): Record<string, string> {
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Cache-Control":                `public, max-age=${cacheMaxAge}`,
-    "X-ArcNS-Version":              "v1",
+    "X-FlashNames-Version":         "v1",
   };
 }
 

@@ -1,33 +1,33 @@
 import Link from "next/link";
 import { CopyButton } from "../../../components/ui/CopyButton";
 
-const BASE_URL = "https://arcname.services/api/v1";
+const BASE_URL = "https://flashnames.space/api/v1";
 
 const CURL_EXAMPLE = `curl --request GET \\
-  --url https://arcname.services/api/v1/resolve/name/alice.arc \\
+  --url https://flashnames.space/api/v1/resolve/name/alice.arc \\
   --header 'Accept: application/json'`;
 
-const TYPESCRIPT_EXAMPLE = `type ArcNSResolution =
+const TYPESCRIPT_EXAMPLE = `type FlashNamesResolution =
   | { status: "ok"; name: string; address: \`0x\${string}\`; owner: string | null; expiry: number | null; source: "subgraph" | "rpc" }
   | { status: "not_found"; hint: string }
   | { status: "error"; code: string; hint: string };
 
-export async function resolveArcNSName(name: string) {
+export async function resolveFlashNamesName(name: string) {
   const normalized = name.trim().toLowerCase();
   const response = await fetch(
-    \`https://arcname.services/api/v1/resolve/name/\${encodeURIComponent(normalized)}\`,
+    \`https://flashnames.space/api/v1/resolve/name/\${encodeURIComponent(normalized)}\`,
     { headers: { Accept: "application/json" } },
   );
-  const result = (await response.json()) as ArcNSResolution;
+  const result = (await response.json()) as FlashNamesResolution;
 
   if (!response.ok || result.status !== "ok") {
-    throw new Error("hint" in result ? result.hint : "ArcNS resolution failed");
+    throw new Error("hint" in result ? result.hint : "FlashNames resolution failed");
   }
   return result;
 }`;
 
 const REACT_EXAMPLE = `import { useEffect, useState } from "react";
-import { resolveArcNSName } from "./arcns";
+import { resolveFlashNamesName } from "./flashnames";
 
 export function RecipientPreview({ name }: { name: string }) {
   const [address, setAddress] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export function RecipientPreview({ name }: { name: string }) {
     let active = true;
     setAddress(null);
     setError(null);
-    resolveArcNSName(name)
+    resolveFlashNamesName(name)
       .then(result => active && setAddress(result.address))
       .catch(err => active && setError(err.message));
     return () => { active = false; };
@@ -50,7 +50,7 @@ export function RecipientPreview({ name }: { name: string }) {
 
 const REVERSE_EXAMPLE = `const address = "0x1234...";
 const response = await fetch(
-  \`https://arcname.services/api/v1/resolve/address/\${address}\`,
+  \`https://flashnames.space/api/v1/resolve/address/\${address}\`,
 );
 const result = await response.json();
 
@@ -64,7 +64,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(_: Request, { params }: { params: { name: string } }) {
   const upstream = await fetch(
-    \`https://arcname.services/api/v1/resolve/name/\${encodeURIComponent(params.name)}\`,
+    \`https://flashnames.space/api/v1/resolve/name/\${encodeURIComponent(params.name)}\`,
     { next: { revalidate: 30 } },
   );
   const body = await upstream.json();
@@ -107,8 +107,8 @@ export default function IntegratePage() {
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 backdrop-blur-xl">
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--arcns-text-muted)]">Public base URL</p>
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-black/25 px-3 py-2"><code className="min-w-0 truncate text-sm text-white">{BASE_URL}</code><CopyButton value={BASE_URL} aria-label="Copy ArcNS API base URL" /></div>
-            <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold"><span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-300">Live</span><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[var(--arcns-text-secondary)]">Arc Testnet</span><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[var(--arcns-text-secondary)]">API v1</span></div>
+            <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-black/25 px-3 py-2"><code className="min-w-0 truncate text-sm text-white">{BASE_URL}</code><CopyButton value={BASE_URL} aria-label="Copy FlashNames API base URL" /></div>
+            <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold"><span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-300">Live</span><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[var(--arcns-text-secondary)]">Built on Arc</span><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[var(--arcns-text-secondary)]">API v1</span></div>
           </div>
         </header>
 
@@ -125,15 +125,15 @@ export default function IntegratePage() {
   "source": "subgraph"
 }`}</code></pre></div></Step></div>
 
-            <div id="step-02"><Step number="02" title="Add a typed client"><p>Keep the adapter behind one function so your application has a single place for normalization, error handling, caching, and future version changes.</p><CodeBlock title="arcns.ts" language="TypeScript" code={TYPESCRIPT_EXAMPLE} /><div className="grid gap-3 sm:grid-cols-3">{[["200 / ok","Resolved address returned"],["200 / not_found","Valid input, no record"],["400 / error","Malformed name or TLD"],["503 / error","Upstream temporarily unavailable"]].map(([status,meaning]) => <div key={status} className="rounded-xl border border-white/10 bg-white/[0.025] p-3"><code className="text-xs text-[var(--arcns-cyan)]">{status}</code><p className="mt-2 text-xs leading-5">{meaning}</p></div>)}</div></Step></div>
+            <div id="step-02"><Step number="02" title="Add a typed client"><p>Keep the adapter behind one function so your application has a single place for normalization, error handling, caching, and future version changes.</p><CodeBlock title="flashnames.ts" language="TypeScript" code={TYPESCRIPT_EXAMPLE} /><div className="grid gap-3 sm:grid-cols-3">{[["200 / ok","Resolved address returned"],["200 / not_found","Valid input, no record"],["400 / error","Malformed name or TLD"],["503 / error","Upstream temporarily unavailable"]].map(([status,meaning]) => <div key={status} className="rounded-xl border border-white/10 bg-white/[0.025] p-3"><code className="text-xs text-[var(--arcns-cyan)]">{status}</code><p className="mt-2 text-xs leading-5">{meaning}</p></div>)}</div></Step></div>
 
             <div id="step-03"><Step number="03" title="Build safe recipient UX"><p>Resolve after the user pauses or leaves the input, then show the complete destination address before any signature request. Never replace the address with the name in the final review screen.</p><CodeBlock title="RecipientPreview.tsx" language="React" code={REACT_EXAMPLE} /><div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-amber-100"><strong>Payment safety:</strong> cache only briefly, re-resolve immediately before transaction construction, and display the final address that will receive funds.</div></Step></div>
 
-            <div id="step-04"><Step number="04" title="Add reverse names"><p>Use reverse resolution to decorate wallet addresses in activity feeds and account menus. ArcNS only returns a primary name after forward confirmation, preventing a name from claiming an unrelated address.</p><CodeBlock title="Reverse lookup" language="TypeScript" code={REVERSE_EXAMPLE} /></Step></div>
+            <div id="step-04"><Step number="04" title="Add reverse names"><p>Use reverse resolution to decorate wallet addresses in activity feeds and account menus. FlashNames only returns a primary name after forward confirmation, preventing a name from claiming an unrelated address.</p><CodeBlock title="Reverse lookup" language="TypeScript" code={REVERSE_EXAMPLE} /></Step></div>
 
             <div id="step-05"><Step number="05" title="Harden production"><p>For backend-heavy applications, proxy and cache the public adapter so you control retries, observability, and your user-facing availability policy.</p><CodeBlock title="Server-side proxy" language="Next.js" code={SERVER_PROXY_EXAMPLE} /><div className="grid gap-3 sm:grid-cols-2">{["Validate .arc or .circle before calling the API","Use AbortController and a short timeout","Respect Cache-Control and retry only safe GET requests","Treat 200 not_found differently from 503 unavailable","Show the final 0x address before transfers","Keep a direct-address fallback available","Monitor latency, error rate, and resolution source","Pin API v1 and test error schemas in CI"].map(item => <div key={item} className="flex gap-3 rounded-xl border border-white/10 bg-white/[0.025] p-3"><span className="text-emerald-300" aria-hidden="true">✓</span><span className="text-xs leading-5">{item}</span></div>)}</div></Step></div>
 
-            <footer className="mt-4 flex flex-col gap-5 rounded-2xl border border-[rgba(0,212,255,0.22)] bg-[rgba(0,212,255,0.055)] p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-lg font-bold text-white">Ready to ship?</h2><p className="mt-1 text-sm text-[var(--arcns-text-secondary)]">Try resolution in the live app or inspect the full API contract on GitHub.</p></div><div className="flex flex-wrap gap-3"><Link href="/resolve" className="rounded-xl bg-[var(--arcns-gradient-primary)] px-4 py-2.5 text-sm font-bold text-white">Open Resolver</Link><a href="https://github.com/khenzarr/arcns/blob/master/docs/integration/public-adapter-api.md" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:border-[var(--arcns-cyan)]">Full API reference ↗</a></div></footer>
+            <footer className="mt-4 flex flex-col gap-5 rounded-2xl border border-[rgba(0,212,255,0.22)] bg-[rgba(0,212,255,0.055)] p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-lg font-bold text-white">Ready to ship?</h2><p className="mt-1 text-sm text-[var(--arcns-text-secondary)]">Try resolution in the live app or inspect the full API contract on GitHub.</p></div><div className="flex flex-wrap gap-3"><Link href="/resolve" className="rounded-xl bg-[var(--arcns-gradient-primary)] px-4 py-2.5 text-sm font-bold text-white">Open Resolver</Link><a href="https://github.com/khenzarr/flashnames/blob/master/docs/integration/public-adapter-api.md" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:border-[var(--arcns-cyan)]">Full API reference ↗</a></div></footer>
           </article>
         </div>
       </div>

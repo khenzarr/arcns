@@ -1,12 +1,11 @@
 /**
- * FooterIdentityLine.tsx — ArcNS footer identity line.
+ * FooterIdentityLine.tsx — FlashNames footer identity line.
  *
  * Small, self-contained footer strip.
  * No business logic. No external links beyond what the app already uses.
  */
 
 import React from "react";
-import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
 import { cn } from "./utils";
 
 interface FooterIdentityLineProps {
@@ -26,13 +25,9 @@ export function FooterIdentityLine({ className }: FooterIdentityLineProps) {
       }}
     >
       <p>
-        <span style={{ color: "var(--arcns-text-secondary)", fontWeight: 500 }}>ArcNS</span>
+        <span style={{ color: "var(--arcns-text-secondary)", fontWeight: 500 }}>FlashNames</span>
         {" · "}
-        Identity for everything on Arc
-        {" · "}
-        <span className="font-mono text-xs">
-          {NETWORK_DISPLAY.networkDisplayName} · {NETWORK_DISPLAY.chainIdLabel}
-        </span>
+        An independent naming protocol built on Arc
       </p>
     </footer>
   );

@@ -1,5 +1,5 @@
 /**
- * normalization.ts — canonical ArcNS name normalization pipeline.
+ * normalization.ts — canonical FlashNames name normalization pipeline.
  *
  * Single source of truth for all name validation, normalization, and
  * pricing-length basis. Used by contracts (via Solidity mirror), frontend,

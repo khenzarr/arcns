@@ -1,8 +1,8 @@
 "use client";
 /**
- * Header.tsx — ArcNS global navigation.
+ * Header.tsx — FlashNames global navigation.
  *
- * Uses the real ArcNS emblem asset from /public/arcns/arcns-emblem.svg
+ * Uses the FlashNames emblem asset from /public/flashnames/flashnames-emblem.svg
  * and a crisp text wordmark for reliable header rendering.
  *
  * WALLET LOGIC IS UNCHANGED:
@@ -18,7 +18,6 @@ import { useAccount, useConnect, useDisconnect } from "wagmi";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { NetworkBadge } from "./ui/NetworkBadge";
 
 function WalletButton() {
   const { address, isConnected } = useAccount();
@@ -134,7 +133,7 @@ export default function Header() {
   const isLanding = pathname === "/";
   const navigation = isLanding
     ? [
-        { href: "/#identity", label: "Why ArcNS" },
+        { href: "/#identity", label: "Why FlashNames" },
         { href: "/#experience", label: "Experience" },
         { href: "/#how", label: "How it works" },
         { href: "/#resources", label: "Resources" },
@@ -162,7 +161,7 @@ export default function Header() {
           href="/"
           className="flex items-center gap-3 flex-shrink-0 group"
           onClick={() => setMobileMenuOpen(false)}
-          aria-label="ArcNS home"
+          aria-label="FlashNames home"
         >
           <span
             className="relative flex h-10 w-10 items-center justify-center rounded-2xl border"
@@ -176,7 +175,7 @@ export default function Header() {
             aria-hidden="true"
           >
             <Image
-              src="/arcns/arcns-emblem.svg"
+              src="/flashnames/flashnames-emblem.svg"
               alt=""
               aria-hidden="true"
               width={28}
@@ -199,10 +198,8 @@ export default function Header() {
               textShadow: "0 0 18px rgba(0, 212, 255, 0.08)",
             }}
           >
-            ArcNS
+            FlashNames
           </span>
-
-          <NetworkBadge variant="testnet" label="Testnet" />
         </Link>
 
         <nav

@@ -1,7 +1,7 @@
 /**
- * TldBadge.tsx — ArcNS namespace badges for .arc and .circle.
+ * TldBadge.tsx — FlashNames namespace badges for .arc and .circle.
  *
- * Native ArcNS namespaces only. No ENS wording.
+ * Native FlashNames namespaces only. No ENS wording.
  * No business logic.
  */
 

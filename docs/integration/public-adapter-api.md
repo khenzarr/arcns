@@ -1,10 +1,10 @@
-# ArcNS Public Resolution Adapter — API Reference
+# FlashNames Public Resolution Adapter — API Reference
 
 **Version:** v1  
-**Network:** Arc Testnet (Chain ID: 5042002)  
+**Network:** Arc (Chain ID: 5042)
 **Status:** Live · Publicly hosted  
-**Public base URL:** `https://arcname.services`
-**Previous Vercel URL (legacy):** `https://arcns-app.vercel.app`
+**Public base URL:** `https://flashnames.space`
+**Legacy compatibility host:** `https://arcname.services`
 **Base path:** `/api/v1`
 
 ---
@@ -15,17 +15,17 @@ The adapter is live and publicly accessible:
 
 | Endpoint | URL |
 |----------|-----|
-| Health | `https://arcname.services/api/v1/health` |
-| Name resolution | `https://arcname.services/api/v1/resolve/name/{name}` |
-| Address resolution | `https://arcname.services/api/v1/resolve/address/{address}` |
+| Health | `https://flashnames.space/api/v1/health` |
+| Name resolution | `https://flashnames.space/api/v1/resolve/name/{name}` |
+| Address resolution | `https://flashnames.space/api/v1/resolve/address/{address}` |
 
 ---
 
 ## Purpose
 
-The ArcNS Resolution Adapter is the canonical HTTP interface for resolving ArcNS names and addresses. It wraps the on-chain resolution protocol in a simple, versioned REST API that explorers, wallets, and third-party integrators can consume without implementing namehash computation or direct RPC calls.
+The FlashNames Resolution Adapter is the canonical HTTP interface for resolving FlashNames names and addresses. It wraps the on-chain resolution protocol in a simple, versioned REST API that explorers, wallets, and third-party integrators can consume without implementing namehash computation or direct RPC calls.
 
-The adapter does not replace on-chain resolution — it implements it correctly. All resolution is ultimately grounded in `eth_call` against Arc Testnet contracts. The subgraph is used as a speed layer only.
+The adapter does not replace on-chain resolution — it implements it correctly. All resolution is ultimately grounded in `eth_call` against contracts deployed on Arc. The subgraph is used as a speed layer only.
 
 ---
 
@@ -33,7 +33,7 @@ The adapter does not replace on-chain resolution — it implements it correctly.
 
 | Method | Path | Purpose |
 |--------|------|---------|
-| `GET` | `/api/v1/resolve/name/{name}` | Resolve ArcNS name → EVM address |
+| `GET` | `/api/v1/resolve/name/{name}` | Resolve FlashNames name → EVM address |
 | `GET` | `/api/v1/resolve/address/{address}` | Resolve EVM address → verified primary name |
 | `GET` | `/api/v1/health` | Adapter liveness and chain context |
 
@@ -77,7 +77,7 @@ Access-Control-Allow-Origin: *
 Access-Control-Allow-Methods: GET, OPTIONS
 Access-Control-Allow-Headers: Content-Type
 Cache-Control: public, max-age=30   (0 for health)
-X-ArcNS-Version: v1
+X-FlashNames-Version: v1
 X-Cache: HIT | MISS
 ```
 
@@ -85,7 +85,7 @@ X-Cache: HIT | MISS
 
 ## `GET /api/v1/resolve/name/{name}`
 
-Resolves a full ArcNS name to its EVM address record.
+Resolves a full FlashNames name to its EVM address record.
 
 **Name rules:**
 - Must end in `.arc` or `.circle`
@@ -148,7 +148,7 @@ GET /api/v1/resolve/name/alice.eth
 {
   "status": "error",
   "code":   "UNSUPPORTED_TLD",
-  "hint":   "Unsupported TLD \".eth\". ArcNS supports: .arc, .circle"
+  "hint":   "Unsupported TLD \".eth\". FlashNames supports: .arc, .circle"
 }
 ```
 
@@ -168,7 +168,7 @@ HTTP 503.
 
 ## `GET /api/v1/resolve/address/{address}`
 
-Resolves an EVM address to its verified primary ArcNS name.
+Resolves an EVM address to its verified primary FlashNames name.
 
 **Critical:** `verified: true` requires both:
 1. `Resolver.name(reverseNode)` returns a non-empty name
@@ -231,8 +231,8 @@ Returns adapter liveness and chain context. Does not make RPC calls.
 ```json
 {
   "status":    "ok",
-  "chainId":   5042002,
-  "network":   "arc_testnet",
+  "chainId":   5042,
+  "network":   "arc",
   "version":   "v1",
   "timestamp": 1745600000
 }
@@ -289,7 +289,7 @@ The adapter uses a 30-second in-process cache. A `verified: true` result cached 
 
 | Consumer | Primary use |
 |----------|-------------|
-| ArcNS app (frontend) | Forward resolution, reverse resolution, primary name display |
+| FlashNames app (frontend) | Forward resolution, reverse resolution, primary name display |
 | ArcScan (block explorer) | Name search, address page primary name, token page labels |
 | Wallet teams | Recipient name resolution, address display labels |
 | Third-party dApps | Resolve names before sending transactions |

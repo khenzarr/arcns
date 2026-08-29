@@ -1,7 +1,7 @@
 {
-  "name": "arcns-app",
+  "name": "flashnames-app",
   "version": "1.0.0",
-  "description": "ArcNS — Arc Name Service. Decentralized naming protocol for Arc Testnet.",
+  "description": "FlashNames — an independent decentralized naming protocol built on Arc.",
   "private": true,
   "scripts": {
     "dev": "next dev",

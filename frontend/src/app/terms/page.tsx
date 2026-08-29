@@ -3,23 +3,23 @@ import LegalPage, {
   CIRCLE_NAMESPACE_NOTICE,
   INDEPENDENT_PROJECT_NOTICE,
   REGISTRATION_NOTICE,
-  TESTNET_STATUS_NOTICE,
+  SERVICE_STATUS_NOTICE,
 } from "../../components/LegalPage";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
-  description: "Testnet-only terms for using the independent ArcNS public app.",
+  description: "Terms for using the independent FlashNames application and protocol interfaces.",
   alternates: { canonical: "/terms" },
   openGraph: {
     type: "website",
-    url: "https://arcname.services/terms",
-    title: "Terms of Use | ArcNS",
-    description: "Testnet-only terms for using the independent ArcNS public app.",
+    url: "https://flashnames.space/terms",
+    title: "Terms of Use | FlashNames",
+    description: "Terms for using the independent FlashNames application and protocol interfaces.",
   },
   twitter: {
     card: "summary",
-    title: "Terms of Use | ArcNS",
-    description: "Testnet-only terms for using the independent ArcNS public app.",
+    title: "Terms of Use | FlashNames",
+    description: "Terms for using the independent FlashNames application and protocol interfaces.",
   },
 };
 
@@ -27,19 +27,19 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Use"
-      summary="These terms describe the limited, testnet-only basis on which ArcNS is currently made available. They are informational project terms and are not legal advice."
+      summary="These terms describe the basis on which the FlashNames application and protocol interfaces are made available. They are informational project terms and are not legal advice."
       sections={[
         {
-          title: "Testnet service and launch status",
-          content: <p>{TESTNET_STATUS_NOTICE}</p>,
+          title: "Service and network status",
+          content: <p>{SERVICE_STATUS_NOTICE}</p>,
         },
         {
           title: "No promises or professional advice",
           content: (
             <p>
-              ArcNS is provided on an experimental, as-is, and as-available basis. Nothing in the app or
-              documentation is a promise of mainnet or public launch, financial return, continued availability,
-              legal outcome, or fitness for a particular purpose. ArcNS does not provide financial, investment,
+              FlashNames is provided on an as-is and as-available basis. Nothing in the app or documentation is a
+              promise of financial return, uninterrupted availability, legal outcome, or fitness for a particular
+              purpose. FlashNames does not provide financial, investment,
               tax, or legal advice.
             </p>
           ),
@@ -51,8 +51,7 @@ export default function TermsPage() {
               <p>{REGISTRATION_NOTICE}</p>
               <p>
                 Users are responsible for checking the selected registration period, applicable expiry date,
-                renewal status, wallet transactions, and testnet conditions. Testnet names and records may not
-                carry over to any future deployment.
+                renewal status, destination addresses, wallet transactions, and current network conditions.
               </p>
             </>
           ),

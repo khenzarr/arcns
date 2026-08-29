@@ -1,6 +1,6 @@
 "use client";
 /**
- * Portfolio.tsx — ArcNS portfolio dashboard.
+ * Portfolio.tsx — FlashNames portfolio dashboard.
  *
  * Product-level row/table redesign.
  *
@@ -185,7 +185,7 @@ export default function Portfolio({
           Connect your wallet
         </p>
         <p className="mt-1 text-sm" style={{ color: "var(--arcns-text-muted)" }}>
-          Connect your wallet from the header to view your ArcNS portfolio.
+          Connect your wallet from the header to view your FlashNames portfolio.
         </p>
       </div>
     );
@@ -535,7 +535,7 @@ function DomainRowWithAddr({
           </div>
 
           <p className="mt-1 text-sm" style={{ color: "var(--arcns-text-muted)" }}>
-            {isPrimary ? "Your main identity" : "Registered ArcNS name"}
+            {isPrimary ? "Your main identity" : "Registered FlashNames name"}
           </p>
         </div>
       </div>

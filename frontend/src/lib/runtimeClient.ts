@@ -1,33 +1,33 @@
 /**
- * runtimeClient.ts - Arc Testnet execution context helpers.
+ * runtimeClient.ts - deployed Arc execution context helpers.
  *
- * Active registration runtime mode is Arc Testnet only.
+ * Active registration runtime follows the generated deployment manifest.
  * Critical transaction observation must stay bound to the active wallet
  * connector provider; detached public RPCs are for optional/non-critical reads.
  */
 
 import { createPublicClient, fallback, http, publicActions } from "viem";
 import {
-  ARC_TESTNET_ALL_RPC_URLS,
   ARC_TESTNET_CHAIN_ID,
-  ARC_TESTNET_PRIMARY_RPC_URL,
-  ARC_TESTNET_RPCS,
-  ARC_TESTNET_RUNTIME_MODE,
-  arcTestnet,
+  DEPLOYED_FALLBACK_RPC_URLS,
+  DEPLOYED_PRIMARY_RPC_URL,
+  DEPLOYED_RUNTIME_MODE,
+  deployedChain,
 } from "./chains";
 import { ADDR_ARC_CONTROLLER, ADDR_CIRCLE_CONTROLLER } from "./contracts";
+import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
 
 export const SUPPORTED_CHAIN_IDS = {
-  ARC_TESTNET: ARC_TESTNET_CHAIN_ID,
+  ARC: DEPLOYED_CHAIN_ID,
 } as const;
 
 export interface ExecutionContext {
-  runtimeMode: typeof ARC_TESTNET_RUNTIME_MODE;
+  runtimeMode: typeof DEPLOYED_RUNTIME_MODE;
   walletChainId: number;
   readChainId: number;
   chainName: string;
   account: `0x${string}`;
-  chain: typeof arcTestnet;
+  chain: typeof deployedChain;
   primaryReadClient: ReturnType<typeof createPublicClient>;
   primaryRpcSource: string;
   fallbackClient: ReturnType<typeof createPublicClient>;
@@ -43,7 +43,7 @@ export interface ExecutionContext {
 }
 
 function buildArcReadContext(): {
-  chain: typeof arcTestnet;
+  chain: typeof deployedChain;
   primaryReadClient: ReturnType<typeof createPublicClient>;
   primaryRpcSource: string;
   fallbackClient: ReturnType<typeof createPublicClient>;
@@ -55,37 +55,34 @@ function buildArcReadContext(): {
   readClientType: string;
 } {
   const primaryReadClient = createPublicClient({
-    chain: arcTestnet,
-    transport: http(ARC_TESTNET_PRIMARY_RPC_URL, {
+    chain: deployedChain,
+    transport: http(DEPLOYED_PRIMARY_RPC_URL, {
       timeout: 10_000,
       retryCount: 2,
       retryDelay: 1_000,
     }),
   });
 
-  const fallbackRpcSources = ARC_TESTNET_ALL_RPC_URLS;
+  const fallbackRpcSources = DEPLOYED_FALLBACK_RPC_URLS;
   const fallbackClient = createPublicClient({
-    chain: arcTestnet,
+    chain: deployedChain,
     transport: fallback(
-      [
-        http(ARC_TESTNET_RPCS.primary.url, { timeout: 10_000, retryCount: 2, retryDelay: 1_000 }),
-        ...ARC_TESTNET_RPCS.secondary.map((rpc) =>
-          http(rpc.url, { timeout: 10_000, retryCount: 1, retryDelay: 1_000 }),
-        ),
-      ],
+      fallbackRpcSources.map((rpc, index) =>
+        http(rpc, { timeout: 10_000, retryCount: index === 0 ? 2 : 1, retryDelay: 1_000 }),
+      ),
       { rank: false },
     ),
   });
 
   return {
-    chain: arcTestnet,
+    chain: deployedChain,
     primaryReadClient,
-    primaryRpcSource: `${ARC_TESTNET_RPCS.primary.name} (${ARC_TESTNET_RPCS.primary.url})`,
+    primaryRpcSource: `Arc RPC (${DEPLOYED_PRIMARY_RPC_URL})`,
     fallbackClient,
-    fallbackRpcSource: `${ARC_TESTNET_RPCS.primary.name} (${ARC_TESTNET_RPCS.primary.url})`,
+    fallbackRpcSource: `Arc RPC (${DEPLOYED_PRIMARY_RPC_URL})`,
     fallbackRpcSources,
     fallbackActive: fallbackRpcSources.length > 1,
-    senderAuthorityHint: "wallet connector provider (Arc Testnet)",
+    senderAuthorityHint: `wallet connector provider (${deployedChain.name})`,
     writeAuthorityType: "wallet-connector-provider",
     readClientType: "primary-public-client",
   };
@@ -117,7 +114,7 @@ export function bindSenderAuthority(
     authorityChainId,
     authoritySource,
     authorityType: "wallet-connector-provider+publicActions",
-    senderAuthorityBound: authorityChainId === ARC_TESTNET_CHAIN_ID,
+    senderAuthorityBound: authorityChainId === DEPLOYED_CHAIN_ID,
   };
 }
 
@@ -126,11 +123,11 @@ export function resolveExecutionContext(
   account: `0x${string}`,
   tld: "arc" | "circle",
 ): ExecutionContext {
-  if (walletChainId !== ARC_TESTNET_CHAIN_ID) {
+  if (walletChainId !== DEPLOYED_CHAIN_ID) {
     throw new Error(
       `[CHAIN_MISMATCH] Unsupported chainId=${walletChainId}. ` +
-      `Active registration runtime is Arc Testnet only (${ARC_TESTNET_CHAIN_ID}). ` +
-      `Please switch your wallet to Arc Testnet.`
+      `Active registration runtime is ${deployedChain.name} (${DEPLOYED_CHAIN_ID}). ` +
+      `Please switch your wallet to Arc.`
     );
   }
 
@@ -149,10 +146,10 @@ export function resolveExecutionContext(
   const controller = tld === "arc" ? ADDR_ARC_CONTROLLER : ADDR_CIRCLE_CONTROLLER;
 
   console.log("[ExecutionContext]", {
-    runtimeMode: ARC_TESTNET_RUNTIME_MODE,
+    runtimeMode: DEPLOYED_RUNTIME_MODE,
     walletChainId,
-    readChainId: ARC_TESTNET_CHAIN_ID,
-    chainName: arcTestnet.name,
+    readChainId: DEPLOYED_CHAIN_ID,
+    chainName: deployedChain.name,
     account,
     controller,
     writeAuthorityType,
@@ -166,10 +163,10 @@ export function resolveExecutionContext(
   });
 
   return {
-    runtimeMode: ARC_TESTNET_RUNTIME_MODE,
+    runtimeMode: DEPLOYED_RUNTIME_MODE,
     walletChainId,
-    readChainId: ARC_TESTNET_CHAIN_ID,
-    chainName: arcTestnet.name,
+    readChainId: DEPLOYED_CHAIN_ID,
+    chainName: deployedChain.name,
     account,
     chain,
     primaryReadClient,
@@ -183,6 +180,6 @@ export function resolveExecutionContext(
     readClientType,
     controller,
     abiSource: "artifacts/contracts/proxy/ArcNSRegistrarControllerV2.sol/ArcNSRegistrarControllerV2.json",
-    isArcTestnetOnly: true,
+    isArcTestnetOnly: DEPLOYED_CHAIN_ID === ARC_TESTNET_CHAIN_ID,
   };
 }

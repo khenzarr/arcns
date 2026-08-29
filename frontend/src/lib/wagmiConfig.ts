@@ -10,25 +10,36 @@
  */
 import { createConfig, http } from "wagmi";
 import { injected, walletConnect } from "wagmi/connectors";
-import { ARC_TESTNET_PRIMARY_RPC_URL, arcTestnet } from "./chains";
+import {
+  ARC_MAINNET_PRIMARY_RPC_URL,
+  ARC_TESTNET_PRIMARY_RPC_URL,
+  arcMainnet,
+  arcTestnet,
+  deployedChain,
+} from "./chains";
 
 export const wagmiConfig = createConfig({
-  chains: [arcTestnet],
+  chains: [deployedChain],
   connectors: [
     injected({ shimDisconnect: true }),
     walletConnect({
       projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "b6d7afb94938b1fd9d9a72f7364fb905",
       metadata: {
-        name: "Arc Name Service",
-        description: "Independent name service built on Arc Testnet",
-        url: "https://arcname.services",
-        icons: ["https://arcname.services/icon.svg"],
+        name: "FlashNames",
+        description: "Independent naming protocol built on Arc",
+        url: "https://flashnames.space",
+        icons: ["https://flashnames.space/icon.svg"],
       },
       showQrModal: true,
     }),
   ],
   transports: {
     [arcTestnet.id]: http(ARC_TESTNET_PRIMARY_RPC_URL, {
+      timeout: 10_000,
+      retryCount: 2,
+      retryDelay: 1_000,
+    }),
+    [arcMainnet.id]: http(ARC_MAINNET_PRIMARY_RPC_URL, {
       timeout: 10_000,
       retryCount: 2,
       retryDelay: 1_000,

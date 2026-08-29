@@ -1,6 +1,6 @@
 "use client";
 /**
- * my-domains/page.tsx — ArcNS My Domains page.
+ * my-domains/page.tsx — FlashNames My Domains page.
  *
  * Manual product-level redesign shell.
  *
@@ -15,7 +15,6 @@ import Image from "next/image";
 import Portfolio from "../../components/Portfolio";
 import TransactionHistory from "../../components/TransactionHistory";
 import PrimaryName from "../../components/PrimaryName";
-import { NetworkBadge } from "../../components/ui/NetworkBadge";
 import { DashboardStats } from "../../components/ui/DashboardStats";
 import { FooterIdentityLine } from "../../components/ui/FooterIdentityLine";
 
@@ -33,7 +32,7 @@ export default function MyDomainsPage() {
         <section className="arcns-domains-hero">
           <div className="arcns-domains-emblem" aria-hidden="true">
             <Image
-              src="/arcns/arcns-emblem.svg"
+              src="/flashnames/flashnames-emblem.svg"
               alt=""
               aria-hidden="true"
               width={132}
@@ -45,9 +44,8 @@ export default function MyDomainsPage() {
           <div className="arcns-domains-title">
             <div className="arcns-domains-title-row">
               <h1>My Domains</h1>
-              <NetworkBadge variant="testnet" label="Testnet" />
             </div>
-            <p>Manage your ArcNS identity portfolio.</p>
+            <p>Manage your FlashNames identity portfolio.</p>
           </div>
         </section>
 

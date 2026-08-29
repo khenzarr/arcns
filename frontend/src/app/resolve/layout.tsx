@@ -1,21 +1,21 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Resolve ArcNS Names",
+  title: "Resolve FlashNames",
   description:
-    "Resolve ArcNS .arc and .circle records and inspect name ownership data on Arc Testnet.",
+    "Resolve FlashNames .arc and .circle records and inspect onchain name ownership data.",
   alternates: { canonical: "/resolve" },
   openGraph: {
     type: "website",
-    url: "https://arcname.services/resolve",
-    title: "Resolve ArcNS Names | ArcNS",
+    url: "https://flashnames.space/resolve",
+    title: "Resolve Names | FlashNames",
     description:
-      "Resolve .arc and .circle records with ArcNS on Arc Testnet.",
+      "Resolve .arc and .circle records with FlashNames, built on Arc.",
   },
   twitter: {
     card: "summary",
-    title: "Resolve ArcNS Names | ArcNS",
-    description: "Resolve .arc and .circle records with ArcNS on Arc Testnet.",
+    title: "Resolve Names | FlashNames",
+    description: "Resolve .arc and .circle records with FlashNames, built on Arc.",
   },
 };
 

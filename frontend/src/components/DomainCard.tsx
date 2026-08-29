@@ -1,6 +1,6 @@
 "use client";
 /**
- * DomainCard.tsx — canonical ArcNS register/renew interaction surface.
+ * DomainCard.tsx — canonical FlashNames register/renew interaction surface.
  *
  * Wired exclusively to v3 hooks (Block 2). No v1/v2 imports.
  * All errors come through hook outputs (errors.ts-driven).
@@ -41,7 +41,7 @@ import { registrarFor } from "../lib/contracts";
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-// Updated to ArcNS brand palette — logic unchanged
+// FlashNames brand palette — logic unchanged
 const DARK_BADGE_STYLES: Record<NameState, { bg: string; color: string; border?: string }> = {
   AVAILABLE: { bg: 'rgba(20, 241, 149, 0.12)', color: '#14F195', border: 'rgba(20,241,149,0.28)' },
   TAKEN:     { bg: 'rgba(100,112,132,0.12)',   color: 'var(--arcns-text-secondary)' },
@@ -109,7 +109,7 @@ function PriceBreakdown({
         <span className="font-semibold" style={{ color: 'var(--arcns-text-secondary)' }}>Total</span>
         <span className="font-bold text-lg" style={{ color: 'var(--arcns-text-primary)' }}>{formatUSDC(totalCost)}</span>
       </div>
-      <p className="text-xs" style={{ color: 'var(--arcns-text-muted)' }}>Paid in USDC · Arc Testnet</p>
+      <p className="text-xs" style={{ color: 'var(--arcns-text-muted)' }}>Paid in USDC · Onchain</p>
     </div>
   );
 }
@@ -431,10 +431,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           <div>
             <p className="text-sm font-medium" style={{ color: 'var(--arcns-danger)' }}>Insufficient USDC balance</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--arcns-danger)' }}>
-              You need {formatUSDC(shortfall)} more.{" "}
-              <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--arcns-danger)' }}>
-                Get testnet USDC →
-              </a>
+              You need {formatUSDC(shortfall)} more USDC.
             </p>
           </div>
         </div>
@@ -468,7 +465,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-muted)' }}>Validating…</div>
         ) : (
           <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] animate-pulse" style={{ background: 'rgba(37,99,255,0.08)', color: '#8FB3FF' }}>
-            Checking availability on Arc Testnet…
+            Checking availability on Arc…
           </div>
         )
 
@@ -477,7 +474,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to register. Use the Connect Wallet button in the header.</div>
         ) : isWrongNetwork ? (
           <div role="alert" aria-live="assertive" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
-            ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to register
+            ⚠ Switch to Arc (Chain ID {DEPLOYED_CHAIN_ID}) to register
           </div>
         ) : isPriceLoading ? (
           <button disabled className="w-full py-3.5 text-white rounded-[var(--arcns-radius-lg)] font-semibold opacity-50 cursor-not-allowed text-sm" style={{ background: 'var(--arcns-gradient-primary)' }}>
@@ -506,7 +503,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
               <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to renew. Use the Connect Wallet button in the header.</div>
           ) : isWrongNetwork ? (
             <div role="alert" aria-live="assertive" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
-              ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to renew
+              ⚠ Switch to Arc (Chain ID {DEPLOYED_CHAIN_ID}) to renew
             </div>
           ) : isOwnerLoading ? (
             <button

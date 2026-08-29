@@ -1,8 +1,8 @@
 /**
  * GET /api/v1/resolve/name/[name]
  *
- * Canonical ArcNS public resolution adapter — forward resolution.
- * Resolves a full ArcNS name (e.g. "alice.arc") to its EVM address record.
+ * Canonical FlashNames public resolution adapter — forward resolution.
+ * Resolves a full FlashNames name (e.g. "alice.arc") to its EVM address record.
  *
  * ─── Response schema ─────────────────────────────────────────────────────────
  *

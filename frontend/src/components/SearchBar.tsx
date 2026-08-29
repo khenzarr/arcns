@@ -1,17 +1,11 @@
 "use client";
 /**
- * SearchBar.tsx — canonical ArcNS search input.
+ * SearchBar.tsx — canonical FlashNames search input.
  *
- * Phase 6 visual redesign: ArcNS brandkit applied.
+ * Phase 6 visual redesign: FlashNames brandkit applied.
  *
- * LOGIC IS UNCHANGED:
- *   - normalizeLabel, validateLabel, priceTierFor, formatUSDC imports untouched
- *   - processInput, handleChange, handleTldChange, handleSubmit handlers untouched
- *   - debounce ref and cleanup untouched
- *   - onSearch / onInput / defaultTld props untouched
- *   - SUPPORTED_TLDS iteration untouched
- *
- * Only JSX structure and visual classes were updated.
+ * Input changes are reported immediately so the parent never renders a stale
+ * result card after the user clears or invalidates the current query.
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -53,6 +47,15 @@ export default function SearchBar({
     const normalized = normalizeLabel(value);
     const error      = validateLabel(normalized);
 
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
+
+    // The parent owns the result card. Notify it for every change—including
+    // empty and invalid values—so a previous committed result cannot linger.
+    onInput?.(normalized, activeTld);
+
     if (!value || value.trim() === "") {
       setHint(null);
       return;
@@ -72,16 +75,10 @@ export default function SearchBar({
 
     setHint(null);
 
-    // Instant price-tier preview (no RPC)
-    const tier = priceTierFor(normalized);
-
-    // Notify parent immediately for card preview
-    onInput?.(normalized, activeTld);
-
     // Debounced availability RPC trigger
-    if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       onSearch(normalized, activeTld);
+      debounceRef.current = null;
     }, 400);
   }, [onSearch, onInput]);
 
@@ -158,7 +155,7 @@ export default function SearchBar({
             autoCapitalize="off"
             spellCheck={false}
             className="arcns-searchbar-input"
-            aria-label="Search for an ArcNS name"
+            aria-label="Search for a FlashNames name"
           />
 
           <div className="arcns-searchbar-divider" aria-hidden="true" />
