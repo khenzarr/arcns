@@ -102,7 +102,7 @@ All values in this section remain `TBD` until produced by a reviewed future depl
 
 | Area | Current status | Required evidence | Go/No-Go | Notes |
 |---|---|---|---|---|
-| Brand/legal | Remediation completed | Reviewed public brand/legal documents and final launch recheck | GO | Completed preparation; recheck during final review |
+| Brand/legal | Arc team explicitly rejected “ArcNS” and “Arc Name Service” as product names; user elected to retain ArcNS pending further decision | Written name clearance or approved rebrand, reviewed public brand/legal documents, and final launch recheck | NO-GO | “Built on Arc” and an independence disclaimer do not cure the explicit name objection. Do not treat this row as launch approval. |
 | Pricing | Final schedule prepared | Canonical 100/50/25/15/5 USDC schedule and independent deployed oracle reads | GO | Input is final; deployed oracle evidence remains part of contract launch gates |
 | Snapshot root | Final snapshot data prepared | Campaign, bytes32, block/hash, root, count, and independent artifact validation | GO | Does not mean root is set on mainnet |
 | Proof artifact | Generated and validated with 849 entries | Validator PASS against finalized snapshot/root | GO | Delivery integration and used-state checks remain incomplete |
