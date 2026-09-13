@@ -24,6 +24,9 @@ import { USDC_CONTRACT, RESOLVER_CONTRACT, ADDR_RESOLVER, ADDR_ARC_CONTROLLER, A
 import { namehash } from "../lib/namehash";
 import { clearPrevPrimaryAddr } from "../lib/clearPrevPrimaryAddr";
 import { DEPLOYED_CHAIN_ID } from "../lib/generated-contracts";
+import { IS_MAINNET, NETWORK_DISPLAY } from "../lib/networkDisplay";
+import { SnapshotPricePreview } from "./SnapshotPricePreview";
+import { useSnapshotDiscount } from "../hooks/useSnapshotDiscount";
 import {
   formatUSDC,
   withSlippage,
@@ -66,7 +69,7 @@ function StateBadge({ state }: { state: NameState }) {
 }
 
 function PriceBreakdown({
-  isPriceLoading, baseCost, premiumCost, totalCost, hasPremium, tierLabel,
+  isPriceLoading, baseCost, premiumCost, totalCost, hasPremium, tierLabel, originalCost,
 }: {
   isPriceLoading: boolean;
   baseCost:       bigint;
@@ -74,6 +77,7 @@ function PriceBreakdown({
   totalCost:      bigint;
   hasPremium:     boolean;
   tierLabel:      string;
+  originalCost?:  bigint;
 }) {
   if (isPriceLoading) {
     return (
@@ -107,9 +111,9 @@ function PriceBreakdown({
       ) : null}
       <div className="border-t pt-2 flex justify-between" style={{ borderColor: 'var(--arcns-border-default)' }}>
         <span className="font-semibold" style={{ color: 'var(--arcns-text-secondary)' }}>Total</span>
-        <span className="font-bold text-lg" style={{ color: 'var(--arcns-text-primary)' }}>{formatUSDC(totalCost)}</span>
+        <span className="font-bold text-lg" style={{ color: 'var(--arcns-text-primary)' }}>{originalCost ? <s className="mr-2 text-sm font-normal text-[var(--arcns-text-muted)]">{formatUSDC(originalCost)}</s> : null}{formatUSDC(totalCost)}</span>
       </div>
-      <p className="text-xs" style={{ color: 'var(--arcns-text-muted)' }}>Paid in USDC · Arc Testnet</p>
+      <p className="text-xs" style={{ color: 'var(--arcns-text-muted)' }}>Paid in USDC · {NETWORK_DISPLAY.networkDisplayName}</p>
     </div>
   );
 }
@@ -128,7 +132,10 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
   const isWrongNetwork = isConnected && walletChainId !== DEPLOYED_CHAIN_ID;
   const [duration,    setDuration]    = useState(BigInt(DURATION_OPTIONS[0].seconds));
   const [reverseRecord, setReverseRecord] = useState(true);
+  const [useDiscount, setUseDiscount] = useState(false);
   const [checkPhase,  setCheckPhase]  = useState<0 | 1 | 2>(0);
+
+  useEffect(() => { setUseDiscount(false); }, [address, label, tld, duration]);
 
   // Time-gated loading phase to suppress flicker
   useEffect(() => {
@@ -144,6 +151,9 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
     nameState, baseCost, premiumCost, totalCost, hasPremium, tierLabel,
     isPriceLoading, refetch: refetchAvail,
   } = useAvailability(label, tld, duration);
+  const discount = useSnapshotDiscount(label, tld, duration);
+  const discountSelected = nameState === "AVAILABLE" && useDiscount && discount !== null && discount.total < totalCost;
+  const payableCost = discountSelected ? discount.total : totalCost;
 
   const reg  = useRegistration();
   const renew = useRenew();
@@ -169,7 +179,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
       prevPrimaryAtRegRef.current = null;
     }
     clearAttemptedRef.current = false;
-    reg.register({ label, tld, duration, totalCost, resolverAddr: reverseRecord ? ADDR_RESOLVER : ZERO_ADDRESS, reverseRecord });
+    reg.register({ label, tld, duration, totalCost: payableCost, resolverAddr: reverseRecord ? ADDR_RESOLVER : ZERO_ADDRESS, reverseRecord, discountProof: discountSelected ? discount.proof : undefined });
   };
 
   // After registration succeeds with reverseRecord=true, attempt to clear the
@@ -194,12 +204,12 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
   }, [reg.step, reverseRecord, address, reg.result, writeContractAsync]);
 
   // ── USDC allowance check ───────────────────────────────────────────────────
-  const maxCost = withSlippage(totalCost);
+  const maxCost = withSlippage(payableCost);
   const { data: allowanceData, refetch: refetchAllowance } = useReadContract({
     ...USDC_CONTRACT,
     functionName: "allowance",
     args:         address ? [address, tld === "arc" ? ADDR_ARC_CONTROLLER : ADDR_CIRCLE_CONTROLLER] : undefined,
-    query: { enabled: !!address && totalCost > 0n, staleTime: 10_000 },
+    query: { enabled: !!address && payableCost > 0n, staleTime: 10_000 },
   });
   const allowance    = (allowanceData as bigint | undefined) ?? 0n;
   const needsApproval = allowance < maxCost;
@@ -212,8 +222,8 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
     query: { enabled: !!address, staleTime: 15_000 },
   });
   const balance   = (balanceData as bigint | undefined) ?? 0n;
-  const sufficient = balance >= totalCost;
-  const shortfall  = totalCost > balance ? totalCost - balance : 0n;
+  const sufficient = balance >= payableCost;
+  const shortfall  = payableCost > balance ? payableCost - balance : 0n;
 
   // ── Expiry (for TAKEN names) ───────────────────────────────────────────────
   const tokenId = labelToTokenId(label);
@@ -413,16 +423,19 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
       {(nameState === "AVAILABLE" || nameState === "TAKEN") ? (
         <PriceBreakdown
           isPriceLoading={isPriceLoading}
-          baseCost={baseCost}
+          baseCost={discountSelected ? discount.base : baseCost}
           premiumCost={premiumCost}
-          totalCost={totalCost}
+          totalCost={payableCost}
           hasPremium={hasPremium}
           tierLabel={tierLabel}
+          originalCost={discountSelected ? totalCost : undefined}
         />
       ) : null}
 
+      {nameState === "AVAILABLE" && discount && discount.total < totalCost ? <SnapshotPricePreview discount={discount} standardCost={totalCost} selected={useDiscount} onSelect={setUseDiscount} /> : null}
+
       {/* Balance warning */}
-      {isConnected && nameState === "AVAILABLE" && !isPriceLoading && !sufficient && totalCost > 0n ? (
+      {isConnected && nameState === "AVAILABLE" && !isPriceLoading && !sufficient && payableCost > 0n ? (
         <div
           className="rounded-[var(--arcns-radius-lg)] p-3 mb-4 flex items-start gap-2 border"
           style={{ background: 'rgba(255,92,122,0.08)', borderColor: 'rgba(255,92,122,0.24)' }}
@@ -433,7 +446,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             <p className="text-xs mt-0.5" style={{ color: 'var(--arcns-danger)' }}>
               You need {formatUSDC(shortfall)} more.{" "}
               <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--arcns-danger)' }}>
-                Get testnet USDC →
+                {IS_MAINNET ? "Learn about USDC →" : "Get testnet USDC →"}
               </a>
             </p>
           </div>
@@ -468,7 +481,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-muted)' }}>Validating…</div>
         ) : (
           <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] animate-pulse" style={{ background: 'rgba(37,99,255,0.08)', color: '#8FB3FF' }}>
-            Checking availability on Arc Testnet…
+            Checking availability on {NETWORK_DISPLAY.networkDisplayName}…
           </div>
         )
 
@@ -477,7 +490,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to register. Use the Connect Wallet button in the header.</div>
         ) : isWrongNetwork ? (
           <div role="alert" aria-live="assertive" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
-            ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to register
+            ⚠ Switch to {NETWORK_DISPLAY.networkDisplayName} (Chain ID {DEPLOYED_CHAIN_ID}) to register
           </div>
         ) : isPriceLoading ? (
           <button disabled className="w-full py-3.5 text-white rounded-[var(--arcns-radius-lg)] font-semibold opacity-50 cursor-not-allowed text-sm" style={{ background: 'var(--arcns-gradient-primary)' }}>
@@ -496,7 +509,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             : reg.step === "ready"      ? "Commitment submitted · preparing registration…"
             : reg.step === "registering"? "Confirm registration in your wallet…"
             : reg.step === "success"    ? "✓ Registered!"
-            : `Register ${label}.${tld} · ${formatUSDC(totalCost)}`}
+            : `Register ${label}.${tld} · ${formatUSDC(payableCost)}`}
           </button>
         )
 
@@ -506,7 +519,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
               <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to renew. Use the Connect Wallet button in the header.</div>
           ) : isWrongNetwork ? (
             <div role="alert" aria-live="assertive" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
-              ⚠ Switch to Arc Testnet (Chain ID {DEPLOYED_CHAIN_ID}) to renew
+              ⚠ Switch to {NETWORK_DISPLAY.networkDisplayName} (Chain ID {DEPLOYED_CHAIN_ID}) to renew
             </div>
           ) : isOwnerLoading ? (
             <button

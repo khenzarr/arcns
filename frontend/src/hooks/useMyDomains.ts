@@ -25,7 +25,7 @@ import {
   ADDR_ARC_REGISTRAR,
   ADDR_CIRCLE_REGISTRAR,
 } from "../lib/contracts";
-import { arcTestnet } from "../lib/chains";
+import { deployedChain, DEPLOYED_PRIMARY_RPC_URL } from "../lib/chains";
 import {
   getExpiryState,
   type ExpiryState,
@@ -64,10 +64,9 @@ const TRANSFER_EVENT = parseAbiItem(
 );
 
 function makeReadClient() {
-  const rpcUrl = (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_RPC_URL)
-    || "https://rpc.testnet.arc.network";
+  const rpcUrl = DEPLOYED_PRIMARY_RPC_URL;
   return createPublicClient({
-    chain:     arcTestnet,
+    chain:     deployedChain,
     transport: http(rpcUrl, { timeout: 15_000, retryCount: 2, retryDelay: 1_000 }),
   });
 }

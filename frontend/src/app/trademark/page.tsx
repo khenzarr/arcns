@@ -2,23 +2,24 @@ import type { Metadata } from "next";
 import LegalPage, {
   CIRCLE_NAMESPACE_NOTICE,
   INDEPENDENT_PROJECT_NOTICE,
-  TESTNET_STATUS_NOTICE,
+  NETWORK_STATUS_NOTICE,
 } from "../../components/LegalPage";
+import { IS_MAINNET, NETWORK_DISPLAY } from "../../lib/networkDisplay";
 
 export const metadata: Metadata = {
   title: "Trademark / Brand Notice",
-  description: "Brand and trademark notice for the independent ArcNS testnet project.",
+  description: `Brand and trademark notice for the independent ArcNS protocol built on ${NETWORK_DISPLAY.networkDisplayName}.`,
   alternates: { canonical: "/trademark" },
   openGraph: {
     type: "website",
     url: "https://arcname.services/trademark",
     title: "Trademark / Brand Notice | ArcNS",
-    description: "Brand and trademark notice for the independent ArcNS testnet project.",
+    description: `Brand and trademark notice for the independent ArcNS protocol built on ${NETWORK_DISPLAY.networkDisplayName}.`,
   },
   twitter: {
     card: "summary",
     title: "Trademark / Brand Notice | ArcNS",
-    description: "Brand and trademark notice for the independent ArcNS testnet project.",
+    description: `Brand and trademark notice for the independent ArcNS protocol built on ${NETWORK_DISPLAY.networkDisplayName}.`,
   },
 };
 
@@ -33,7 +34,7 @@ export default function TrademarkPage() {
           content: <p>{INDEPENDENT_PROJECT_NOTICE}</p>,
         },
         {
-          title: ".circle testnet namespace",
+          title: ".circle namespace",
           content: <p>{CIRCLE_NAMESPACE_NOTICE}</p>,
         },
         {
@@ -41,19 +42,19 @@ export default function TrademarkPage() {
           content: (
             <p>
               The ArcNS project claims no ownership of the Arc or Circle names, marks, logos, or other brand assets.
-              References to Arc Testnet and Circle are descriptive only and do not state or imply partnership,
+              References to Arc and Circle are descriptive only and do not state or imply partnership,
               approval, endorsement, sponsorship, or official status.
             </p>
           ),
         },
         {
-          title: "Testnet status and no promises",
+          title: IS_MAINNET ? "Network and user responsibility" : "Testnet status and no promises",
           content: (
             <>
-              <p>{TESTNET_STATUS_NOTICE}</p>
+              <p>{NETWORK_STATUS_NOTICE}</p>
               <p>
-                Nothing in ArcNS branding is a promise of mainnet launch, financial value, legal right, continued
-                availability, or future recognition of a testnet name.
+                Nothing in ArcNS branding is a promise of financial value, legal rights, uninterrupted availability,
+                or official recognition by Circle or the Arc team.
               </p>
             </>
           ),

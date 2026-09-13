@@ -2,23 +2,24 @@ import type { Metadata } from "next";
 import LegalPage, {
   CIRCLE_NAMESPACE_NOTICE,
   INDEPENDENT_PROJECT_NOTICE,
-  TESTNET_STATUS_NOTICE,
+  NETWORK_STATUS_NOTICE,
 } from "../../components/LegalPage";
+import { IS_MAINNET, NETWORK_DISPLAY } from "../../lib/networkDisplay";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Privacy information for the independent ArcNS public Arc Testnet app.",
+  description: `Privacy information for the independent ArcNS app on ${NETWORK_DISPLAY.networkDisplayName}.`,
   alternates: { canonical: "/privacy" },
   openGraph: {
     type: "website",
     url: "https://arcname.services/privacy",
     title: "Privacy Policy | ArcNS",
-    description: "Privacy information for the independent ArcNS public Arc Testnet app.",
+    description: `Privacy information for the independent ArcNS app on ${NETWORK_DISPLAY.networkDisplayName}.`,
   },
   twitter: {
     card: "summary",
     title: "Privacy Policy | ArcNS",
-    description: "Privacy information for the independent ArcNS public Arc Testnet app.",
+    description: `Privacy information for the independent ArcNS app on ${NETWORK_DISPLAY.networkDisplayName}.`,
   },
 };
 
@@ -26,18 +27,18 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy Policy"
-      summary="This policy explains the information involved when you use the public ArcNS testnet app. Public blockchain activity is inherently visible and should not be treated as private."
+      summary={`This policy explains the information involved when you use ArcNS on ${NETWORK_DISPLAY.networkDisplayName}. Public blockchain activity is visible and should not be treated as private.`}
       sections={[
         {
           title: "Current service status",
-          content: <p>{TESTNET_STATUS_NOTICE}</p>,
+          content: <p>{NETWORK_STATUS_NOTICE}</p>,
         },
         {
           title: "Information processed",
           content: (
             <p>
               The app may process wallet addresses, name-search input, network information, and transaction data
-              needed to display and submit testnet interactions. Wallet and name records written to Arc Testnet
+              needed to display and submit interactions. Wallet and name records written to {NETWORK_DISPLAY.networkDisplayName}
               are public blockchain data and may be indexed or retained by independent infrastructure providers.
             </p>
           ),
@@ -48,7 +49,7 @@ export default function PrivacyPage() {
             <p>
               The app may rely on wallet providers, RPC endpoints, indexers, hosting services, and public blockchain
               explorers. Those independent services may process technical data under their own policies. ArcNS
-              makes no promise that testnet infrastructure will remain available or that a mainnet service will launch.
+              makes no promise that third-party infrastructure will remain available.
             </p>
           ),
         },
@@ -57,7 +58,7 @@ export default function PrivacyPage() {
           content: (
             <p>
               This policy does not create a financial guarantee, legal representation, fiduciary relationship, or
-              promise concerning the value, permanence, availability, or future portability of any testnet name.
+              promise concerning the value, permanence, availability, or portability of any name.
             </p>
           ),
         },

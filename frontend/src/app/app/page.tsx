@@ -11,9 +11,9 @@ import {
   type SupportedTLD,
 } from "../../lib/normalization";
 import { ACTIVE_CHAIN_ID } from "../../lib/chainConfig";
-import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
+import { IS_MAINNET, NETWORK_DISPLAY } from "../../lib/networkDisplay";
 
-const DISPLAY_PRICING_TABLE = ACTIVE_CHAIN_ID === 5042
+const DISPLAY_PRICING_TABLE = Number(ACTIVE_CHAIN_ID) === 5042
   ? MAINNET_PRICING.map((row) => ({ len: row.label, price: `${row.display.replace("/yr", "")} / year`, annual: row.annualUSDC }))
   : PRICING_TABLE;
 
@@ -73,7 +73,7 @@ const FEATURES = [
   },
   {
     title: "Pay with USDC",
-    desc: "Stable, predictable pricing. No gas volatility. From $2.00/yr.",
+    desc: `Stable, predictable pricing. From $${IS_MAINNET ? "5" : "2"}.00/yr.`,
     accent: "#3BA3FF",
     icon: TRUST_ITEMS[1].icon,
   },
@@ -125,7 +125,7 @@ export default function AppPage() {
           <div className="arcns-hero-copy">
             <div className="arcns-live-badge">
               <span className="arcns-pulse-dot" aria-hidden="true" />
-              Live on {NETWORK_DISPLAY.networkDisplayName} - {NETWORK_DISPLAY.chainIdLabel}
+              {IS_MAINNET ? "Built on Arc" : `Live on ${NETWORK_DISPLAY.networkDisplayName} - ${NETWORK_DISPLAY.chainIdLabel}`}
             </div>
 
             <h1 className="arcns-hero-headline">
@@ -192,11 +192,11 @@ export default function AppPage() {
 
                 <div className="arcns-price-grid">
                   {DISPLAY_PRICING_TABLE.map((row, index) => (
-                    <div className="arcns-price-cell" key={row.len} data-best={index === 0 ? "true" : "false"}>
+                    <div className="arcns-price-cell" key={row.len} data-best={IS_MAINNET ? index === 4 ? "true" : "false" : index === 0 ? "true" : "false"}>
                       <span>{row.len}</span>
                       <strong>{row.price.replace(" / year", "")}</strong>
                       <em>/ year</em>
-                      {index === 0 ? <b>Best value</b> : null}
+                      {(IS_MAINNET ? index === 4 : index === 0) ? <b>Best value</b> : null}
                     </div>
                   ))}
                 </div>

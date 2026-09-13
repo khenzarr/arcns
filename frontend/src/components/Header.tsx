@@ -19,6 +19,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { NetworkBadge } from "./ui/NetworkBadge";
+import { IS_MAINNET } from "../lib/networkDisplay";
 
 function WalletButton() {
   const { address, isConnected } = useAccount();
@@ -191,18 +192,14 @@ export default function Header() {
             />
           </span>
 
-          <span
-            className="font-bold text-2xl tracking-[-0.04em]"
-            style={{
-              color: "var(--arcns-text-primary)",
-              fontFamily: "var(--arcns-font-display)",
-              textShadow: "0 0 18px rgba(0, 212, 255, 0.08)",
-            }}
-          >
-            ArcNS
+          <span className="flex flex-col leading-none">
+            <span
+              className="font-bold text-2xl tracking-[-0.04em]"
+              style={{ color: "var(--arcns-text-primary)", fontFamily: "var(--arcns-font-display)" }}
+            >ArcNS</span>
+            <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.19em] text-[var(--arcns-text-muted)]">Built on Arc</span>
           </span>
-
-          <NetworkBadge variant="testnet" label="Testnet" />
+          {!IS_MAINNET ? <NetworkBadge variant="testnet" label="Testnet" /> : null}
         </Link>
 
         <nav

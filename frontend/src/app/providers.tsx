@@ -19,6 +19,7 @@ import { WagmiProvider, useAccount } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { wagmiConfig } from "../lib/wagmiConfig";
 import { DEPLOYED_CHAIN_ID, DEPLOYED_NETWORK } from "../lib/generated-contracts";
+import { NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 // ─── Chain guard banner ───────────────────────────────────────────────────────
 
@@ -38,7 +39,7 @@ function ChainGuardBanner() {
         fontFamily: "monospace", textAlign: "center",
       }}
     >
-      ⚠ Wrong network (Chain ID {chainId}). Please switch your wallet to Arc Testnet
+      ⚠ Wrong network (Chain ID {chainId}). Please switch your wallet to {NETWORK_DISPLAY.networkDisplayName}
       (Chain ID {DEPLOYED_CHAIN_ID}). Write transactions are blocked until you switch.
     </div>
   );

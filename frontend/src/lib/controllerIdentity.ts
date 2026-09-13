@@ -14,7 +14,7 @@
  */
 
 import { ADDR_ARC_CONTROLLER, ADDR_CIRCLE_CONTROLLER } from "./contracts";
-import { arcTestnet } from "./chains";
+import { deployedChain } from "./chains";
 
 // Internal shim — single source of truth for controller addresses
 const CONTRACTS = {
@@ -133,7 +133,7 @@ export async function resolveControllerIdentity(
     : CONTRACTS.circleController;
 
   // Read chainId from active client
-  const chainId: number = publicClient.chain?.id ?? arcTestnet.id;
+  const chainId: number = publicClient.chain?.id ?? deployedChain.id;
 
   // Read EIP-1967 implementation slot
   const implSlotValue = await readImplSlot(publicClient, controllerAddress);

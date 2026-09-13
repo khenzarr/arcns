@@ -45,6 +45,8 @@ import { CopyButton } from "../../components/ui/CopyButton";
 import { TldBadge } from "../../components/ui/TldBadge";
 import { FooterIdentityLine } from "../../components/ui/FooterIdentityLine";
 import { JsonLd } from "../../components/JsonLd";
+import { activeConfig } from "../../lib/chainConfig";
+import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
 
 export type ResolveQuery = { label: string; tld: SupportedTLD; domain: string };
 export type ResolveInputState = "pristine" | "invalid" | "malformed" | "unsupportedTld" | "valid";
@@ -55,7 +57,7 @@ const resolvePageJsonLd = {
   "@id": "https://arcname.services/resolve#webpage",
   name: "ArcNS Resolve",
   url: "https://arcname.services/resolve",
-  description: "Inspect ArcNS names and on-chain identity records on Arc Testnet.",
+  description: `Inspect ArcNS names and on-chain identity records on ${NETWORK_DISPLAY.networkDisplayName}.`,
   isPartOf: {
     "@id": "https://arcname.services/#website",
   },
@@ -553,15 +555,15 @@ export default function ResolvePage() {
 
   const explorerTokenHref =
     tld && label
-      ? `https://testnet.arcscan.app/token/${registrar}?a=${tokenId}`
-      : "https://testnet.arcscan.app";
+      ? `${activeConfig.blockExplorer}/token/${registrar}?a=${tokenId}`
+      : activeConfig.blockExplorer;
 
   const resolvedExplorerHref = hasAddr
-    ? `https://testnet.arcscan.app/address/${normalizedResolvedAddress}`
+    ? `${activeConfig.blockExplorer}/address/${normalizedResolvedAddress}`
     : undefined;
 
   const ownerExplorerHref = ownerAddress
-    ? `https://testnet.arcscan.app/address/${ownerAddress}`
+    ? `${activeConfig.blockExplorer}/address/${ownerAddress}`
     : undefined;
 
   const ownershipCopy = !connectedAddress
@@ -773,7 +775,7 @@ export default function ResolvePage() {
         {hasResult && !readsSettled ? (
           <section className="mt-10 w-full rounded-[28px] border px-5 py-10 text-center sm:px-8" role="status" aria-live="polite" aria-busy="true" style={{ background: "rgba(11,18,36,0.72)", borderColor: "rgba(120,160,255,0.20)" }}>
             <h2 className="text-2xl font-bold" style={{ color: "var(--arcns-text-primary)" }}>Verifying {queried}…</h2>
-            <p className="mt-3 text-sm" style={{ color: "var(--arcns-text-secondary)" }}>Reading Arc testnet records.</p>
+            <p className="mt-3 text-sm" style={{ color: "var(--arcns-text-secondary)" }}>Reading {NETWORK_DISPLAY.networkDisplayName} records.</p>
           </section>
         ) : null}
 
@@ -881,7 +883,7 @@ export default function ResolvePage() {
                     value={shortAddress(ADDR_RESOLVER, 8, 6)}
                     valueColor="var(--arcns-cyan)"
                     copyValue={ADDR_RESOLVER}
-                    explorerHref={`https://testnet.arcscan.app/address/${ADDR_RESOLVER}`}
+                    explorerHref={`${activeConfig.blockExplorer}/address/${ADDR_RESOLVER}`}
                   />
 
                   <DetailRow
@@ -955,7 +957,7 @@ export default function ResolvePage() {
                 ) : null}
 
                 {hasAddr ? (
-                  <MiniAction href={`https://testnet.arcscan.app/address/${normalizedResolvedAddress}`}>
+                  <MiniAction href={`${activeConfig.blockExplorer}/address/${normalizedResolvedAddress}`}>
                     Open in Explorer <ExternalIcon />
                   </MiniAction>
                 ) : null}
@@ -1208,7 +1210,7 @@ export default function ResolvePage() {
                       Registrar
                     </p>
                     <a
-                      href={`https://testnet.arcscan.app/address/${registrar}`}
+                      href={`${activeConfig.blockExplorer}/address/${registrar}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-sm font-bold"

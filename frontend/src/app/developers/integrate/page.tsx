@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CopyButton } from "../../../components/ui/CopyButton";
+import { NETWORK_DISPLAY } from "../../../lib/networkDisplay";
 
 const BASE_URL = "https://arcname.services/api/v1";
 
@@ -108,7 +109,7 @@ export default function IntegratePage() {
           <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 backdrop-blur-xl">
             <p className="text-xs uppercase tracking-[0.16em] text-[var(--arcns-text-muted)]">Public base URL</p>
             <div className="mt-3 flex items-center justify-between gap-3 rounded-xl bg-black/25 px-3 py-2"><code className="min-w-0 truncate text-sm text-white">{BASE_URL}</code><CopyButton value={BASE_URL} aria-label="Copy ArcNS API base URL" /></div>
-            <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold"><span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-300">Live</span><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[var(--arcns-text-secondary)]">Arc Testnet</span><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[var(--arcns-text-secondary)]">API v1</span></div>
+            <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold"><span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-emerald-300">Live</span><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[var(--arcns-text-secondary)]">{NETWORK_DISPLAY.networkDisplayName}</span><span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[var(--arcns-text-secondary)]">API v1</span></div>
           </div>
         </header>
 

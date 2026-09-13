@@ -24,6 +24,6 @@
   </g>
   <text x="590" y="270" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="190" font-weight="500" letter-spacing="-8" fill="#07112F">Arc</text>
   <text x="940" y="270" font-family="Space Grotesk, Inter, Arial, sans-serif" font-size="190" font-weight="500" letter-spacing="-8" fill="url(#nsGrad)">NS</text>
-  <text x="604" y="365" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="500" letter-spacing="20" fill="#6E7B96">Arc Name Service</text>
+  <text x="604" y="365" font-family="Inter, Arial, sans-serif" font-size="48" font-weight="500" letter-spacing="16" fill="#6E7B96">BUILT ON ARC</text>
 </g>
 </svg>

@@ -14,6 +14,9 @@ import { formatUSDC, formatExpiry } from "../lib/normalization";
 import { RESOLVER_CONTRACT } from "../lib/contracts";
 import { namehash } from "../lib/namehash";
 import type { RegistrationResult } from "../hooks/useRegistration";
+import { ADDR_ARC_REGISTRAR, ADDR_CIRCLE_REGISTRAR } from "../lib/generated-contracts";
+import { activeConfig } from "../lib/chainConfig";
+import { NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 15_000;
@@ -73,12 +76,10 @@ export default function SuccessModal({ result, reverseRecord = false, onClose, o
     (registeredAddr as string) !== ZERO_ADDRESS &&
     !!connectedAddress &&
     (registeredAddr as string).toLowerCase() === connectedAddress.toLowerCase();
-  const registrarAddr = tld === "arc"
-    ? "0xb156d9726661E92C541e3a267ee8710Fdcd24969"
-    : "0xBdfF2790Dd72E86C3510Cc8374EaC5E2E0659c5e";
+  const registrarAddr = tld === "arc" ? ADDR_ARC_REGISTRAR : ADDR_CIRCLE_REGISTRAR;
 
-  const arcScanTxUrl  = `https://testnet.arcscan.app/tx/${result.txHash}`;
-  const arcScanNFTUrl = `https://testnet.arcscan.app/token/${registrarAddr}?a=${tokenId}`;
+  const arcScanTxUrl  = `${activeConfig.blockExplorer}/tx/${result.txHash}`;
+  const arcScanNFTUrl = `${activeConfig.blockExplorer}/token/${registrarAddr}?a=${tokenId}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(`${result.name}.${tld}`);
@@ -103,7 +104,7 @@ export default function SuccessModal({ result, reverseRecord = false, onClose, o
           </div>
           <h2 className="text-xl font-bold text-white">Registration Successful!</h2>
           <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.75)' }}>
-            {resolvedToWallet ? "Registered and resolving to your wallet" : "Your domain is live on Arc Testnet"}
+            {resolvedToWallet ? "Registered and resolving to your wallet" : `Your domain is live on ${NETWORK_DISPLAY.networkDisplayName}`}
           </p>
         </div>
 

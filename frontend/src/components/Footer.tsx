@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { NETWORK_DISPLAY } from "../lib/networkDisplay";
+import { IS_MAINNET, NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 type FooterLinkItem = {
   label: string;
@@ -25,7 +25,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
       { label: "Send Assets", href: "/send" },
       { label: "My Domains", href: "/my-domains" },
       { label: "Resolve", href: "/resolve" },
-      { label: "Public Testnet App", href: "/app" },
+      ...(!IS_MAINNET ? [{ label: "Public Testnet App", href: "/app" }] : []),
       { label: "GitHub", href: GITHUB_REPO, external: true },
     ],
   },
@@ -193,7 +193,7 @@ export default function Footer() {
                     ArcNS
                   </p>
                   <p className="text-sm text-[var(--arcns-text-secondary)]">
-                    Human-readable names for addresses on Arc.
+                    Built on Arc
                   </p>
                 </div>
               </div>
@@ -206,11 +206,11 @@ export default function Footer() {
 
               <div className="space-y-2 text-sm leading-6 text-[var(--arcns-text-secondary)]">
                 <p>
-                  Live on {NETWORK_DISPLAY.networkDisplayName} - {NETWORK_DISPLAY.environmentStatusLabel} - External audit pending
+                  {IS_MAINNET ? "Human-readable names on Arc." : `Live on ${NETWORK_DISPLAY.networkDisplayName} - ${NETWORK_DISPLAY.environmentStatusLabel} - External audit pending`}
                 </p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
-                  ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with,
-                  endorsed by, or sponsored by Circle unless separately agreed in writing.
+                  ArcNS is an independent naming protocol built on Arc. It is not operated by, affiliated with,
+                  sponsored by, or endorsed by Circle or the Arc team.
                 </p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
                   Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.

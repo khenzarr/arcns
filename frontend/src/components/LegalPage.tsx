@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { IS_MAINNET } from "../lib/networkDisplay";
 
 type LegalSection = {
   title: string;
@@ -7,16 +8,20 @@ type LegalSection = {
 };
 
 export const INDEPENDENT_PROJECT_NOTICE =
-  "ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with, endorsed by, or sponsored by Circle unless separately agreed in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.";
+  "ArcNS is an independently developed and operated naming protocol built on Arc. ArcNS is not an official Arc or Circle product and is not operated by, affiliated with, sponsored by, or endorsed by Circle or the Arc team. The word ‘Arc’ in the ArcNS name identifies the network on which the protocol is built; it does not indicate ownership, authorization, or official status. Arc and Circle are trademarks of Circle Internet Group, Inc. and/or its affiliates. No rights in those marks are claimed.";
 
 export const CIRCLE_NAMESPACE_NOTICE =
-  "`.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.";
+  "The .circle namespace is offered by the independent ArcNS protocol. Its name does not imply that Circle owns, operates, authorizes, sponsors, or endorses the namespace.";
 
 export const REGISTRATION_NOTICE =
   "Names are ERC-721 NFTs with registration periods and renewal requirements. Registration expires unless renewed before the applicable expiry date.";
 
 export const TESTNET_STATUS_NOTICE =
   "ArcNS is live on Arc Testnet for testing and demonstration. Mainnet deployment is gated on external audit, mainnet USDC configuration, operational hardening, and final legal/brand review.";
+
+export const NETWORK_STATUS_NOTICE = IS_MAINNET
+  ? "ArcNS operates on Arc mainnet. Blockchain transactions are irreversible; users should verify network, recipient, price, contract addresses, and wallet prompts before signing."
+  : TESTNET_STATUS_NOTICE;
 
 export default function LegalPage({
   title,
@@ -37,7 +42,7 @@ export default function LegalPage({
           {title}
         </h1>
         <p className="mt-4 leading-7">{summary}</p>
-        <p className="mt-3 text-sm text-[var(--arcns-text-muted)]">Last updated: August 1, 2026</p>
+        <p className="mt-3 text-sm text-[var(--arcns-text-muted)]">Last updated: September 13, 2026</p>
 
         <div className="mt-10 space-y-9">
           {sections.map(section => (

@@ -32,6 +32,7 @@ export const ADDR_ARC_CONTROLLER     = "0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D
 export const ADDR_ARC_CTRL_IMPL      = "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB"  as `0x${string}`;
 export const ADDR_CIRCLE_CONTROLLER  = "0x4CB0650847459d9BbDd5823cc6D320C900D883dA"   as `0x${string}`;
 export const ADDR_CIRCLE_CTRL_IMPL   = "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB" as `0x${string}`;
+export const ADDR_DISCOUNT_REGISTRY  = "0x0000000000000000000000000000000000000000" as `0x${string}`;
 
 // ─── Canonical namehashes ─────────────────────────────────────────────────────
 

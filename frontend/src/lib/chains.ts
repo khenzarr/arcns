@@ -1,8 +1,15 @@
 import { defineChain } from "viem";
+import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
 
 export const ARC_TESTNET_CHAIN_ID = 5042002;
 export const ARC_MAINNET_CHAIN_ID = 5042;
 export const ARC_TESTNET_RUNTIME_MODE = "arc-testnet" as const;
+export const ARC_MAINNET_RUNTIME_MODE = "arc-mainnet" as const;
+const isMainnetDeployment = Number(DEPLOYED_CHAIN_ID) === ARC_MAINNET_CHAIN_ID;
+const configuredMainnetRpc = process.env.NEXT_PUBLIC_RPC_URL;
+if (isMainnetDeployment && (!configuredMainnetRpc?.startsWith("https://") || configuredMainnetRpc.includes("testnet"))) {
+  throw new Error("ArcNS mainnet requires an approved HTTPS NEXT_PUBLIC_RPC_URL that is not a testnet endpoint.");
+}
 
 export const ARC_TESTNET_RPCS = {
   primary: {
@@ -63,10 +70,27 @@ export const arcMainnet = defineChain({
   name: "Arc",
   nativeCurrency: { decimals: 6, name: "USD Coin", symbol: "USDC" },
   rpcUrls: {
-    default: { http: ["https://rpc.blockdaemon.mainnet.arc.io"] },
-    public: { http: ["https://rpc.blockdaemon.mainnet.arc.io"] },
+    default: { http: [configuredMainnetRpc ?? "https://rpc.blockdaemon.mainnet.arc.io"] },
+    public: { http: [configuredMainnetRpc ?? "https://rpc.blockdaemon.mainnet.arc.io"] },
   },
   blockExplorers: {
     default: { name: "Blockscout", url: "https://arc-mainnet.cloud.blockscout.com" },
   },
 });
+
+export const deployedChain = isMainnetDeployment ? arcMainnet : arcTestnet;
+export const DEPLOYED_RUNTIME_MODE = isMainnetDeployment
+  ? ARC_MAINNET_RUNTIME_MODE
+  : ARC_TESTNET_RUNTIME_MODE;
+export const DEPLOYED_PRIMARY_RPC_URL = process.env.NEXT_PUBLIC_RPC_URL
+  ?? (isMainnetDeployment
+    ? "https://rpc.blockdaemon.mainnet.arc.io"
+    : ARC_TESTNET_PRIMARY_RPC_URL);
+export const DEPLOYED_FALLBACK_RPC_URLS = [
+  DEPLOYED_PRIMARY_RPC_URL,
+  process.env.NEXT_PUBLIC_RPC_URL_2,
+  process.env.NEXT_PUBLIC_RPC_URL_3,
+].filter((value): value is string => Boolean(value));
+if (isMainnetDeployment && DEPLOYED_FALLBACK_RPC_URLS.some(url => !url.startsWith("https://") || url.includes("testnet"))) {
+  throw new Error("ArcNS mainnet RPC fallback configuration contains an invalid or testnet endpoint.");
+}

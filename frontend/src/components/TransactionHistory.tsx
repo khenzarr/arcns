@@ -19,6 +19,7 @@ import { useAccount } from "wagmi";
 import { useState, useEffect } from "react";
 import { getRegistrationHistory, getRenewalHistory } from "../lib/graphql";
 import { formatUSDC } from "../lib/normalization";
+import { activeConfig } from "../lib/chainConfig";
 
 // ── TxRow type — UNCHANGED ────────────────────────────────────────────────────
 interface TxRow {
@@ -153,7 +154,7 @@ export default function TransactionHistory() {
                 <td className="px-4 py-3 text-right">
                   {/* ArcScan link — UNCHANGED */}
                   <a
-                    href={`https://testnet.arcscan.app/tx/${row.transactionHash}`}
+                    href={`${activeConfig.blockExplorer}/tx/${row.transactionHash}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-mono text-xs transition-opacity hover:opacity-80"

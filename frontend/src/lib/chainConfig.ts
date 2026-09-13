@@ -61,16 +61,44 @@ export const CHAIN_CONFIGS: Record<number, ChainConfig> = {
   // configuration/preflight-only and cannot be selected for checkout yet.
 };
 
-/** Get config for the active chain, falling back to Arc Testnet */
+/** Active chain is derived from the verified deployment file, never an env-only flag. */
 export function getChainConfig(chainId?: number): ChainConfig {
-  const id = chainId ?? 5042002;
-  return CHAIN_CONFIGS[id] ?? CHAIN_CONFIGS[5042002];
+  const id = chainId ?? ACTIVE_CHAIN_ID;
+  const config = CHAIN_CONFIGS[id];
+  if (!config) throw new Error(`Unsupported ArcNS chain: ${id}`);
+  return config;
 }
 
-/** Active chain ID from env */
-export const ACTIVE_CHAIN_ID = parseInt(
-  process.env.NEXT_PUBLIC_CHAIN_ID ?? "5042002",
-  10
-);
+import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
+import { DEPLOYED_FALLBACK_RPC_URLS, DEPLOYED_PRIMARY_RPC_URL, deployedChain } from "./chains";
+import {
+  ADDR_ARC_CONTROLLER, ADDR_ARC_REGISTRAR, ADDR_CIRCLE_CONTROLLER,
+  ADDR_CIRCLE_REGISTRAR, ADDR_PRICE_ORACLE, ADDR_REGISTRY, ADDR_RESOLVER,
+  ADDR_REVERSE_REGISTRAR, ADDR_TREASURY, ADDR_USDC,
+} from "./generated-contracts";
+
+export const ACTIVE_CHAIN_ID = DEPLOYED_CHAIN_ID;
+CHAIN_CONFIGS[ACTIVE_CHAIN_ID] = {
+  chainId: ACTIVE_CHAIN_ID,
+  name: deployedChain.name,
+  rpcUrl: DEPLOYED_PRIMARY_RPC_URL,
+  fallbackRpcUrls: DEPLOYED_FALLBACK_RPC_URLS.slice(1),
+  blockExplorer: deployedChain.blockExplorers?.default.url ?? "https://arc-mainnet.cloud.blockscout.com",
+  contracts: {
+    registry: ADDR_REGISTRY,
+    arcController: ADDR_ARC_CONTROLLER,
+    circleController: ADDR_CIRCLE_CONTROLLER,
+    resolver: ADDR_RESOLVER,
+    reverseRegistrar: ADDR_REVERSE_REGISTRAR,
+    priceOracle: ADDR_PRICE_ORACLE,
+    usdc: ADDR_USDC,
+    arcRegistrar: ADDR_ARC_REGISTRAR,
+    circleRegistrar: ADDR_CIRCLE_REGISTRAR,
+    treasury: ADDR_TREASURY,
+  },
+  subgraphUrl: process.env.NEXT_PUBLIC_SUBGRAPH_URL ?? "",
+  minCommitmentAge: 60,
+  maxCommitmentAge: 86_400,
+};
 
 export const activeConfig = getChainConfig(ACTIVE_CHAIN_ID);

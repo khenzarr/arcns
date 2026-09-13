@@ -31,7 +31,7 @@ export function FooterIdentityLine({ className }: FooterIdentityLineProps) {
         Identity for everything on Arc
         {" · "}
         <span className="font-mono text-xs">
-          {NETWORK_DISPLAY.networkDisplayName} · {NETWORK_DISPLAY.chainIdLabel}
+          {NETWORK_DISPLAY.networkDisplayName}{NETWORK_DISPLAY.chainIdLabel ? ` · ${NETWORK_DISPLAY.chainIdLabel}` : ""}
         </span>
       </p>
     </footer>

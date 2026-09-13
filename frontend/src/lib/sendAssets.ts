@@ -1,4 +1,6 @@
 import { formatUnits, getAddress, isAddress, parseUnits } from "viem";
+import { IS_MAINNET } from "./networkDisplay";
+import { ADDR_USDC } from "./generated-contracts";
 
 export type SendAsset = {
   address: `0x${string}`;
@@ -31,6 +33,19 @@ export const ARC_TESTNET_SEND_ASSETS: readonly SendAsset[] = [
     provenance: "circle",
   },
 ] as const;
+
+/** Mainnet tokens beyond canonical USDC require verified addresses at release time. */
+export const DEPLOYED_SEND_ASSETS: readonly SendAsset[] = IS_MAINNET
+  ? [
+      { address: ADDR_USDC, symbol: "USDC", name: "USD Coin", decimals: 6, provenance: "circle" },
+      ...([
+        [process.env.NEXT_PUBLIC_MAINNET_EURC_ADDRESS, "EURC", "Euro Coin", 6],
+        [process.env.NEXT_PUBLIC_MAINNET_CIRBTC_ADDRESS, "cirBTC", "Circle Wrapped Bitcoin", 8],
+      ] as const).filter(([address]) => address && isAddress(address)).map(([address, symbol, name, decimals]) => ({
+        address: getAddress(address!) as `0x${string}`, symbol, name, decimals, provenance: "circle" as const,
+      })),
+    ]
+  : ARC_TESTNET_SEND_ASSETS;
 
 export type ResolutionResult = {
   input: string;

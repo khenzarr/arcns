@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { IS_MAINNET, NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
     template: "%s | ArcNS",
   },
   description:
-    "ArcNS (Arc Name Services) is an independent public testnet app for registering and resolving human-readable .arc and .circle names on Arc Testnet.",
+    `ArcNS is an independent naming protocol built on ${NETWORK_DISPLAY.networkDisplayName} for registering and resolving human-readable .arc and .circle names.`,
   metadataBase: new URL("https://arcname.services"),
   openGraph: {
     type: "website",
@@ -27,14 +28,14 @@ export const metadata: Metadata = {
     siteName: "ArcNS",
     title: "ArcNS - Arc Name Services",
     description:
-      "Register and resolve .arc and .circle names with ArcNS, an independent public app on Arc Testnet.",
+      `Register and resolve .arc and .circle names with ArcNS, an independent protocol built on ${NETWORK_DISPLAY.networkDisplayName}.`,
     locale: "en_US",
   },
   twitter: {
     card: "summary",
     title: "ArcNS - Arc Name Services",
     description:
-      "Register and resolve .arc and .circle names with ArcNS on Arc Testnet.",
+      `Register and resolve .arc and .circle names with ArcNS on ${NETWORK_DISPLAY.networkDisplayName}.`,
   },
   icons: { icon: "/icon.svg" },
 };

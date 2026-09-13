@@ -47,6 +47,11 @@ for (const key of required) {
   }
 }
 
+if (network === "arc_mainnet" && (Number(chainId) !== 5042 || !contracts.discountRegistry)) {
+  console.error("[generate-frontend-config] Mainnet requires chain ID 5042 and a deployed discountRegistry address.");
+  process.exit(1);
+}
+
 const output = `/**
  * generated-contracts.ts — AUTO-GENERATED. DO NOT HAND-EDIT.
  *
@@ -81,6 +86,7 @@ export const ADDR_ARC_CONTROLLER     = "${contracts.arcController}"      as \`0x
 export const ADDR_ARC_CTRL_IMPL      = "${contracts.arcControllerImpl}"  as \`0x\${string}\`;
 export const ADDR_CIRCLE_CONTROLLER  = "${contracts.circleController}"   as \`0x\${string}\`;
 export const ADDR_CIRCLE_CTRL_IMPL   = "${contracts.circleControllerImpl}" as \`0x\${string}\`;
+export const ADDR_DISCOUNT_REGISTRY  = "${contracts.discountRegistry || "0x0000000000000000000000000000000000000000"}" as \`0x\${string}\`;
 
 // ─── Canonical namehashes ─────────────────────────────────────────────────────
 

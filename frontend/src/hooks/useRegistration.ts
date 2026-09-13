@@ -33,6 +33,8 @@ import {
 import { classifyRawError, userFacingMessage, ARC_ERR } from "../lib/errors";
 import { normalizeLabel } from "../lib/normalization";
 import type { SupportedTLD } from "../lib/normalization";
+import type { Hex } from "viem";
+import { DISCOUNT_CONTROLLER_ABI } from "../lib/discountContract";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -75,6 +77,7 @@ export interface RegisterFlowParams {
   totalCost:     bigint;          // USDC (6 decimals), used for approval + maxCost
   resolverAddr?: `0x${string}`;  // optional; defaults to ZERO_ADDRESS
   reverseRecord?: boolean;        // optional; defaults to false; non-fatal if fails
+  discountProof?: Hex[];           // only supplied after live registry validation
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -143,6 +146,7 @@ export function useRegistration(): RegistrationState {
       totalCost,
       resolverAddr = ZERO_ADDRESS,
       reverseRecord = false,
+      discountProof,
     } = params;
 
     const normalizedName = normalizeLabel(label);
@@ -238,11 +242,18 @@ export function useRegistration(): RegistrationState {
         exactRegisterArgs:  registerArgs,
       });
 
-      const txHash = await writeContractAsync({
-        ...ctrl,
-        functionName: "register",
-        args:         registerArgs,
-      });
+      const txHash = discountProof
+        ? await writeContractAsync({
+            address: controllerAddr,
+            abi: DISCOUNT_CONTROLLER_ABI,
+            functionName: "registerWithDiscount",
+            args: [...registerArgs, discountProof],
+          })
+        : await writeContractAsync({
+            ...ctrl,
+            functionName: "register",
+            args: registerArgs,
+          });
 
       // ── Step 6: Success ────────────────────────────────────────────────────
       setResult({
