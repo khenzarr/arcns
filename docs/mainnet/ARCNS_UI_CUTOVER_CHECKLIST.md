@@ -10,12 +10,12 @@ This branch prepares ArcNS branding for Arc mainnet. It does not authorize a lau
 - [x] Preserve testnet UI and 50/25/15/10/2 pricing when the generated deployment remains on testnet.
 - [x] Display 100/50/25/15/5 USDC annual standard pricing on mainnet; registration and renewal quotes remain onchain.
 - [x] Add eligible-wallet-only first-registration discount choice. It appears only when the local snapshot proof matches and live mainnet reads confirm campaign ID, snapshot block, root, frozen/active state, both controller pointers/authorizations, and unused wallet state. The selectable price is the onchain `discountRentPrice` quote; the wallet submits `registerWithDiscount` with the proof. Failures return to the standard path.
-- [x] Update public-facing independence/trademark notice to state ArcNS is not an official Arc/Circle product; retain third-party attribution. This notice requires qualified legal/brand review and does **not** resolve the explicit Arc team objection to the product name.
+- [x] Update the independence/trademark notice to state ArcNS is not an official Arc/Circle product; retain third-party attribution. The founder reports conditional Arc team approval of the revised website with “Built on Arc” prominently maintained; archive that email and review future changes against its scope.
 - [x] Do not show testnet EURC/cirBTC contract addresses on mainnet. Only verified mainnet address configuration may enable those suggested tokens; custom ERC-20 and indexed wallet assets remain available.
 
 ## Release-blocking inputs and verification
 
-- [ ] Resolve the Arc team’s explicit “ArcNS” and repository-name brand objection, or obtain written approval. A disclaimer alone is not compliance.
+- [ ] Archive the founder-reported final Arc team approval of the revised ArcNS website, including its “Built on Arc” condition. Preserve that descriptor in the released UI and obtain a final review if the approved presentation changes. A disclaimer alone is not a substitute for the reported approval.
 - [ ] Complete qualified external smart-contract audit, remediate findings, and verify deployed source/bytecode.
 - [ ] Approve deploy-grade mainnet RPC, operator/deployer funding, Blockscout API/verification workflow, indexer, deployment roles, production owners, monitoring, and tested rollback.
 - [ ] Deploy and verify Timelock with the approved 48-hour delay and Safe roles; complete authority handoff and revoke deployer privileges.

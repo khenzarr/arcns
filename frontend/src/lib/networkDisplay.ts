@@ -7,16 +7,20 @@
 import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
 
 export const IS_MAINNET = Number(DEPLOYED_CHAIN_ID) === 5042;
-export const NETWORK_DISPLAY = IS_MAINNET ? {
-  networkDisplayName: "Arc",
-  networkShortLabel: "Arc",
-  chainIdLabel: "",
-  currencyDisplayName: "USDC",
-  environmentStatusLabel: "Live",
-} : {
-  networkDisplayName: "Arc Testnet",
-  networkShortLabel: "Testnet",
-  chainIdLabel: "Chain ID 5042002",
-  currencyDisplayName: "Testnet USDC",
-  environmentStatusLabel: "Pre-mainnet",
-};
+export function networkDisplayFor(chainId: number) {
+  return chainId === 5042 ? {
+    networkDisplayName: "Arc",
+    networkShortLabel: "Arc",
+    chainIdLabel: "",
+    currencyDisplayName: "USDC",
+    environmentStatusLabel: "Live",
+  } : {
+    networkDisplayName: "Arc Testnet",
+    networkShortLabel: "Testnet",
+    chainIdLabel: "Chain ID 5042002",
+    currencyDisplayName: "Testnet USDC",
+    environmentStatusLabel: "Pre-mainnet",
+  };
+}
+
+export const NETWORK_DISPLAY = networkDisplayFor(Number(DEPLOYED_CHAIN_ID));

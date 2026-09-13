@@ -197,7 +197,7 @@ export default function Header() {
               className="font-bold text-2xl tracking-[-0.04em]"
               style={{ color: "var(--arcns-text-primary)", fontFamily: "var(--arcns-font-display)" }}
             >ArcNS</span>
-            <span className="mt-1 text-[9px] font-semibold uppercase tracking-[0.19em] text-[var(--arcns-text-muted)]">Built on Arc</span>
+            <span className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--arcns-text-secondary)]">Built on Arc</span>
           </span>
           {!IS_MAINNET ? <NetworkBadge variant="testnet" label="Testnet" /> : null}
         </Link>

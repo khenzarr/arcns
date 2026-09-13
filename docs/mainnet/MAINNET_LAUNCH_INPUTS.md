@@ -102,7 +102,7 @@ All values in this section remain `TBD` until produced by a reviewed future depl
 
 | Area | Current status | Required evidence | Go/No-Go | Notes |
 |---|---|---|---|---|
-| Brand/legal | Arc team explicitly rejected “ArcNS” and “Arc Name Service” as product names; user elected to retain ArcNS pending further decision | Written name clearance or approved rebrand, reviewed public brand/legal documents, and final launch recheck | NO-GO | “Built on Arc” and an independence disclaimer do not cure the explicit name objection. Do not treat this row as launch approval. |
+| Brand/legal | Founder reports the Arc team reviewed the revised website and conditionally approved continued ArcNS use with a prominent “Built on Arc” descriptor | Archive the final approval email, keep the descriptor prominent across public assets, and complete final brand/legal review | CONDITIONAL GO | This records the founder's report, not an independently inspected email; any new public materials must preserve the approved presentation and relationship language. |
 | Pricing | Final schedule prepared | Canonical 100/50/25/15/5 USDC schedule and independent deployed oracle reads | GO | Input is final; deployed oracle evidence remains part of contract launch gates |
 | Snapshot root | Final snapshot data prepared | Campaign, bytes32, block/hash, root, count, and independent artifact validation | GO | Does not mean root is set on mainnet |
 | Proof artifact | Generated and validated with 849 entries | Validator PASS against finalized snapshot/root | GO | Delivery integration and used-state checks remain incomplete |
@@ -119,10 +119,10 @@ All values in this section remain `TBD` until produced by a reviewed future depl
 | Discount activation | Not performed | All activation prerequisites, explicit approval, and active-state read-back | NO-GO | Activation is forbidden in this task |
 | Indexer/subgraph | Not deployed or synced | Final manifest, addresses/start blocks, deployment, sync, queries, comparisons, health evidence | NO-GO | No endpoint exists |
 | DiscountRegistry indexing | Reusable ABI/schema/handlers prepared; concrete source absent | Final address/start block wiring, deployed/synced lifecycle and `DiscountUsed` evidence | NO-GO | Dormant template indexes nothing |
-| Frontend proof helper | Inactive local helper and tests prepared | Final preview evidence combined with approved lifecycle/used-state reads | GO | Helper alone does not establish claim availability |
-| Discount UX shell | Unmounted and disabled by default | Reviewed preview integration after every discount gate passes | GO | GO only for safe disabled shell preparation; UI remains disabled |
-| Frontend mainnet cutover | Not implemented | Final addresses/endpoints/config, preview deployment, smoke tests, approval, rollback evidence | NO-GO | Production remains testnet-bound |
-| Used-state handling | Not implemented in active UX | Indexed `DiscountUsed` or approved direct read and cross-namespace already-used tests | NO-GO | Proof existence is insufficient |
+| Frontend proof helper | Local proof lookup and tests prepared | Final preview evidence combined with approved lifecycle/used-state reads | GO | Proof alone does not establish claim availability |
+| Discount UX | Mainnet-only choice and discounted register path prepared on `codex/arcns-mainnet-ui` | Onchain campaign/quote/used-state and cross-namespace preview tests after deploy | NO-GO | Never shown on testnet; fails closed until the campaign is verified active |
+| Frontend mainnet cutover | Chain-aware UI/runtime code prepared on a local branch; production is unchanged | Final addresses/endpoints/config, preview deployment, smoke tests, approval, rollback evidence | NO-GO | Merge and cutover only after verified mainnet deployment |
+| Used-state handling | Direct registry `used(address)` read added to the mainnet-only discount gate | Preview tests for an unused wallet, consumed wallet, and both namespaces | NO-GO | Network failures hide the discount; onchain consume remains the authority |
 | Monitoring/rollback | Owners, targets, and evidence are `TBD` | Named owners, thresholds, alerts, fallback behavior, tested rollback target/procedure | NO-GO | Must cover indexer, proof delivery, RPC, and frontend |
 | Final launch approval | Not complete | Consolidated evidence review with every blocker closed and explicit approval | NO-GO | This document is not approval |
 
