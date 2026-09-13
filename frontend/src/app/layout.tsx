@@ -4,7 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { IS_MAINNET, NETWORK_DISPLAY } from "../lib/networkDisplay";
+import { NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 

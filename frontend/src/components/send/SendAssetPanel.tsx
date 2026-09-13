@@ -14,7 +14,7 @@ import {
   type SendAsset,
 } from "../../lib/sendAssets";
 import { CopyButton } from "../ui/CopyButton";
-import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
+import { RUNTIME_NETWORK_DISPLAY } from "../../lib/networkDisplay";
 import { activeConfig } from "../../lib/chainConfig";
 
 type Review = {
@@ -194,7 +194,7 @@ export default function SendAssetPanel() {
     setError(null);
     setTxHash(null);
     if (!isConnected || !address) return setError("Connect your wallet before preparing a transfer.");
-    if (chainId !== DEPLOYED_CHAIN_ID) return setError(`Switch your wallet to ${NETWORK_DISPLAY.networkDisplayName} (Chain ID ${DEPLOYED_CHAIN_ID}).`);
+    if (chainId !== DEPLOYED_CHAIN_ID) return setError(`Switch your wallet to ${RUNTIME_NETWORK_DISPLAY.networkDisplayName} (Chain ID ${DEPLOYED_CHAIN_ID}).`);
 
     const recipient = resolution && resolution.input.trim().toLowerCase() === recipientInput.trim().toLowerCase()
       ? resolution

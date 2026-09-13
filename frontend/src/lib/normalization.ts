@@ -97,6 +97,16 @@ export function priceTierFor(normalizedLabel: string) {
   return PRICE_TIERS[4];
 }
 
+/** Launch pricing shown by public discovery surfaces. Checkout remains on-chain quoted. */
+export function mainnetPriceTierFor(normalizedLabel: string) {
+  const len = codepointLength(normalizedLabel);
+  if (len === 1) return MAINNET_PRICING[0];
+  if (len === 2) return MAINNET_PRICING[1];
+  if (len === 3) return MAINNET_PRICING[2];
+  if (len === 4) return MAINNET_PRICING[3];
+  return MAINNET_PRICING[4];
+}
+
 // ─── Normalization ────────────────────────────────────────────────────────────
 
 /**

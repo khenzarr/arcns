@@ -24,7 +24,7 @@ import { USDC_CONTRACT, RESOLVER_CONTRACT, ADDR_RESOLVER, ADDR_ARC_CONTROLLER, A
 import { namehash } from "../lib/namehash";
 import { clearPrevPrimaryAddr } from "../lib/clearPrevPrimaryAddr";
 import { DEPLOYED_CHAIN_ID } from "../lib/generated-contracts";
-import { IS_MAINNET, NETWORK_DISPLAY } from "../lib/networkDisplay";
+import { NETWORK_DISPLAY, RUNTIME_NETWORK_DISPLAY } from "../lib/networkDisplay";
 import { SnapshotPricePreview } from "./SnapshotPricePreview";
 import { useSnapshotDiscount } from "../hooks/useSnapshotDiscount";
 import {
@@ -446,7 +446,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
             <p className="text-xs mt-0.5" style={{ color: 'var(--arcns-danger)' }}>
               You need {formatUSDC(shortfall)} more.{" "}
               <a href="https://faucet.circle.com" target="_blank" rel="noopener noreferrer" className="underline" style={{ color: 'var(--arcns-danger)' }}>
-                {IS_MAINNET ? "Learn about USDC →" : "Get testnet USDC →"}
+                Add USDC →
               </a>
             </p>
           </div>
@@ -490,7 +490,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
           <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to register. Use the Connect Wallet button in the header.</div>
         ) : isWrongNetwork ? (
           <div role="alert" aria-live="assertive" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
-            ⚠ Switch to {NETWORK_DISPLAY.networkDisplayName} (Chain ID {DEPLOYED_CHAIN_ID}) to register
+            ⚠ Switch to {RUNTIME_NETWORK_DISPLAY.networkDisplayName} (Chain ID {DEPLOYED_CHAIN_ID}) to register
           </div>
         ) : isPriceLoading ? (
           <button disabled className="w-full py-3.5 text-white rounded-[var(--arcns-radius-lg)] font-semibold opacity-50 cursor-not-allowed text-sm" style={{ background: 'var(--arcns-gradient-primary)' }}>
@@ -519,7 +519,7 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
               <div role="status" aria-live="polite" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)]" style={{ background: 'var(--arcns-bg-elevated)', color: 'var(--arcns-text-secondary)' }}>Connect wallet to renew. Use the Connect Wallet button in the header.</div>
           ) : isWrongNetwork ? (
             <div role="alert" aria-live="assertive" className="text-center py-3 text-sm rounded-[var(--arcns-radius-lg)] font-medium" style={{ background: 'rgba(255,92,122,0.08)', color: 'var(--arcns-danger)' }}>
-              ⚠ Switch to {NETWORK_DISPLAY.networkDisplayName} (Chain ID {DEPLOYED_CHAIN_ID}) to renew
+              ⚠ Switch to {RUNTIME_NETWORK_DISPLAY.networkDisplayName} (Chain ID {DEPLOYED_CHAIN_ID}) to renew
             </div>
           ) : isOwnerLoading ? (
             <button

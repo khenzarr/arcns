@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { IS_MAINNET } from "../lib/networkDisplay";
+import { IS_MAINNET_UI } from "../lib/networkDisplay";
 
 type LegalSection = {
   title: string;
@@ -19,8 +19,8 @@ export const REGISTRATION_NOTICE =
 export const TESTNET_STATUS_NOTICE =
   "ArcNS is live on Arc Testnet for testing and demonstration. Mainnet deployment is gated on external audit, mainnet USDC configuration, operational hardening, and final legal/brand review.";
 
-export const NETWORK_STATUS_NOTICE = IS_MAINNET
-  ? "ArcNS operates on Arc mainnet. Blockchain transactions are irreversible; users should verify network, recipient, price, contract addresses, and wallet prompts before signing."
+export const NETWORK_STATUS_NOTICE = IS_MAINNET_UI
+  ? "ArcNS uses public blockchain infrastructure. Transactions are irreversible; users should verify the network, recipient, price, contract addresses, and wallet prompts before signing."
   : TESTNET_STATUS_NOTICE;
 
 export default function LegalPage({

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { IS_MAINNET, NETWORK_DISPLAY } from "../lib/networkDisplay";
+import { IS_MAINNET_UI, NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 type FooterLinkItem = {
   label: string;
@@ -25,7 +25,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
       { label: "Send Assets", href: "/send" },
       { label: "My Domains", href: "/my-domains" },
       { label: "Resolve", href: "/resolve" },
-      ...(!IS_MAINNET ? [{ label: "Public Testnet App", href: "/app" }] : []),
+      ...(!IS_MAINNET_UI ? [{ label: "Public Testnet App", href: "/app" }] : []),
       { label: "GitHub", href: GITHUB_REPO, external: true },
     ],
   },
@@ -42,11 +42,11 @@ const FOOTER_SECTIONS: FooterSection[] = [
         href: `${GITHUB_REPO}/blob/master/docs/final/SUBGRAPH_GUIDE.md`,
         external: true,
       },
-      {
+      ...(!IS_MAINNET_UI ? [{
         label: "Mainnet Gap Report",
         href: `${GITHUB_REPO}/blob/master/docs/final/MAINNET_GAP_REPORT.md`,
         external: true,
-      },
+      }] : []),
       {
         label: "Security / Audit Status",
         href: `${GITHUB_REPO}/blob/master/docs/final/AUDIT_SCOPE.md`,
@@ -206,7 +206,7 @@ export default function Footer() {
 
               <div className="space-y-2 text-sm leading-6 text-[var(--arcns-text-secondary)]">
                 <p>
-                  {IS_MAINNET ? "Human-readable names on Arc." : `Live on ${NETWORK_DISPLAY.networkDisplayName} - ${NETWORK_DISPLAY.environmentStatusLabel} - External audit pending`}
+                  {IS_MAINNET_UI ? "Human-readable names on Arc." : `Live on ${NETWORK_DISPLAY.networkDisplayName} - ${NETWORK_DISPLAY.environmentStatusLabel} - External audit pending`}
                 </p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
                   ArcNS is an independent naming protocol built on Arc. It is not operated by, affiliated with,

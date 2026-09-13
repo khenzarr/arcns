@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import CinematicLanding from "../components/landing/CinematicLanding";
 import { JsonLd } from "../components/JsonLd";
-import { IS_MAINNET, NETWORK_DISPLAY } from "../lib/networkDisplay";
+import { NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 const title = `ArcNS - Human-readable names on ${NETWORK_DISPLAY.networkDisplayName}`;
 const description = `Explore ArcNS, an independent naming protocol built on ${NETWORK_DISPLAY.networkDisplayName} for .arc and .circle names.`;

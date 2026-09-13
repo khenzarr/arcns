@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MAINNET_PRICING } from "@/lib/normalization";
-import { IS_MAINNET, NETWORK_DISPLAY } from "@/lib/networkDisplay";
+import { IS_MAINNET_UI, NETWORK_DISPLAY } from "@/lib/networkDisplay";
 
 const SUFFIXES = [".arc", ".circle"] as const;
 type Suffix = (typeof SUFFIXES)[number];
@@ -31,7 +31,7 @@ export default function CinematicLanding() {
 
       <section className="cinematic-hero cinematic-shell" aria-labelledby="landing-title">
         <div className="cinematic-hero-copy">
-          <p className="cinematic-eyebrow"><span aria-hidden="true" />{IS_MAINNET ? "Independent name service · Built on Arc" : "Arc public testnet - Pre-mainnet"}</p>
+          <p className="cinematic-eyebrow"><span aria-hidden="true" />{IS_MAINNET_UI ? "Independent name service · Built on Arc" : "Arc public testnet - Pre-mainnet"}</p>
           <h1 id="landing-title">One name.<br /><em>Every interaction.</em></h1>
           <p className="cinematic-lede">Turn a wallet address into a human-readable identity on {NETWORK_DISPLAY.networkDisplayName}. Explore ArcNS, then use the real application to search, register, and resolve names.</p>
           <p className="cinematic-disclosure">ArcNS is an independent naming protocol built on Arc. Neither its name nor the <code>.circle</code> namespace implies affiliation with, sponsorship by, or endorsement from Arc or Circle.</p>

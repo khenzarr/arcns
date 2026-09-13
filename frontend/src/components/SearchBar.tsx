@@ -18,7 +18,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import {
   normalizeLabel,
   validateLabel,
-  priceTierFor,
+  mainnetPriceTierFor,
   formatUSDC,
   type SupportedTLD,
   SUPPORTED_TLDS,
@@ -54,7 +54,9 @@ export default function SearchBar({
     const error      = validateLabel(normalized);
 
     if (!value || value.trim() === "") {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       setHint(null);
+      onInput?.("", activeTld);
       return;
     }
 
@@ -73,7 +75,7 @@ export default function SearchBar({
     setHint(null);
 
     // Instant price-tier preview (no RPC)
-    const tier = priceTierFor(normalized);
+    const tier = mainnetPriceTierFor(normalized);
 
     // Notify parent immediately for card preview
     onInput?.(normalized, activeTld);
@@ -114,7 +116,7 @@ export default function SearchBar({
   // ── Derived state — UNCHANGED ──────────────────────────────────────────────
   const normalized = normalizeLabel(raw);
   const isValid    = raw.length > 0 && validateLabel(normalized) === null;
-  const tier       = isValid ? priceTierFor(normalized) : null;
+  const tier       = isValid ? mainnetPriceTierFor(normalized) : null;
 
   // ── TLD badge colors ───────────────────────────────────────────────────────
   const tldActiveStyle: Record<SupportedTLD, React.CSSProperties> = {

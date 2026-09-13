@@ -5,7 +5,7 @@ import LegalPage, {
   REGISTRATION_NOTICE,
   NETWORK_STATUS_NOTICE,
 } from "../../components/LegalPage";
-import { IS_MAINNET, NETWORK_DISPLAY } from "../../lib/networkDisplay";
+import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
 
 export const metadata: Metadata = {
   title: "Terms of Use",
@@ -52,7 +52,7 @@ export default function TermsPage() {
               <p>{REGISTRATION_NOTICE}</p>
               <p>
                 Users are responsible for checking the selected registration period, applicable expiry date,
-                renewal status, wallet transactions, and network conditions. {IS_MAINNET ? "Testnet names and records do not automatically transfer to mainnet." : "Testnet names and records may not carry over to a future deployment."}
+                renewal status, wallet transactions, and network conditions. Records created in a different deployment do not automatically transfer to Arc mainnet.
               </p>
             </>
           ),

@@ -4,7 +4,7 @@ import LegalPage, {
   INDEPENDENT_PROJECT_NOTICE,
   NETWORK_STATUS_NOTICE,
 } from "../../components/LegalPage";
-import { IS_MAINNET, NETWORK_DISPLAY } from "../../lib/networkDisplay";
+import { IS_MAINNET_UI, NETWORK_DISPLAY } from "../../lib/networkDisplay";
 
 export const metadata: Metadata = {
   title: "Trademark / Brand Notice",
@@ -48,7 +48,7 @@ export default function TrademarkPage() {
           ),
         },
         {
-          title: IS_MAINNET ? "Network and user responsibility" : "Testnet status and no promises",
+          title: IS_MAINNET_UI ? "Network and user responsibility" : "Testnet status and no promises",
           content: (
             <>
               <p>{NETWORK_STATUS_NOTICE}</p>

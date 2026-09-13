@@ -13,7 +13,7 @@
  *   USER_REJECTION — user cancelled in wallet; return to idle silently
  */
 import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
-import { NETWORK_DISPLAY } from "./networkDisplay";
+import { RUNTIME_NETWORK_DISPLAY } from "./networkDisplay";
 
 // ─── Error codes ──────────────────────────────────────────────────────────────
 
@@ -206,7 +206,7 @@ export function userFacingMessage(code: ArcErrorCode): string {
       return "Transaction cancelled.";
 
     case ARC_ERR.TXPOOL_FULL:
-      return `${NETWORK_DISPLAY.networkDisplayName} is busy — transaction pool is full. Wait a moment and try again.`;
+      return `${RUNTIME_NETWORK_DISPLAY.networkDisplayName} is busy — transaction pool is full. Wait a moment and try again.`;
 
     case ARC_ERR.RECEIPT_TIMEOUT:
       return "Transaction submitted but confirmation is taking longer than expected. Check ArcScan for your transaction, then retry if needed.";
@@ -222,18 +222,18 @@ export function userFacingMessage(code: ArcErrorCode): string {
       return "Wallet nonce conflict detected. Refresh the page and try again.";
 
     case ARC_ERR.INSUFFICIENT_FUNDS:
-      return `Insufficient USDC balance. Please fund your wallet on ${NETWORK_DISPLAY.networkDisplayName}.`;
+      return `Insufficient USDC balance. Please fund your wallet on ${RUNTIME_NETWORK_DISPLAY.networkDisplayName}.`;
 
     case ARC_ERR.RPC_SUBMISSION_FAILED:
     case ARC_ERR.RPC_RESOURCE_NOT_AVAILABLE:
     case ARC_ERR.MEMPOOL_PROPAGATION_FAILURE:
-      return `${NETWORK_DISPLAY.networkDisplayName} RPC is temporarily unavailable. Try again in a moment.`;
+      return `${RUNTIME_NETWORK_DISPLAY.networkDisplayName} RPC is temporarily unavailable. Try again in a moment.`;
 
     case ARC_ERR.GAS_ESTIMATION_FAILED:
-      return `Transaction could not be estimated. The ${NETWORK_DISPLAY.networkDisplayName} RPC may be slow — please retry.`;
+      return `Transaction could not be estimated. The ${RUNTIME_NETWORK_DISPLAY.networkDisplayName} RPC may be slow — please retry.`;
 
     case ARC_ERR.CHAIN_MISMATCH:
-      return `Wrong network — please switch your wallet to ${NETWORK_DISPLAY.networkDisplayName} (Chain ID ${DEPLOYED_CHAIN_ID}).`;
+      return `Wrong network — please switch your wallet to ${RUNTIME_NETWORK_DISPLAY.networkDisplayName} (Chain ID ${DEPLOYED_CHAIN_ID}).`;
 
     case ARC_ERR.COMMITMENT_TOO_NEW:
       return "Commitment is not yet mature. Please wait a moment and retry.";

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { networkDisplayFor } from "../lib/networkDisplay";
+import { NETWORK_DISPLAY, RUNTIME_NETWORK_DISPLAY, networkDisplayFor } from "../lib/networkDisplay";
+import { mainnetPriceTierFor } from "../lib/normalization";
 
 describe("network-aware public labels", () => {
   it("retains explicit testnet context on chain 5042002", () => {
@@ -15,5 +16,20 @@ describe("network-aware public labels", () => {
     expect(labels.networkDisplayName).toBe("Arc");
     expect(labels.chainIdLabel).toBe("");
     expect(JSON.stringify(labels).toLowerCase()).not.toContain("testnet");
+  });
+
+  it("uses launch presentation while preserving the deployed runtime identity", () => {
+    expect(NETWORK_DISPLAY.networkDisplayName).toBe("Arc");
+    expect(NETWORK_DISPLAY.chainIdLabel).toBe("");
+    expect(RUNTIME_NETWORK_DISPLAY.networkDisplayName).toBe("Arc Testnet");
+    expect(RUNTIME_NETWORK_DISPLAY.chainIdLabel).toBe("Chain ID 5042002");
+  });
+
+  it("uses the launch price schedule on discovery surfaces", () => {
+    expect(mainnetPriceTierFor("a").annualUSDC).toBe(100_000_000n);
+    expect(mainnetPriceTierFor("ab").annualUSDC).toBe(50_000_000n);
+    expect(mainnetPriceTierFor("abc").annualUSDC).toBe(25_000_000n);
+    expect(mainnetPriceTierFor("abcd").annualUSDC).toBe(15_000_000n);
+    expect(mainnetPriceTierFor("alice").annualUSDC).toBe(5_000_000n);
   });
 });

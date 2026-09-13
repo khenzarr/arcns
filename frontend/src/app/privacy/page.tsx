@@ -4,7 +4,7 @@ import LegalPage, {
   INDEPENDENT_PROJECT_NOTICE,
   NETWORK_STATUS_NOTICE,
 } from "../../components/LegalPage";
-import { IS_MAINNET, NETWORK_DISPLAY } from "../../lib/networkDisplay";
+import { NETWORK_DISPLAY } from "../../lib/networkDisplay";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",

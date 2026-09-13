@@ -16,7 +16,7 @@ import Portfolio from "../../components/Portfolio";
 import TransactionHistory from "../../components/TransactionHistory";
 import PrimaryName from "../../components/PrimaryName";
 import { NetworkBadge } from "../../components/ui/NetworkBadge";
-import { IS_MAINNET } from "../../lib/networkDisplay";
+import { IS_MAINNET_UI } from "../../lib/networkDisplay";
 import { DashboardStats } from "../../components/ui/DashboardStats";
 import { FooterIdentityLine } from "../../components/ui/FooterIdentityLine";
 
@@ -46,7 +46,7 @@ export default function MyDomainsPage() {
           <div className="arcns-domains-title">
             <div className="arcns-domains-title-row">
               <h1>My Domains</h1>
-              {!IS_MAINNET ? <NetworkBadge variant="testnet" label="Testnet" /> : null}
+              {!IS_MAINNET_UI ? <NetworkBadge variant="testnet" label="Testnet" /> : null}
             </div>
             <p>Manage your ArcNS identity portfolio.</p>
           </div>
