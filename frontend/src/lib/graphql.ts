@@ -10,7 +10,12 @@
  * are NOT touched here — this file is read-only indexed data only.
  */
 
-const PRIMARY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL || "";
+import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
+
+const ARC_TESTNET_CHAIN_ID = 5_042_002;
+export const ARC_TESTNET_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/1748590/arcnslatest/v3";
+const PRIMARY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL
+  || (DEPLOYED_CHAIN_ID === ARC_TESTNET_CHAIN_ID ? ARC_TESTNET_SUBGRAPH_URL : "");
 const FALLBACK_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL || "";
 const GOLDSKY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL || "";
 
@@ -151,7 +156,10 @@ export async function getDomainByName(name: string): Promise<GQLDomain | null> {
 }
 
 /** Get all domains owned by an address — for portfolio view */
-export async function getDomainsByOwner(address: string): Promise<GQLDomain[]> {
+export async function getDomainsByOwnerResult(address: string): Promise<{
+  domains: GQLDomain[];
+  indexAvailable: boolean;
+}> {
   const data = await gqlQuery<{ domains: GQLDomain[] }>(
     `query($owner: String!) {
       domains(
@@ -163,7 +171,14 @@ export async function getDomainsByOwner(address: string): Promise<GQLDomain[]> {
     }`,
     { owner: address.toLowerCase() }
   );
-  return data?.domains ?? [];
+  return {
+    domains: data?.domains ?? [],
+    indexAvailable: data !== null,
+  };
+}
+
+export async function getDomainsByOwner(address: string): Promise<GQLDomain[]> {
+  return (await getDomainsByOwnerResult(address)).domains;
 }
 
 /** Reverse lookup: address → primary name */

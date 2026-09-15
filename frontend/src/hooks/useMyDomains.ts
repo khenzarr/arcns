@@ -31,7 +31,7 @@ import {
   type ExpiryState,
   type SupportedTLD,
 } from "../lib/normalization";
-import { getDomainsByOwner } from "../lib/graphql";
+import { getDomainsByOwnerResult } from "../lib/graphql";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -146,9 +146,9 @@ export function useMyDomains(): MyDomainsState {
     async function load() {
       try {
         // ── Subgraph-first ────────────────────────────────────────────────────
-        const gqlDomains = await getDomainsByOwner(addr);
+        const { domains: gqlDomains, indexAvailable } = await getDomainsByOwnerResult(addr);
 
-        if (!cancelled && gqlDomains.length > 0) {
+        if (!cancelled && indexAvailable) {
           const mapped: OwnedDomain[] = gqlDomains.map(d => {
             const tld = (d.registrationType === "ARC" ? "arc" : "circle") as SupportedTLD;
             const expiry = BigInt(d.expiry);
