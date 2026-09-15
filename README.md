@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/assets/arcns-readme-banner.png" alt="ArcNS — Identity for everything on Arc. .arc and .circle names with on-chain reverse resolution." width="100%" />
+</p>
+
 # ArcNS — Arc Name Service
 
 **Independent decentralized naming protocol · Built on Arc.**
