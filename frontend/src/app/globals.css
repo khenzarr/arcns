@@ -197,6 +197,23 @@ select.arcns-select option {
 }
 
 /* ── Cinematic marketing surface (strictly scoped) ─────────────────────────── */
+.arcns-cinematic .cinematic-brand-sculpture { display:flex;align-items:center;gap:1.1rem;width:max-content;max-width:100%;margin:-1rem 0 .4rem }
+.arcns-cinematic .cinematic-brand-stage { position:relative;isolation:isolate;display:grid;place-items:center;width:170px;height:170px;flex:0 0 auto;perspective:600px }
+.arcns-cinematic .cinematic-brand-stage img { position:relative;z-index:3;width:114px;height:114px;filter:drop-shadow(0 0 18px rgba(0,212,255,.65));animation:arcns-sculpture-levitate 6s ease-in-out infinite }
+.arcns-cinematic .cinematic-brand-aura { position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,.22),rgba(37,99,255,.13) 42%,transparent 70%);animation:cinematic-brand-breathe 4s ease-in-out infinite }
+.arcns-cinematic .cinematic-brand-ring { position:absolute;inset:9%;border:1px solid rgba(0,212,255,.44);border-radius:50%;box-shadow:0 0 16px rgba(0,212,255,.12),inset 0 0 12px rgba(0,212,255,.08);animation:arcns-sculpture-ring 12s linear infinite }
+.arcns-cinematic .cinematic-brand-ring-a { transform:rotateX(65deg) rotateZ(-25deg) }
+.arcns-cinematic .cinematic-brand-ring-b { inset:1%;border-color:rgba(99,113,255,.5);animation-direction:reverse;animation-duration:19s }
+.arcns-cinematic .cinematic-brand-ring::after { content:"";position:absolute;left:50%;top:-3px;width:6px;height:6px;border-radius:50%;background:#9cf5ff;box-shadow:0 0 14px #00d4ff }
+.arcns-cinematic .cinematic-brand-platform { position:absolute;z-index:1;bottom:12px;left:16%;right:16%;height:16px;border:1px solid rgba(0,212,255,.34);border-radius:50%;background:radial-gradient(ellipse,rgba(0,212,255,.35),transparent 70%);box-shadow:0 0 28px rgba(0,212,255,.24);animation:cinematic-brand-breathe 6s ease-in-out infinite }
+.arcns-cinematic .cinematic-brand-spark { position:absolute;width:4px;height:4px;border-radius:50%;background:#8cf5ff;box-shadow:0 0 13px #00d4ff;animation:arcns-sculpture-spark 5s ease-in-out infinite }
+.arcns-cinematic .cinematic-brand-spark-a { top:18%;left:14% }.arcns-cinematic .cinematic-brand-spark-b { bottom:24%;right:8%;animation-delay:-2.5s }
+.arcns-cinematic .cinematic-brand-signature { display:grid;gap:.4rem }.arcns-cinematic .cinematic-brand-signature b { font-family:var(--arcns-font-display);font-size:2.5rem;font-weight:650;letter-spacing:-.055em;color:#f7f9ff;text-shadow:0 0 30px rgba(0,212,255,.15) }.arcns-cinematic .cinematic-brand-signature small { color:#96acc9;font-size:.64rem;font-weight:750;letter-spacing:.24em;text-transform:uppercase }
+@keyframes arcns-sculpture-levitate { 0%,100% { transform:translateY(2px) rotateY(-10deg) rotateZ(-2deg) } 50% { transform:translateY(-9px) rotateY(12deg) rotateZ(2deg) } }
+@keyframes arcns-sculpture-ring { from { transform:rotateX(65deg) rotateZ(-25deg) } to { transform:rotateX(65deg) rotateZ(335deg) } }
+@keyframes arcns-sculpture-spark { 0%,100% { opacity:.25;transform:translateY(0) } 50% { opacity:1;transform:translateY(-16px) } }
+@media (max-width:640px) { .arcns-cinematic .cinematic-brand-stage { width:140px;height:140px }.arcns-cinematic .cinematic-brand-stage img { width:96px;height:96px }.arcns-cinematic .cinematic-brand-signature b { font-size:2.1rem } }
+@media (prefers-reduced-motion:reduce) { .arcns-cinematic .cinematic-brand-stage * { animation:none!important } }
 .arcns-header-launch { display:inline-flex;align-items:center;gap:.5rem;min-height:44px;padding:.65rem 1rem;border-radius:999px;background:var(--arcns-gradient-primary);color:#fff;font-size:.875rem;font-weight:700;box-shadow:0 0 28px rgba(0,212,255,.16) }
 .arcns-cinematic { position:relative;isolation:isolate;overflow:hidden;background:#050814;color:#f7f9ff }
 .arcns-cinematic .cinematic-shell { width:min(1180px,calc(100% - 40px));margin-inline:auto }

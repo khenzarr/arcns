@@ -35,9 +35,17 @@ export default function CinematicLanding() {
 
       <section className="cinematic-hero cinematic-shell" aria-labelledby="landing-title">
         <div className="cinematic-hero-copy">
-          <div className="cinematic-hero-brand" aria-label="ArcNS, built on Arc">
-            <span className="cinematic-hero-brand-mark" aria-hidden="true"><Image src="/arcns/arcns-emblem.svg" alt="" width={42} height={42} /></span>
-            <span><b>ArcNS</b><small>{IS_MAINNET_UI ? "Built on Arc" : "Arc public testnet"}</small></span>
+          <div className="cinematic-brand-sculpture" aria-label="ArcNS, built on Arc">
+            <div className="cinematic-brand-stage" aria-hidden="true">
+              <span className="cinematic-brand-aura" />
+              <span className="cinematic-brand-ring cinematic-brand-ring-a" />
+              <span className="cinematic-brand-ring cinematic-brand-ring-b" />
+              <span className="cinematic-brand-spark cinematic-brand-spark-a" />
+              <span className="cinematic-brand-spark cinematic-brand-spark-b" />
+              <Image src="/arcns/arcns-emblem.svg" alt="" width={140} height={140} priority />
+              <span className="cinematic-brand-platform" />
+            </div>
+            <span className="cinematic-brand-signature"><b>ArcNS</b><small>{IS_MAINNET_UI ? "Built on Arc" : "Arc public testnet"}</small></span>
           </div>
           <h1 id="landing-title">One name<em>every interaction</em></h1>
           <p className="cinematic-lede">Turn a wallet address into a memorable identity. Search, register, and resolve <code>.arc</code> and <code>.circle</code> names on {NETWORK_DISPLAY.networkDisplayName}.</p>
@@ -86,7 +94,7 @@ export default function CinematicLanding() {
       <section className="cinematic-identity cinematic-shell" id="identity" aria-labelledby="identity-title">
         <div className="cinematic-section-heading cinematic-compact"><div><span>02</span><p>Identity layer</p></div><h2 id="identity-title">More than an address</h2></div>
         <div className="cinematic-feature-grid">
-          <article className="cinematic-feature-main"><span aria-hidden="true">ID</span><p>Human-readable identity</p><h3>Use a memorable name instead of a long hexadecimal address.</h3><div><span>0x9c90...ACBC</span><b aria-hidden="true">-&gt;</b><strong>yourname.arc</strong></div><Link className="cinematic-text-link" href="/send">Send assets to a name <Arrow /></Link></article>
+          <article className="cinematic-feature-main"><span aria-hidden="true">ID</span><p>Human-readable identity</p><h3>Use a memorable name instead of a long hexadecimal address.</h3><div><span aria-label="Illustrative wallet address">0xAb123...XYZ</span><Arrow /><strong>yourname.arc</strong></div><Link className="cinematic-text-link" href="/send">Send assets to a name <Arrow /></Link></article>
           <article><span aria-hidden="true">NFT</span><p>Onchain ownership</p><h3>Registered names are represented by ERC-721 ownership for the selected registration period.</h3></article>
           <article><span aria-hidden="true">OPEN</span><p>Forward and reverse resolution</p><h3>Use the app to configure and inspect name records on {NETWORK_DISPLAY.networkDisplayName}.</h3></article>
         </div>
