@@ -35,19 +35,22 @@ export default function CinematicLanding() {
 
       <section className="cinematic-hero cinematic-shell" aria-labelledby="landing-title">
         <div className="cinematic-hero-copy">
-          <p className="cinematic-eyebrow"><span aria-hidden="true" />{IS_MAINNET_UI ? "Independent name service · Built on Arc" : "Arc public testnet - Pre-mainnet"}</p>
-          <h1 id="landing-title">One name<br /><em>every interaction</em></h1>
-          <p className="cinematic-lede">Turn a wallet address into a human-readable identity on {NETWORK_DISPLAY.networkDisplayName}. Explore ArcNS, then use the real application to search, register, and resolve names.</p>
-          <p className="cinematic-disclosure">ArcNS is an independent naming protocol built on Arc. Neither its name nor the <code>.circle</code> namespace implies affiliation with, sponsorship by, or endorsement from Arc or Circle.</p>
+          <div className="cinematic-hero-brand" aria-label="ArcNS, built on Arc">
+            <span className="cinematic-hero-brand-mark" aria-hidden="true"><Image src="/arcns/arcns-emblem.svg" alt="" width={42} height={42} /></span>
+            <span><b>ArcNS</b><small>{IS_MAINNET_UI ? "Built on Arc" : "Arc public testnet"}</small></span>
+          </div>
+          <h1 id="landing-title">One name<em>every interaction</em></h1>
+          <p className="cinematic-lede">Turn a wallet address into a memorable identity. Search, register, and resolve <code>.arc</code> and <code>.circle</code> names on {NETWORK_DISPLAY.networkDisplayName}.</p>
+          <p className="cinematic-disclosure"><span aria-hidden="true">i</span>Independent protocol built on Arc. Not affiliated with or endorsed by Arc or Circle.</p>
           <div className="cinematic-actions">
-            <Link className="cinematic-primary-button" href="/app">Visit ArcNS <Arrow /></Link>
+            <Link className="cinematic-primary-button" href="/app">Open ArcNS <Arrow /></Link>
             <a className="cinematic-text-link" href="#experience">Try the demo</a>
           </div>
         </div>
         <div className="cinematic-identity-visual" aria-hidden="true">
           <div className="cinematic-orbit cinematic-orbit-one"><span /></div><div className="cinematic-orbit cinematic-orbit-two"><span /></div><div className="cinematic-orbit cinematic-orbit-three"><span /></div>
-          <div className="cinematic-identity-core"><span className="cinematic-core-pulse" /><Image src="/arcns/arcns-emblem.svg" alt="" width={180} height={180} priority /></div>
-          <div className="cinematic-chip cinematic-chip-wallet"><small>WALLET</small><b>0xCdc3...16a7</b></div>
+          <div className="cinematic-identity-core"><span className="cinematic-core-halo cinematic-core-halo-outer" /><span className="cinematic-core-halo cinematic-core-halo-inner" /><span className="cinematic-core-pulse" /><Image src="/arcns/arcns-emblem.svg" alt="" width={180} height={180} priority /></div>
+          <div className="cinematic-chip cinematic-chip-wallet"><small>EXAMPLE WALLET</small><b>0xAb123...XYZ</b></div>
           <div className="cinematic-chip cinematic-chip-name"><small>EXAMPLE NAME</small><b>yourname.arc</b></div>
           <div className="cinematic-chip cinematic-chip-resolve"><small>NETWORK</small><b>{NETWORK_DISPLAY.networkDisplayName}</b></div>
         </div>

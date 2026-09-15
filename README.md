@@ -1,12 +1,12 @@
 # ArcNS — Arc Name Service
 
-**Independent decentralized naming service built on Arc Testnet.**
+**Independent decentralized naming protocol · Built on Arc.**
 
 ArcNS maps human-readable names ending in `.arc` and `.circle` to on-chain addresses, issues names as ERC-721 NFTs for selected registration periods, and lets any address set a verified primary name.
 
-ArcNS is an independent name service built on Arc Testnet. ArcNS is not affiliated with, endorsed by, or sponsored by Circle unless separately agreed in writing. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.
+ArcNS is an independent naming protocol built on Arc. It is not operated by, affiliated with, sponsored by, or endorsed by Circle or the Arc team. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.
 
-> `.circle` is an ArcNS testnet namespace and does not imply Circle endorsement, sponsorship, affiliation, or ownership.
+> Neither the ArcNS name nor the `.arc` or `.circle` namespaces imply official Arc or Circle ownership, affiliation, sponsorship, or endorsement.
 
 Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. No off-chain infrastructure is required to read or verify a name.
 
@@ -32,18 +32,13 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 |-----------|--------|
 | All 8 v3 contracts | Deployed on Arc Testnet (2026-04-24) |
 | Indexed data layer | Goldsky primary (Arc Testnet), The Graph Studio fallback, RPC fallback preserved |
-| Frontend (Next.js) | Functional, v3-wired, local dev |
+| Frontend (Next.js) | Live at [arcname.services](https://arcname.services), launch-ready UI on testnet runtime |
 | Contract test suite | ~180 passing tests, zero failures |
 | Live smoke tests | 10 flows verified on-chain |
-| External security audit | Not yet completed — required before mainnet |
 
-The protocol is fully functional on testnet. Mainnet deployment is gated on an external security audit and operational hardening. See [Mainnet Gap Report](docs/final/MAINNET_GAP_REPORT.md) for the full checklist.
+The application currently runs against Arc Testnet contracts. Mainnet network references and deployment addresses will be published after the mainnet deployment is verified; testnet addresses must not be used as mainnet addresses.
 
-**Public testnet app:** https://arcname.services
-
-**Previous Vercel URL (legacy):** https://arcns-app.vercel.app
-
-**Grant reviewer entry point:** [docs/grants/CIRCLE_GRANT_README.md](docs/grants/CIRCLE_GRANT_README.md)
+**Website and app:** [arcname.services](https://arcname.services)
 
 ---
 
@@ -153,13 +148,15 @@ Payment flow:
 
 | Label length | Annual price |
 |-------------|-------------|
-| 5+ characters | $2.00 |
-| 4 characters | $10.00 |
-| 3 characters | $15.00 |
-| 2 characters | $25.00 |
-| 1 character | $50.00 |
+| 5+ characters | $5.00 |
+| 4 characters | $15.00 |
+| 3 characters | $25.00 |
+| 2 characters | $50.00 |
+| 1 character | $100.00 |
 
 Pricing is computed by the PriceOracle in USDC with 6 decimal places. Duration is pro-rated. A 5% slippage guard is applied at registration time.
+
+Verified snapshot-eligible wallets may use their one-time first-registration benefit at the former testnet annual rates: $2 / $10 / $15 / $25 / $50 for 5+ / 4 / 3 / 2 / 1 characters respectively. The benefit applies to one registration across `.arc` and `.circle`; multi-year registrations discount only the first year, and renewals use standard pricing. Eligibility and claim availability are checked in the app; the final on-chain quote determines the amount payable.
 
 ---
 
@@ -273,66 +270,19 @@ See [Subgraph Guide](docs/final/SUBGRAPH_GUIDE.md) for the full deployment flow.
 
 ## Documentation
 
-### Finalization & Deployment
-| Document | Purpose |
-|----------|---------|
-| [FINAL_STATUS.md](docs/final/FINAL_STATUS.md) | Authoritative live status — what works, what is tested, what is not mainnet-ready |
-| [DEPLOYED_ADDRESSES.md](docs/final/DEPLOYED_ADDRESSES.md) | All contract addresses, subgraph URL, explorer links |
-| [RELEASE_SUMMARY.md](docs/final/RELEASE_SUMMARY.md) | What is live, what is v1-scope-only, what is not yet mainnet-ready |
-| [ENVIRONMENT_GUIDE.md](docs/final/ENVIRONMENT_GUIDE.md) | Environment variable reference |
-| [SUBGRAPH_GUIDE.md](docs/final/SUBGRAPH_GUIDE.md) | Subgraph build, deploy, and frontend consumption |
-| [SMOKE_TEST_RESULTS.md](docs/final/SMOKE_TEST_RESULTS.md) | Live manual test results |
+A focused entry point for developers and operators:
 
-### Audit & Security
-| Document | Purpose |
-|----------|---------|
-| [AUDIT_SCOPE.md](docs/final/AUDIT_SCOPE.md) | In-scope contracts, out-of-scope items, operational dependencies |
-| [THREAT_MODEL_SUMMARY.md](docs/final/THREAT_MODEL_SUMMARY.md) | Trust boundaries, invariants, attacker models |
-| [UPGRADE_POLICY.md](docs/final/UPGRADE_POLICY.md) | Upgradeable vs non-upgradeable rationale, upgrade process |
-| [ROLE_PERMISSION_MATRIX.md](docs/final/ROLE_PERMISSION_MATRIX.md) | Full privilege map, mainnet recommendations |
-| [TEST_COVERAGE_SUMMARY.md](docs/final/TEST_COVERAGE_SUMMARY.md) | Coverage by contract and flow, known gaps |
-| [MAINNET_GAP_REPORT.md](docs/final/MAINNET_GAP_REPORT.md) | Prioritized gap analysis, go/no-go checklist |
+| Guide | Purpose |
+|-------|---------|
+| [Integration guide](https://arcname.services/developers/integrate) | Practical ArcNS integration examples |
+| [Public resolver API](docs/integration/public-adapter-api.md) | Forward and verified reverse resolution |
+| [Wallet integration](docs/integration/wallet-integration-package.md) | Wallet integration specification |
+| [Deployed addresses](docs/final/DEPLOYED_ADDRESSES.md) | Contract references and explorer links |
+| [Environment guide](docs/final/ENVIRONMENT_GUIDE.md) | Environment variable reference |
+| [Subgraph guide](docs/final/SUBGRAPH_GUIDE.md) | Indexer build and deployment |
+| [Mainnet deployment runbook](docs/mainnet/DEPLOYMENT_RUNBOOK.md) | Mainnet deployment workflow |
 
-### Demo
-| Document | Purpose |
-|----------|---------|
-| [FOUNDER_DEMO_SCRIPT.md](docs/final/FOUNDER_DEMO_SCRIPT.md) | 9-step live demo flow with talking points |
-| [FOUNDER_DEMO_CHECKLIST.md](docs/final/FOUNDER_DEMO_CHECKLIST.md) | Pre-demo setup checklist |
-| [FOUNDER_DEMO_FALLBACKS.md](docs/final/FOUNDER_DEMO_FALLBACKS.md) | Recovery guide for live testnet conditions |
-
-### Ecosystem Integration
-| Document | Purpose |
-|----------|---------|
-| [ECOSYSTEM_INTEGRATION_STATUS.md](docs/integration/ECOSYSTEM_INTEGRATION_STATUS.md) | Phase 8 integration readiness summary and next execution order |
-| [resolution-adapter-design.md](docs/integration/resolution-adapter-design.md) | Canonical public resolution adapter design |
-| [arcscan-integration-package.md](docs/integration/arcscan-integration-package.md) | Implementation-grade ArcScan integration spec |
-| [wallet-integration-package.md](docs/integration/wallet-integration-package.md) | Implementation-grade wallet integration spec |
-| [dapp-fallback-ux.md](docs/integration/dapp-fallback-ux.md) | In-app fallback UX while native ecosystem support is pending |
-
----
-
-## Roadmap
-
-**Current milestone: Audit + Hardening + Mainnet Preparation**
-
-1. Engage external security auditor (all 6 v3 contracts)
-2. Resolve audit findings
-3. Implement upgrade time-lock
-4. Transfer admin roles and treasury to multisig
-5. Confirm mainnet USDC address
-6. Fix 2 failing frontend tests; add reentrancy adversarial tests
-7. Deploy subgraph to decentralized hosting
-8. Deploy frontend to production domain
-9. Provision dedicated RPC
-10. Redeploy on mainnet, complete mainnet smoke test matrix
-
-**Parallel track: Ecosystem integration**
-- Harden and publicly deploy the resolution adapter API
-- Deliver ArcScan integration package to the ArcScan team
-- Deliver wallet integration package to wallet vendors
-- Publish official MetaMask Snap for ArcNS resolution
-
-Estimated scope: 6–10 weeks depending on audit timeline.
+Historical reports and internal preparation documents remain in `docs/`; they are not launch-status claims.
 
 ---
 
@@ -351,12 +301,9 @@ Estimated scope: 6–10 weeks depending on audit timeline.
 
 ## Contributing / Collaboration
 
-ArcNS is in active pre-mainnet development. If you are an ecosystem partner, grant reviewer, auditor, or integration team:
+For bugs, feature proposals, or integration questions, open an [issue](https://github.com/khenzarr/arcns/issues). Include the affected network, reproduction steps, and relevant public transaction hashes. Never include private keys or credentials.
 
-- **Audit inquiries:** See [AUDIT_SCOPE.md](docs/final/AUDIT_SCOPE.md) for scope and [THREAT_MODEL_SUMMARY.md](docs/final/THREAT_MODEL_SUMMARY.md) for the threat model.
-- **Explorer integration:** See [arcscan-integration-package.md](docs/integration/arcscan-integration-package.md).
-- **Wallet integration:** See [wallet-integration-package.md](docs/integration/wallet-integration-package.md).
-- **Grant / hackathon reviewers:** See [FINAL_STATUS.md](docs/final/FINAL_STATUS.md) for the authoritative live status and [MAINNET_GAP_REPORT.md](docs/final/MAINNET_GAP_REPORT.md) for the honest gap analysis. Grant reviewer entry point: [CIRCLE_GRANT_README.md](docs/grants/CIRCLE_GRANT_README.md).
+For wallet and application integrations, start with the [integration guide](https://arcname.services/developers/integrate) and [public resolver API](docs/integration/public-adapter-api.md).
 
 ---
 
