@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "chainId": "5042002",
+  "createdAt": 1789500351026,
+  "meta": {
+    "name": "ArcNS testnet early-adopter discount - activate",
+    "description": "Activates the verified and frozen 849-wallet early-adopter campaign for the controlled testnet rehearsal. Does not alter the root, controller authorization, or pricing.",
+    "txBuilderVersion": "2.0.1",
+    "createdFromSafeAddress": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+    "createdFromOwnerAddress": "",
+    "checksum": "0x70c3a705ad1872bcdbecf39ec342d191cf639c5f75142fcc8b1a4afad92d9d3c"
+  },
+  "transactions": [
+    {
+      "to": "0x654C98c3452944Be06fF79A79641739249be553E",
+      "value": "0",
+      "data": "0x6885b03c0000000000000000000000000000000000000000000000000000000000000001",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

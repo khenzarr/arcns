@@ -98,6 +98,7 @@ describe("Bug 1 — SuccessModal timing: confirmation line absent when addr retu
       const { rerender } = render(
         <SuccessModal
           result={makeResult()}
+          reverseRecord
           onClose={vi.fn()}
           onSetPrimary={vi.fn()}
         />
@@ -107,6 +108,7 @@ describe("Bug 1 — SuccessModal timing: confirmation line absent when addr retu
       rerender(
         <SuccessModal
           result={makeResult()}
+          reverseRecord
           onClose={vi.fn()}
           onSetPrimary={vi.fn()}
         />
@@ -122,7 +124,7 @@ describe("Bug 1 — SuccessModal timing: confirmation line absent when addr retu
       //
       // Counterexample: SuccessModal({ registeredAddr: ZERO_ADDRESS, connectedAddress: "0xABC…" })
       // → confirmation line absent, never retried — BUG CONFIRMED.
-      const confirmationLine = screen.queryByText(/This name now resolves to/i);
+      const confirmationLine = screen.queryByText(/active for receiving transfers/i);
       expect(confirmationLine).not.toBeNull();
     }
   );
@@ -183,12 +185,12 @@ describe("Preservation — SuccessModal: confirmation line behavior on non-buggy
 
       const { default: SuccessModal } = await import("./SuccessModal");
       const { unmount } = render(
-        <SuccessModal result={makeResult()} onClose={vi.fn()} onSetPrimary={vi.fn()} />
+        <SuccessModal result={makeResult()} reverseRecord onClose={vi.fn()} onSetPrimary={vi.fn()} />
       );
 
       await new Promise((r) => setTimeout(r, 20));
 
-      const confirmationLine = screen.queryByText(/This name now resolves to/i);
+      const confirmationLine = screen.queryByText(/active for receiving transfers/i);
       expect(confirmationLine).not.toBeNull();
       unmount();
     }
@@ -330,7 +332,7 @@ describe("Preservation (arcns-ux-polish) — SuccessModal sub-headline and secon
   });
 
   it(
-    "sub-headline reads 'Your domain is live on Arc Testnet' when resolvedToWallet=false (addr=ZERO_ADDRESS) — preservation",
+    "sub-headline reads the configured Arc network name when resolvedToWallet=false (addr=ZERO_ADDRESS)",
     async () => {
       /**
        * Validates: Requirements 2.2
@@ -352,7 +354,7 @@ describe("Preservation (arcns-ux-polish) — SuccessModal sub-headline and secon
 
       await new Promise((r) => setTimeout(r, 20));
 
-      const subHeadline = screen.queryByText(/Your domain is live on Arc Testnet/i);
+      const subHeadline = screen.queryByText(/Your domain is live on Arc$/i);
       expect(subHeadline).not.toBeNull();
 
       unmount();
@@ -378,12 +380,12 @@ describe("Preservation (arcns-ux-polish) — SuccessModal sub-headline and secon
 
       const { default: SuccessModal } = await import("./SuccessModal");
       const { unmount } = render(
-        <SuccessModal result={makeResult()} onClose={vi.fn()} onSetPrimary={vi.fn()} />
+        <SuccessModal result={makeResult()} reverseRecord onClose={vi.fn()} onSetPrimary={vi.fn()} />
       );
 
       await new Promise((r) => setTimeout(r, 20));
 
-      const secondaryLine = screen.queryByText(/This name now resolves to/i);
+      const secondaryLine = screen.queryByText(/active for receiving transfers/i);
       expect(secondaryLine).not.toBeNull();
 
       unmount();

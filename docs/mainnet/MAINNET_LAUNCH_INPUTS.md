@@ -31,6 +31,7 @@ Mainnet launch remains **NO-GO** and handoff remains pending. No address, transa
 - Known network facts are Arc mainnet chain ID `5042` and USDC `0x3600000000000000000000000000000000000000`, symbol `USDC`, decimals `6`.
 - Final pricing is 1/2/3/4/5+ characters at 100/50/25/15/5 USDC per year.
 - The finalized early-adopter input is campaign `ARCNS_TESTNET_V3_EARLY_ADOPTER_2026_V1`, campaign bytes32 `0xae3c7462e46cc76b3e0349e7d211264ada95257da9d9d7a797abed70b7eb83e3`, snapshot block `54933646`, snapshot block hash `0x0a450d7fb8055de409084ddb9942f31431aa017a3b3241c4eb8e2e655b8c024d`, Merkle root `0xf18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e`, and 849 eligible wallets. These finalized data inputs are not evidence of any mainnet root operation or activation.
+- The complete eligible-wallet path was rehearsed manually on Arc testnet: proof detection, default discount selection, discounted USDC approval, registration and one-time consumption all completed successfully. This is canary evidence for the application path, not mainnet deployment evidence.
 - Timelock readiness and future read-only validation are tracked in [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md). The Timelock is the next authority blocker; it is not deployed, its address remains `TBD`, and mainnet remains **NO-GO**.
 
 ## B. Required pre-deployment inputs
@@ -120,7 +121,7 @@ All values in this section remain `TBD` until produced by a reviewed future depl
 | Indexer/subgraph | Not deployed or synced | Final manifest, addresses/start blocks, deployment, sync, queries, comparisons, health evidence | NO-GO | No endpoint exists |
 | DiscountRegistry indexing | Reusable ABI/schema/handlers prepared; concrete source absent | Final address/start block wiring, deployed/synced lifecycle and `DiscountUsed` evidence | NO-GO | Dormant template indexes nothing |
 | Frontend proof helper | Local proof lookup and tests prepared | Final preview evidence combined with approved lifecycle/used-state reads | GO | Proof alone does not establish claim availability |
-| Discount UX | Mainnet-only choice and discounted register path prepared on `codex/arcns-mainnet-ui` | Onchain campaign/quote/used-state and cross-namespace preview tests after deploy | NO-GO | Never shown on testnet; fails closed until the campaign is verified active |
+| Discount UX | Eligible-wallet flow rehearsed successfully on Arc testnet; discount defaults on when the verified quote is cheaper and remains user-selectable | Repeat the smoke path against the final mainnet deployment for eligible, ineligible and consumed wallets on both namespaces | CONDITIONAL GO | Testnet canary passed; mainnet runtime evidence remains required |
 | Frontend mainnet cutover | Chain-aware UI/runtime code prepared on a local branch; production is unchanged | Final addresses/endpoints/config, preview deployment, smoke tests, approval, rollback evidence | NO-GO | Merge and cutover only after verified mainnet deployment |
 | Used-state handling | Direct registry `used(address)` read added to the mainnet-only discount gate | Preview tests for an unused wallet, consumed wallet, and both namespaces | NO-GO | Network failures hide the discount; onchain consume remains the authority |
 | Monitoring/rollback | Owners, targets, and evidence are `TBD` | Named owners, thresholds, alerts, fallback behavior, tested rollback target/procedure | NO-GO | Must cover indexer, proof delivery, RPC, and frontend |
@@ -139,12 +140,18 @@ Commands are recorded for future reviewed use. Environment values must be suppli
 | `node scripts/mainnet/validate-discount-proof-artifact.js` | Validate finalized artifact metadata, count, and every Merkle proof | Version-controlled finalized snapshot and bundled proof artifact; no env, signer, or RPC | Read-only, local and network-free | Any review/CI context | Yes |
 | `node scripts/mainnet/check-safe-config.js` | Validate Safe chain, bytecode, exact owner set, threshold, and separation from owner EOAs | `SAFE_RPC_URL`, `EXPECTED_CHAIN_ID=5042`, verified Safe address, approved owners, and threshold `2`; Radar is read-only/testing only | Read-only network calls; no signer | Passed against the verified mainnet Safe | PASS; deploy-grade RPC remains TBD |
 | `node scripts/mainnet/check-timelock-config.js` | Validate Timelock chain, bytecode, delay, role constants, Safe roles, self-administration, and optional deployer-admin absence | Future deploy-grade/read provider, `EXPECTED_CHAIN_ID=5042`, final Timelock address, `EXPECTED_MIN_DELAY=172800`, verified Admin Safe, and optional deployer | Read-only network calls; no signer | Only after a future approved Timelock deployment | No; Timelock address is `TBD` |
+| `npx hardhat run scripts/v3/deployV3.js --network arc_mainnet` | Deploy the canonical protocol, record every receipt/block/hash and bootstrap transaction, and preserve verification arguments | Exact mainnet confirmation, approved RPC, funded expected deployer, exact USDC, treasury, Safe and reviewed minimum balance | **Write-capable; deploys contracts** | Mainnet deployment ceremony only | Code and guards are ready; runtime inputs remain unresolved |
+| `npx hardhat run scripts/v3/verifyV3.js --network arc_mainnet` | Verify standalone contracts, three UUPS proxy/implementation linkages, DiscountRegistry and Timelock on the approved explorer | Final deployment and Timelock artifacts, validated HTTPS API URL and provider key if required | Explorer API submissions; no onchain transaction | After receipt/address reconciliation, before handoff completion | Code and guards are ready; explorer API route remains `TBD` |
+| `npx hardhat run scripts/mainnet/handoff-admin.js --network arc_mainnet` | Grant final Safe/Timelock authorities, transfer ownership/root and remove deployer authority in a resumable state-aware sequence | Exact handoff confirmation, final deployment and Timelock artifacts, expected deployer/Safe/treasury | **Write-capable; changes and revokes authority** | Immediately after deployment verification | Code is ready; requires deployed contracts |
 | `npx hardhat run scripts/mainnet/assert-admin-handoff.js --network arc_mainnet` | Assert configured owners, roles, treasury, bytecode, and deployer revocation | Final expected Safe, Timelock, treasury, deployer, and all contract addresses, or reviewed artifact path; read provider | Read-only network calls | Only after final deployment and handoff, before public launch | No; final addresses/deployment/handoff are missing |
+| `node scripts/mainnet/generate-safe-discount-batches.js` | Produce separate Safe Transaction Builder files for set-root, irreversible freeze and later activation, with review hashes | Final deployment artifact, expected Safe, explicit new output directory and finalized snapshot | Local deterministic file generation; no signer or RPC | After deployment reconciliation | Code and tests are ready; requires final registry address |
+| `npx hardhat run scripts/mainnet/verify-discount-state.js --network arc_mainnet` | Verify exact deployed/root-set/frozen/active lifecycle stage and discounted quote | Final deployment artifact, expected Safe and `EXPECTED_DISCOUNT_STAGE` | Read-only network calls | After each lifecycle step | Code is ready; requires deployed contracts |
+| `node scripts/mainnet/generate-mainnet-subgraph.js` | Materialize all eight mainnet data sources and exact start blocks from reconciled deployment receipts | Final deployment artifact and provider-approved `GRAPH_MAINNET_NETWORK` slug | Local deterministic file generation; no signer or RPC | After deployment reconciliation | Code and tests are ready; provider network slug remains `TBD` |
 | `npx hardhat run scripts/mainnet/discount-set-root.js --network arc_mainnet` | Set only the finalized DiscountRegistry Merkle root after state/owner guards | `CONFIRM_MAINNET_WRITE=YES`, final registry and expected owner, Arc mainnet provider and signer; canonical snapshot | **Write-capable; signs and submits a transaction** | Only in a separately approved post-deployment ceremony after verification and handoff prerequisites | No; forbidden in this task and prerequisites are incomplete |
 | `npx hardhat run scripts/mainnet/discount-freeze-root.js --network arc_mainnet` | Irreversibly freeze the finalized root after exact read-back guards | `CONFIRM_MAINNET_WRITE=YES`, final registry and expected owner, Arc mainnet provider and signer; exact root already set | **Write-capable and irreversible; signs and submits a transaction** | Only in a separate independently reviewed freeze ceremony | No; forbidden in this task and root is not set |
 | `npx hardhat run scripts/mainnet/discount-activate.js --network arc_mainnet` | Activate the finalized campaign after root and readiness guards | Set-root inputs plus all five `CONFIRM_*_READY=YES` flags and explicit approval | **Write-capable; signs and submits a transaction** | Only after contracts, verification, handoff, indexer, proof delivery, frontend, root freeze, and final approval | No; forbidden in this task and readiness gates are incomplete |
 
-The read-only handoff assertion has documented coverage limits: Safe owners/threshold, Timelock delay/internal roles, registrar allowlists, DiscountRegistry controller authorization, controller registry pointers, and root lifecycle state require additional reviewed read-only checks.
+The read-only handoff assertion covers bytecode, ownership/roles, deployer removal, treasury, controller pointers, registrar allowlists, resolver/reverse wiring, DiscountRegistry controller authorization, paused state and exact oracle prices. Safe owner/threshold and Timelock internal-role checks remain separate dedicated checks; discount root lifecycle state is verified separately after each Safe operation.
 
 ## F. Remaining launch blockers
 
@@ -178,11 +185,11 @@ The read-only handoff assertion has documented coverage limits: Safe owners/thre
 - The subgraph is not deployed, synced, smoke-tested, compared with direct reads, or monitored.
 - DiscountRegistry reusable coverage exists, but concrete wiring and runtime evidence do not.
 
-### Frontend not ready
+### Frontend runtime cutover pending
 
-- Mainnet address/config and subgraph endpoint integration are not implemented.
-- No approved mainnet preview exists; preview smoke tests and rollback evidence are missing.
-- Production remains testnet-bound, discount UI remains disabled, and `registerWithDiscount` remains unwired.
+- Chain-aware mainnet UI, generated address configuration, proof/used-state gates and `registerWithDiscount` path are implemented and testnet-canary verified.
+- Final mainnet addresses and the provider-issued subgraph endpoint cannot be populated before deployment/indexer creation.
+- An approved mainnet preview, production promotion and tested rollback evidence remain required; production must stay on the current testnet configuration until those gates pass.
 
 ### Discount lifecycle not ready
 
@@ -211,6 +218,7 @@ The read-only handoff assertion has documented coverage limits: Safe owners/thre
 
 ## Related plans
 
+- Mainnet-day quickstart: [`MAINNET_DAY_QUICKSTART.md`](./MAINNET_DAY_QUICKSTART.md)
 - Deployment runbook: [`DEPLOYMENT_RUNBOOK.md`](./DEPLOYMENT_RUNBOOK.md)
 - Admin Safe readiness: [`ADMIN_SAFE_READINESS_PLAN.md`](./ADMIN_SAFE_READINESS_PLAN.md)
 - Timelock readiness: [`TIMELOCK_READINESS_PLAN.md`](./TIMELOCK_READINESS_PLAN.md)

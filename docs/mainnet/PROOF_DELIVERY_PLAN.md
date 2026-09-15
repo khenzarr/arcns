@@ -52,9 +52,9 @@ Both commands are network-free, read-only, and require no signer or RPC.
 - [x] Artifact generated and validated.
 - [x] 849 proofs present.
 - [x] Root matches finalized root.
-- [x] Inactive static proof lookup helper and unit coverage prepared.
-- [ ] Active frontend discount integration reviewed and approved.
-- [ ] Preview smoke tests passed.
+- [x] Static proof lookup helper, metadata validation and unit coverage prepared.
+- [x] Active frontend discount integration completed and exercised through a manual Arc testnet canary.
+- [x] Testnet eligible-wallet smoke path passed, including discounted approval and one-time consumption.
 - [ ] DiscountRegistry deployed.
 - [ ] Root set and frozen.
 - [ ] Discount inactive before launch.
@@ -63,7 +63,7 @@ Both commands are network-free, read-only, and require no signer or RPC.
 
 ## F. Remaining blockers
 
-Final mainnet addresses are TBD; the helper and artifact are not wired into active UI; `registerWithDiscount` is not wired; discount UI is not enabled; the root is not set/frozen on mainnet; DiscountRegistry is not deployed on mainnet; frontend cutover is not implemented; the indexer/subgraph is not deployed/synced; and final launch review is required. The helper is preparation only and does not mean the frontend discount UX is ready.
+Final mainnet addresses are TBD. The proof helper, active UI and `registerWithDiscount` path are implemented and testnet-canary verified, but the root is not set/frozen on mainnet, DiscountRegistry is not deployed there, and the mainnet indexer/subgraph is not deployed or synced. Final mainnet eligible/ineligible/used-wallet smoke evidence and launch review remain required; testnet success must not be treated as mainnet state evidence.
 
 ## G. Non-goals
 

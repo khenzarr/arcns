@@ -81,22 +81,97 @@ function discountDeploymentConfig(env = process.env, options = {}) {
   };
 }
 
+const MAINNET_DEPLOY_CONFIRMATION = "I_UNDERSTAND_THIS_DEPLOYS_ARCNS_TO_MAINNET";
+const ARC_MAINNET_USDC = "0x3600000000000000000000000000000000000000";
+
+function mainnetDeploymentConfig(networkName, env = process.env) {
+  if (networkName !== "arc_mainnet") return null;
+  if (env.CONFIRM_MAINNET_PROTOCOL_DEPLOY !== MAINNET_DEPLOY_CONFIRMATION) {
+    throw new Error(`CONFIRM_MAINNET_PROTOCOL_DEPLOY=${MAINNET_DEPLOY_CONFIRMATION} is required`);
+  }
+  if (!ethers.isAddress(env.USDC_ADDRESS) || ethers.getAddress(env.USDC_ADDRESS) !== ethers.getAddress(ARC_MAINNET_USDC)) {
+    throw new Error(`USDC_ADDRESS must be the reviewed Arc mainnet USDC ${ARC_MAINNET_USDC}`);
+  }
+  for (const name of ["TREASURY_ADDRESS", "EXPECTED_DEPLOYER_ADDRESS", "EXPECTED_ADMIN_SAFE_ADDRESS"]) {
+    if (!ethers.isAddress(env[name]) || env[name] === ethers.ZeroAddress) throw new Error(`${name} must be an explicit non-zero address`);
+  }
+  if (ethers.getAddress(env.EXPECTED_DEPLOYER_ADDRESS) === ethers.getAddress(env.EXPECTED_ADMIN_SAFE_ADDRESS)) {
+    throw new Error("EXPECTED_DEPLOYER_ADDRESS must not equal EXPECTED_ADMIN_SAFE_ADDRESS");
+  }
+  if (env.DEPLOY_EARLY_ADOPTER_DISCOUNT_REGISTRY !== "true") {
+    throw new Error("Mainnet deployment requires DEPLOY_EARLY_ADOPTER_DISCOUNT_REGISTRY=true");
+  }
+  if (env.PRICE_ORACLE_ADDRESS) throw new Error("PRICE_ORACLE_ADDRESS is not accepted for the canonical fresh mainnet deployment");
+  const minimumBalance = env.MIN_DEPLOYER_BALANCE_WEI;
+  if (!minimumBalance || !/^\d+$/.test(minimumBalance) || BigInt(minimumBalance) <= 0n) {
+    throw new Error("MIN_DEPLOYER_BALANCE_WEI must be an explicitly reviewed positive integer");
+  }
+  return Object.freeze({
+    expectedDeployer: ethers.getAddress(env.EXPECTED_DEPLOYER_ADDRESS),
+    adminSafe: ethers.getAddress(env.EXPECTED_ADMIN_SAFE_ADDRESS),
+    treasury: ethers.getAddress(env.TREASURY_ADDRESS),
+    minimumBalance: BigInt(minimumBalance),
+  });
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
   const isLocal = ["hardhat", "localhost"].includes(network.name);
   // All environment/manifest checks must finish before a signer is loaded or any write can occur.
   const discountConfig = discountDeploymentConfig();
+  const mainnetConfig = mainnetDeploymentConfig(network.name);
+  const outDir = path.join(__dirname, "../../deployments");
+  const outFile = path.join(outDir, `${network.name}-v3.json`);
+  if (network.name === "arc_mainnet" && fs.existsSync(outFile)) {
+    throw new Error(`Refusing to overwrite existing mainnet deployment artifact: ${outFile}`);
+  }
   const [deployer] = await ethers.getSigners();
+
+  const providerNetwork = await ethers.provider.getNetwork();
+  if (network.name === "arc_mainnet") {
+    if (Number(providerNetwork.chainId) !== 5042) throw new Error(`Expected Arc mainnet chain 5042, received ${providerNetwork.chainId}`);
+    if (ethers.getAddress(deployer.address) !== mainnetConfig.expectedDeployer) throw new Error("Signer does not match EXPECTED_DEPLOYER_ADDRESS");
+    if (ethers.getAddress(process.env.TREASURY_ADDRESS) !== mainnetConfig.treasury) throw new Error("TREASURY_ADDRESS mismatch");
+    if (await ethers.provider.getCode(mainnetConfig.adminSafe) === "0x") throw new Error("EXPECTED_ADMIN_SAFE_ADDRESS has no bytecode");
+    const balance = await ethers.provider.getBalance(deployer.address);
+    if (balance < mainnetConfig.minimumBalance) throw new Error(`Deployer balance ${balance} is below MIN_DEPLOYER_BALANCE_WEI ${mainnetConfig.minimumBalance}`);
+  }
 
   console.log("\n╔══════════════════════════════════════╗");
   console.log("║   ArcNS v3 — Canonical Deployment    ║");
   console.log("╚══════════════════════════════════════╝");
   console.log(`Network  : ${network.name}`);
-  console.log(`Chain ID : ${(await ethers.provider.getNetwork()).chainId}`);
+  console.log(`Chain ID : ${providerNetwork.chainId}`);
   console.log(`Deployer : ${deployer.address}\n`);
 
   const contracts = {};
+  const deploymentRecords = {};
+  const bootstrapTransactions = [];
+  const deploymentArguments = {};
+
+  async function recordDeployment(label, contract, address) {
+    const tx = contract.deploymentTransaction();
+    if (!tx) throw new Error(`Missing deployment transaction for ${label}`);
+    const receipt = await tx.wait();
+    if (!receipt || receipt.status !== 1) throw new Error(`Deployment failed for ${label}`);
+    const block = await ethers.provider.getBlock(receipt.blockNumber);
+    if (!block || block.hash !== receipt.blockHash) throw new Error(`Block reconciliation failed for ${label}`);
+    deploymentRecords[label] = {
+      address,
+      txHash: receipt.hash,
+      blockNumber: receipt.blockNumber,
+      blockHash: receipt.blockHash,
+    };
+  }
+
+  async function bootstrap(label, txPromise) {
+    const tx = await txPromise;
+    const receipt = await tx.wait();
+    if (!receipt || receipt.status !== 1) throw new Error(`Bootstrap transaction failed: ${label}`);
+    bootstrapTransactions.push({ label, txHash: receipt.hash, blockNumber: receipt.blockNumber, blockHash: receipt.blockHash });
+    return receipt;
+  }
 
   if (network.name === "arc_mainnet") {
     const expected = [100_000_000n, 50_000_000n, 25_000_000n, 15_000_000n, 5_000_000n];
@@ -123,6 +198,7 @@ async function main() {
     const usdc = await MockUSDC.deploy();
     await usdc.waitForDeployment();
     usdcAddress = await usdc.getAddress();
+    await recordDeployment("usdc", usdc, usdcAddress);
     console.log(`   MockUSDC: ${usdcAddress}`);
   } else if (usdcAddress) {
     console.log(`   Using USDC: ${usdcAddress}`);
@@ -137,6 +213,8 @@ async function main() {
   const registry = await Registry.deploy();
   await registry.waitForDeployment();
   contracts.registry = await registry.getAddress();
+  deploymentArguments.registry = { constructor: [] };
+  await recordDeployment("registry", registry, contracts.registry);
   console.log(`   ArcNSRegistry: ${contracts.registry}`);
 
   // ── 3. Resolver (UUPS proxy) ───────────────────────────────────────────────
@@ -150,6 +228,8 @@ async function main() {
   await resolver.waitForDeployment();
   contracts.resolver     = await resolver.getAddress();
   contracts.resolverImpl = await upgrades.erc1967.getImplementationAddress(contracts.resolver);
+  deploymentArguments.resolver = { proxyKind: "uups", initializer: [contracts.registry, deployer.address] };
+  await recordDeployment("resolver", resolver, contracts.resolver);
   console.log(`   ArcNSResolver proxy: ${contracts.resolver}`);
   console.log(`   ArcNSResolver impl:  ${contracts.resolverImpl}`);
 
@@ -159,10 +239,12 @@ async function main() {
   const oracle = await Oracle.deploy();
   await oracle.waitForDeployment();
   contracts.priceOracle = await oracle.getAddress();
+  deploymentArguments.priceOracle = { constructor: [] };
+  await recordDeployment("priceOracle", oracle, contracts.priceOracle);
   console.log(`   ArcNSPriceOracle: ${contracts.priceOracle}`);
   if (network.name === "arc_mainnet") {
     const expected = [100_000_000n, 50_000_000n, 25_000_000n, 15_000_000n, 5_000_000n];
-    await (await oracle.setPrices(...expected)).wait();
+    await bootstrap("priceOracle.setPrices", oracle.setPrices(...expected));
     const actual = await Promise.all([
       oracle.price1Char(), oracle.price2Char(), oracle.price3Char(),
       oracle.price4Char(), oracle.price5Plus(),
@@ -182,6 +264,8 @@ async function main() {
   const arcRegistrar = await Registrar.deploy(contracts.registry, arcNode, "arc");
   await arcRegistrar.waitForDeployment();
   contracts.arcRegistrar = await arcRegistrar.getAddress();
+  deploymentArguments.arcRegistrar = { constructor: [contracts.registry, arcNode, "arc"] };
+  await recordDeployment("arcRegistrar", arcRegistrar, contracts.arcRegistrar);
   console.log(`   arcRegistrar: ${contracts.arcRegistrar}`);
 
   // ── 6. BaseRegistrar (.circle) ─────────────────────────────────────────────
@@ -189,6 +273,8 @@ async function main() {
   const circleRegistrar = await Registrar.deploy(contracts.registry, circleNode, "circle");
   await circleRegistrar.waitForDeployment();
   contracts.circleRegistrar = await circleRegistrar.getAddress();
+  deploymentArguments.circleRegistrar = { constructor: [contracts.registry, circleNode, "circle"] };
+  await recordDeployment("circleRegistrar", circleRegistrar, contracts.circleRegistrar);
   console.log(`   circleRegistrar: ${contracts.circleRegistrar}`);
 
   // ── 7. ReverseRegistrar ────────────────────────────────────────────────────
@@ -197,6 +283,8 @@ async function main() {
   const reverseRegistrar = await ReverseRegistrar.deploy(contracts.registry, contracts.resolver);
   await reverseRegistrar.waitForDeployment();
   contracts.reverseRegistrar = await reverseRegistrar.getAddress();
+  deploymentArguments.reverseRegistrar = { constructor: [contracts.registry, contracts.resolver] };
+  await recordDeployment("reverseRegistrar", reverseRegistrar, contracts.reverseRegistrar);
   console.log(`   reverseRegistrar: ${contracts.reverseRegistrar}`);
 
   // ── 8. Controller (.arc, UUPS proxy) ──────────────────────────────────────
@@ -216,6 +304,8 @@ async function main() {
   await arcController.waitForDeployment();
   contracts.arcController     = await arcController.getAddress();
   contracts.arcControllerImpl = await upgrades.erc1967.getImplementationAddress(contracts.arcController);
+  deploymentArguments.arcController = { proxyKind: "uups", initializer: [contracts.arcRegistrar, contracts.priceOracle, contracts.usdc, contracts.registry, contracts.resolver, contracts.reverseRegistrar, treasury, deployer.address] };
+  await recordDeployment("arcController", arcController, contracts.arcController);
   console.log(`   arcController proxy: ${contracts.arcController}`);
   console.log(`   arcController impl:  ${contracts.arcControllerImpl}`);
 
@@ -234,6 +324,8 @@ async function main() {
   await circleController.waitForDeployment();
   contracts.circleController     = await circleController.getAddress();
   contracts.circleControllerImpl = await upgrades.erc1967.getImplementationAddress(contracts.circleController);
+  deploymentArguments.circleController = { proxyKind: "uups", initializer: [contracts.circleRegistrar, contracts.priceOracle, contracts.usdc, contracts.registry, contracts.resolver, contracts.reverseRegistrar, treasury, deployer.address] };
+  await recordDeployment("circleController", circleController, contracts.circleController);
   console.log(`   circleController proxy: ${contracts.circleController}`);
   console.log(`   circleController impl:  ${contracts.circleControllerImpl}`);
   contracts.treasury = treasury;
@@ -242,34 +334,34 @@ async function main() {
   console.log("\n🔧 Wiring contracts...");
 
   // Assign TLD nodes to registrars
-  await (await registry.setSubnodeOwner(ethers.ZeroHash, labelhash("arc"),    contracts.arcRegistrar)).wait();
+  await bootstrap("registry.setSubnodeOwner(.arc)", registry.setSubnodeOwner(ethers.ZeroHash, labelhash("arc"), contracts.arcRegistrar));
   console.log("   ✓ .arc TLD → arcRegistrar");
 
-  await (await registry.setSubnodeOwner(ethers.ZeroHash, labelhash("circle"), contracts.circleRegistrar)).wait();
+  await bootstrap("registry.setSubnodeOwner(.circle)", registry.setSubnodeOwner(ethers.ZeroHash, labelhash("circle"), contracts.circleRegistrar));
   console.log("   ✓ .circle TLD → circleRegistrar");
 
   // Set up addr.reverse node for ReverseRegistrar
-  await (await registry.setSubnodeOwner(ethers.ZeroHash, labelhash("reverse"), deployer.address)).wait();
+  await bootstrap("registry.setSubnodeOwner(reverse)", registry.setSubnodeOwner(ethers.ZeroHash, labelhash("reverse"), deployer.address));
   const reverseBaseNode = namehash("reverse");
-  await (await registry.setSubnodeOwner(reverseBaseNode, labelhash("addr"), contracts.reverseRegistrar)).wait();
+  await bootstrap("registry.setSubnodeOwner(addr.reverse)", registry.setSubnodeOwner(reverseBaseNode, labelhash("addr"), contracts.reverseRegistrar));
   console.log("   ✓ addr.reverse → reverseRegistrar");
 
   // Add controllers to registrars
-  await (await arcRegistrar.addController(contracts.arcController)).wait();
+  await bootstrap("arcRegistrar.addController", arcRegistrar.addController(contracts.arcController));
   console.log("   ✓ arcController added to arcRegistrar");
 
-  await (await circleRegistrar.addController(contracts.circleController)).wait();
+  await bootstrap("circleRegistrar.addController", circleRegistrar.addController(contracts.circleController));
   console.log("   ✓ circleController added to circleRegistrar");
 
   // Grant CONTROLLER_ROLE on Resolver to both controllers and reverseRegistrar
-  await (await resolver.setController(contracts.arcController,    true)).wait();
-  await (await resolver.setController(contracts.circleController, true)).wait();
-  await (await resolver.setController(contracts.reverseRegistrar, true)).wait();
+  await bootstrap("resolver.setController(arcController)", resolver.setController(contracts.arcController, true));
+  await bootstrap("resolver.setController(circleController)", resolver.setController(contracts.circleController, true));
+  await bootstrap("resolver.setController(reverseRegistrar)", resolver.setController(contracts.reverseRegistrar, true));
   console.log("   ✓ CONTROLLER_ROLE granted on Resolver");
 
   // Approve the resolver on both controllers
-  await (await arcController.setApprovedResolver(contracts.resolver,    true)).wait();
-  await (await circleController.setApprovedResolver(contracts.resolver, true)).wait();
+  await bootstrap("arcController.setApprovedResolver", arcController.setApprovedResolver(contracts.resolver, true));
+  await bootstrap("circleController.setApprovedResolver", circleController.setApprovedResolver(contracts.resolver, true));
   console.log("   ✓ Resolver approved on both controllers");
 
   if (discountConfig.enabled) {
@@ -278,11 +370,13 @@ async function main() {
     const discountRegistry = await DiscountRegistry.deploy(discountConfig.campaignId, discountConfig.snapshotBlock, deployer.address);
     await discountRegistry.waitForDeployment();
     contracts.discountRegistry = await discountRegistry.getAddress();
+    deploymentArguments.discountRegistry = { constructor: [discountConfig.campaignId, String(discountConfig.snapshotBlock), deployer.address] };
+    await recordDeployment("discountRegistry", discountRegistry, contracts.discountRegistry);
 
-    await (await discountRegistry.setControllerAuthorization(contracts.arcController, true)).wait();
-    await (await discountRegistry.setControllerAuthorization(contracts.circleController, true)).wait();
-    await (await arcController.setDiscountRegistry(contracts.discountRegistry)).wait();
-    await (await circleController.setDiscountRegistry(contracts.discountRegistry)).wait();
+    await bootstrap("discountRegistry.authorize(arcController)", discountRegistry.setControllerAuthorization(contracts.arcController, true));
+    await bootstrap("discountRegistry.authorize(circleController)", discountRegistry.setControllerAuthorization(contracts.circleController, true));
+    await bootstrap("arcController.setDiscountRegistry", arcController.setDiscountRegistry(contracts.discountRegistry));
+    await bootstrap("circleController.setDiscountRegistry", circleController.setDiscountRegistry(contracts.discountRegistry));
 
     if (await arcController.discountRegistry() !== contracts.discountRegistry || await circleController.discountRegistry() !== contracts.discountRegistry) {
       throw new Error("Both controllers must point to the same shared discount registry");
@@ -308,14 +402,15 @@ async function main() {
       addrReverse: namehash("addr.reverse"),
     },
     upgrades: [],
+    deploymentRecords,
+    bootstrapTransactions,
+    deploymentArguments,
     earlyAdopterDiscount: discountConfig,
   };
 
-  const outDir = path.join(__dirname, "../../deployments");
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-
-  const outFile = path.join(outDir, `${network.name}-v3.json`);
-  fs.writeFileSync(outFile, JSON.stringify(output, null, 2));
+  if (network.name === "arc_mainnet") fs.writeFileSync(outFile, `${JSON.stringify(output, null, 2)}\n`, { flag: "wx" });
+  else fs.writeFileSync(outFile, JSON.stringify(output, null, 2));
 
   console.log(`\n✅ ArcNS v3 deployment complete!`);
   console.log(`📄 Saved to deployments/${network.name}-v3.json`);
@@ -331,4 +426,4 @@ async function main() {
 
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1); });
 
-module.exports = { discountDeploymentConfig, envBoolean, main };
+module.exports = { MAINNET_DEPLOY_CONFIRMATION, discountDeploymentConfig, envBoolean, mainnetDeploymentConfig, main };

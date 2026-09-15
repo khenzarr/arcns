@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { IS_MAINNET_UI, NETWORK_DISPLAY } from "../lib/networkDisplay";
 
 type FooterLinkItem = {
   label: string;
@@ -19,14 +18,12 @@ const GITHUB_REPO = "https://github.com/khenzarr/arcns";
 
 const FOOTER_SECTIONS: FooterSection[] = [
   {
-    title: "ArcNS",
+    title: "Product",
     links: [
       { label: "Search Names", href: "/app" },
       { label: "Send Assets", href: "/send" },
       { label: "My Domains", href: "/my-domains" },
       { label: "Resolve", href: "/resolve" },
-      ...(!IS_MAINNET_UI ? [{ label: "Public Testnet App", href: "/app" }] : []),
-      { label: "GitHub", href: GITHUB_REPO, external: true },
     ],
   },
   {
@@ -37,26 +34,7 @@ const FOOTER_SECTIONS: FooterSection[] = [
         href: `${GITHUB_REPO}/blob/master/docs/final/DEPLOYED_ADDRESSES.md`,
         external: true,
       },
-      {
-        label: "Indexing Status",
-        href: `${GITHUB_REPO}/blob/master/docs/final/SUBGRAPH_GUIDE.md`,
-        external: true,
-      },
-      ...(!IS_MAINNET_UI ? [{
-        label: "Mainnet Gap Report",
-        href: `${GITHUB_REPO}/blob/master/docs/final/MAINNET_GAP_REPORT.md`,
-        external: true,
-      }] : []),
-      {
-        label: "Security / Audit Status",
-        href: `${GITHUB_REPO}/blob/master/docs/final/AUDIT_SCOPE.md`,
-        external: true,
-      },
-      {
-        label: "Goldsky Integration",
-        href: `${GITHUB_REPO}/blob/master/docs/integration/GOLDSKY_PHASE3_FINAL_SYNC_PARITY_REPORT.md`,
-        external: true,
-      },
+      { label: "GitHub", href: GITHUB_REPO, external: true },
     ],
   },
   {
@@ -72,37 +50,17 @@ const FOOTER_SECTIONS: FooterSection[] = [
         href: "/developers/integrate",
       },
       {
-        label: "Public Adapter",
-        href: `${GITHUB_REPO}/blob/master/docs/integration/TIER2_PUBLIC_ADAPTER_STATUS.md`,
-        external: true,
-      },
-      {
         label: "Wallet Integration",
         href: `${GITHUB_REPO}/blob/master/docs/integration/wallet-integration-package.md`,
-        external: true,
-      },
-      {
-        label: "BENS / Blockscout Roadmap",
-        href: `${GITHUB_REPO}/blob/master/docs/integration/GOLDSKY_ARCNS_INTEGRATION_PLAN.md`,
         external: true,
       },
     ],
   },
   {
-    title: "Community",
+    title: "Connect",
     links: [
       { label: "X / Twitter", href: "https://x.com/arc_name", external: true },
       { label: "Feedback", href: `${GITHUB_REPO}/issues`, external: true },
-      {
-        label: "Grant Updates",
-        href: `${GITHUB_REPO}/blob/master/docs/grants/CIRCLE_GRANT_README.md`,
-        external: true,
-      },
-      {
-        label: "Ecosystem",
-        href: `${GITHUB_REPO}/blob/master/docs/integration/ECOSYSTEM_INTEGRATION_STATUS.md`,
-        external: true,
-      },
     ],
   },
   {
@@ -136,12 +94,16 @@ function FooterLink({ item }: { item: FooterLinkItem }) {
     return (
       <a href={item.href} target="_blank" rel="noopener noreferrer" className={className}>
         <span>{item.label}</span>
-        <span
+        <svg
           aria-hidden="true"
-          className="text-[11px] text-[var(--arcns-text-muted)] transition group-hover:text-[var(--arcns-cyan)]"
+          width="13"
+          height="13"
+          viewBox="0 0 13 13"
+          fill="none"
+          className="text-[var(--arcns-text-muted)] transition group-hover:text-[var(--arcns-cyan)]"
         >
-          -&gt;
-        </span>
+          <path d="M3 10 10 3M5 3h5v5" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </a>
     );
   }
@@ -206,7 +168,7 @@ export default function Footer() {
 
               <div className="space-y-2 text-sm leading-6 text-[var(--arcns-text-secondary)]">
                 <p>
-                  {IS_MAINNET_UI ? "Human-readable names on Arc." : `Live on ${NETWORK_DISPLAY.networkDisplayName} - ${NETWORK_DISPLAY.environmentStatusLabel} - External audit pending`}
+                  Human-readable names on Arc.
                 </p>
                 <p className="max-w-xl text-[13px] text-[var(--arcns-text-muted)]">
                   ArcNS is an independent naming protocol built on Arc. It is not operated by, affiliated with,
@@ -218,7 +180,7 @@ export default function Footer() {
               </div>
             </div>
 
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 xl:gap-6">
+            <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-4 xl:gap-8">
               {FOOTER_SECTIONS.map(section => (
                 <section key={section.title} className="min-w-0">
                   <h2 className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--arcns-text-muted)]">

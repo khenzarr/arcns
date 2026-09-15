@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { zeroAddress, type Hex } from "viem";
-import { ADDR_ARC_CONTROLLER, ADDR_CIRCLE_CONTROLLER, ADDR_DISCOUNT_REGISTRY } from "../lib/generated-contracts";
+import { ADDR_ARC_CONTROLLER, ADDR_CIRCLE_CONTROLLER, ADDR_DISCOUNT_REGISTRY, DEPLOYED_CHAIN_ID } from "../lib/generated-contracts";
 import { DISCOUNT_CONTROLLER_ABI, DISCOUNT_REGISTRY_ABI } from "../lib/discountContract";
 import { EARLY_ADOPTER_PROOF_METADATA, lookupEarlyAdopterProof } from "../lib/discountProofs";
-import { IS_MAINNET } from "../lib/networkDisplay";
 import { publicClient } from "../lib/publicClient";
 import type { SupportedTLD } from "../lib/normalization";
 
@@ -20,7 +19,7 @@ export function useSnapshotDiscount(label: string, tld: SupportedTLD, duration: 
 
   useEffect(() => {
     setResult(null);
-    if (!IS_MAINNET || !address || chainId !== 5042 || !label || ADDR_DISCOUNT_REGISTRY === zeroAddress) return;
+    if (!address || chainId !== DEPLOYED_CHAIN_ID || !label || ADDR_DISCOUNT_REGISTRY === zeroAddress) return;
     let cancelled = false;
     const controller = tld === "arc" ? ADDR_ARC_CONTROLLER : ADDR_CIRCLE_CONTROLLER;
     const registry = ADDR_DISCOUNT_REGISTRY;

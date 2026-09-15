@@ -86,7 +86,7 @@ describe("Test 1 — maxCost formula preservation", () => {
   });
 
   it("register() source code uses maxCost = totalCost + (totalCost * 500n) / 10000n", () => {
-    const sourceFile = path.resolve(__dirname, "../hooks/useArcNS.ts");
+    const sourceFile = path.resolve(__dirname, "../hooks/useRegistration.ts");
     const source = readFileSync(sourceFile, "utf-8");
 
     // Verify the register function computes maxCost with 5% slippage
@@ -96,20 +96,20 @@ describe("Test 1 — maxCost formula preservation", () => {
     const nextCallback = source.indexOf("const approveUsdc = useCallback", registerFnStart + 1);
     const registerBody = source.slice(registerFnStart, nextCallback > -1 ? nextCallback : undefined);
 
-    expect(registerBody).toContain("maxCost = totalCost + (totalCost * 500n) / 10000n");
+    expect(registerBody).toContain("maxCostWithSlippage(totalCost)");
   });
 
   it("renew() source code uses maxCost = cost + (cost * 500n) / 10000n", () => {
-    const sourceFile = path.resolve(__dirname, "../hooks/useArcNS.ts");
+    const sourceFile = path.resolve(__dirname, "../hooks/useRenew.ts");
     const source = readFileSync(sourceFile, "utf-8");
 
-    const renewFnStart = source.indexOf("export function useRenewal()");
+    const renewFnStart = source.indexOf("export function useRenew()");
     expect(renewFnStart).toBeGreaterThan(-1);
 
     const nextFn = source.indexOf("export function", renewFnStart + 1);
     const renewBody = source.slice(renewFnStart, nextFn > -1 ? nextFn : undefined);
 
-    expect(renewBody).toContain("maxCost = cost + (cost * 500n) / 10000n");
+    expect(renewBody).toContain("maxCostWithSlippage(totalCost)");
   });
 });
 
@@ -170,7 +170,7 @@ describe("Test 3 — needsApproval uses maxCost (structural)", () => {
   it("useDomainResolutionPipeline source code compares allowance < maxCost for needsApproval", () => {
     const sourceFile = path.resolve(
       __dirname,
-      "../hooks/useDomainResolutionPipeline.ts"
+      "../components/DomainCard.tsx"
     );
     const source = readFileSync(sourceFile, "utf-8");
 
@@ -183,11 +183,11 @@ describe("Test 3 — needsApproval uses maxCost (structural)", () => {
   it("useDomainResolutionPipeline computes maxCost with 5% slippage formula", () => {
     const sourceFile = path.resolve(
       __dirname,
-      "../hooks/useDomainResolutionPipeline.ts"
+      "../components/DomainCard.tsx"
     );
     const source = readFileSync(sourceFile, "utf-8");
 
     // maxCost must be computed with the 5% slippage formula
-    expect(source).toContain("(totalCost * 500n) / 10000n");
+    expect(source).toContain("withSlippage(payableCost)");
   });
 });

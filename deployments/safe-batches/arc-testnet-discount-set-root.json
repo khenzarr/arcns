@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "chainId": "5042002",
+  "createdAt": 1789498812017,
+  "meta": {
+    "name": "ArcNS testnet discount registry - set finalized root",
+    "description": "Sets only the finalized 849-wallet early-adopter Merkle root. Does not freeze the root and does not activate discounts.",
+    "txBuilderVersion": "2.0.1",
+    "createdFromSafeAddress": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+    "createdFromOwnerAddress": "",
+    "checksum": "0xade770008aea61d170ae98324a4f0b539697cf8112404e7953e71f57167a4f5e"
+  },
+  "transactions": [
+    {
+      "to": "0x654C98c3452944Be06fF79A79641739249be553E",
+      "value": "0",
+      "data": "0x7cb64759f18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

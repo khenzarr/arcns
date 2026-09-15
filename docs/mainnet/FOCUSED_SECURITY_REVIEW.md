@@ -40,16 +40,16 @@ Deployment remains blocked by incomplete launch administration and infrastructur
 
 ## Detailed findings
 
-### FSR-01 — Final Safe/Timelock authority handoff is not executable or verifiable from the canonical deployment flow
+### FSR-01 — Final Safe/Timelock authority handoff tooling is prepared; runtime execution remains pending
 
 - **Severity:** BLOCKER
-- **Affected:** `scripts/v3/deployV3.js`, `docs/mainnet/ADMIN_OWNERSHIP_PLAN.md`, `docs/mainnet/DEPLOYMENT_RUNBOOK.md`
-- **Description:** The approved 2-of-3 Admin Safe `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` is created and its exact owner set, threshold, chain, bytecode, and address separation are read-only verified. The Timelock and protocol contract addresses remain `TBD`, the Timelock is not deployed, and `deployV3.js` initializes owners/admin roles to the deployer without performing or verifying the final handoff/revocation sequence.
-- **Impact:** Running the current deploy script alone would leave the deployer with critical protocol authority and would not produce the approved launch state.
-- **Recommended fix:** Finalize and independently verify Safe owners/threshold/address and Timelock configuration; after a future approved Timelock deployment, require `scripts/mainnet/check-timelock-config.js` PASS; implement a separately reviewed handoff procedure or script with explicit role grants, ownership transfers, deployer revocations/renunciations, and final read-only assertions for every component. Treat deployment and handoff as one incomplete launch operation until all assertions pass.
-- **Code change required:** Yes, or a dedicated reviewed handoff/verification script.
+- **Affected:** `scripts/v3/deployV3.js`, `scripts/mainnet/handoff-admin.js`, `scripts/mainnet/assert-admin-handoff.js`, `docs/mainnet/ADMIN_OWNERSHIP_PLAN.md`, `docs/mainnet/DEPLOYMENT_RUNBOOK.md`
+- **Description:** The approved 2-of-3 Admin Safe is created and read-only verified. The canonical deployer now records deployment/bootstrapping evidence; the state-aware handoff script grants operational roles to the Safe, upgrade roles to the Timelock, transfers Ownable/root authority, and removes deployer roles. The expanded assertion checks the resulting authority and protocol wiring. The Timelock and protocol addresses are still `TBD`, so none of these mainnet runtime assertions can pass yet.
+- **Impact:** Running only the deployment command still leaves temporary bootstrap authority with the deployer. Deployment, explorer verification, handoff, dedicated Safe/Timelock checks and the final read-only assertion must be treated as one incomplete ceremony until every step passes.
+- **Recommended fix:** On mainnet day, deploy and verify the Timelock, deploy/verify the protocol, run the guarded handoff, then require both dedicated governance checks and `assert-admin-handoff.js` PASS before root configuration or public launch.
+- **Code change required:** Completed for preparation; runtime execution and evidence remain required.
 - **Docs-only fix sufficient:** No.
-- **Blocks Aşama 6:** Yes.
+- **Blocks Aşama 6:** Yes, until runtime evidence passes.
 
 ### FSR-02 — Mainnet campaign facts are environment-selected rather than pinned to the reviewed snapshot
 

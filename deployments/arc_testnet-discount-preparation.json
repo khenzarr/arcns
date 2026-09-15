@@ -1,0 +1,71 @@
+{
+  "network": "arc_testnet",
+  "chainId": 5042002,
+  "status": "active-testnet-rehearsal",
+  "deployedAt": "2026-09-13T02:57:40.000Z",
+  "deployer": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D",
+  "adminSafe": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+  "controllers": {
+    "arc": "0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46",
+    "circle": "0x4CB0650847459d9BbDd5823cc6D320C900D883dA",
+    "currentImplementation": "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB",
+    "preparedImplementation": "0xb095cece945C08b793cEc07191ae9A2225b6f9Da",
+    "deploymentTransaction": "0x4246e90249d3b4f287381c97d057045d800f27067ea5b2d2fac806eb469e5763",
+    "deploymentBlock": 61831323
+  },
+  "discountRegistry": {
+    "address": "0x654C98c3452944Be06fF79A79641739249be553E",
+    "deploymentTransaction": "0xb5fcdea3049730620c12b777ea4b19c2e4af069dacab7091245baf133e500fcb",
+    "deploymentBlock": 61831326,
+    "owner": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+    "campaignId": "0xae3c7462e46cc76b3e0349e7d211264ada95257da9d9d7a797abed70b7eb83e3",
+    "snapshotBlock": 54933646,
+    "merkleRoot": "0xf18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e",
+    "preparedMerkleRoot": "0xf18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e",
+    "setRootSafeBatch": "deployments/safe-batches/arc-testnet-discount-set-root.json",
+    "setRootSafeBatchChecksum": "0xade770008aea61d170ae98324a4f0b539697cf8112404e7953e71f57167a4f5e",
+    "setRootTransaction": "0x13397781f6e0cace95c112b0b11e05fa26d144222ab32707df16a1e874883c77",
+    "setRootBlock": 62278756,
+    "setRootExecutedAt": "2026-09-15T19:07:02.000Z",
+    "freezeRootSafeBatch": "deployments/safe-batches/arc-testnet-discount-freeze-root.json",
+    "freezeRootSafeBatchChecksum": "0x2aac7f47d2af332f523f0b353e3445cdfcc88604f7c46f1c6f119fd26915ad25",
+    "activateSafeBatch": "deployments/safe-batches/arc-testnet-discount-activate.json",
+    "activateSafeBatchChecksum": "0x70c3a705ad1872bcdbecf39ec342d191cf639c5f75142fcc8b1a4afad92d9d3c",
+    "freezeRootTransaction": "0x18ed1dca9f8da3bfa80ea18d10c0c9577c2ab2ab6a734fd8ed1363c87b2a4978",
+    "freezeRootBlock": 62279850,
+    "freezeRootExecutedAt": "2026-09-15T19:16:13.000Z",
+    "rootFrozen": true,
+    "activationTransaction": "0xd0883d43464c32ac795665c17664ce99f55b3fa29d4908586d280a58ba7ee059",
+    "activationBlock": 62281306,
+    "activatedAt": "2026-09-15T19:28:27.000Z",
+    "discountActive": true
+  },
+  "registryWiring": {
+    "transaction": "0x4f3211223ea68860600baa83853e80ccc80bb63e073d1461303de4e3d50e3407",
+    "block": 62277672,
+    "executedAt": "2026-09-15T18:57:55.000Z",
+    "arcControllerAuthorized": true,
+    "circleControllerAuthorized": true,
+    "controllerPointersVerified": true
+  },
+  "timelock": {
+    "address": "0x0f9d898D74f29c69cAD1a66918b41891E73e08f0",
+    "delaySeconds": 172800,
+    "operationId": "0xbba3fbb8c53eb915e61b4476ec4466904841311c2a5a802e4ebdac2bcd1214fb",
+    "salt": "0x0fcd7139b06c33e0e8568e0bbf6500840560f13f14942a4dbd17e83f3d34407b",
+    "scheduledTransaction": "0xa13f43a83011d2e6f295d78992e5226031c9f7da14253fbda28598ed2df5d14b",
+    "scheduledBlock": 61832958,
+    "scheduledAt": "2026-09-13T03:11:39.000Z",
+    "readyAt": "2026-09-15T03:11:39.000Z",
+    "executedTransaction": "0xee9719c6b3d069aca25372752f9e77a57952b37d8cb14b8195c982670eddf01d",
+    "executedBlock": 62276786,
+    "executedAt": "2026-09-15T18:50:29.000Z"
+  },
+  "safety": {
+    "upgradedControllersVerified": true,
+    "controllersRemainUnpaused": true,
+    "registryWiringVerified": true,
+    "scheduleSimulationPassed": true,
+    "discountCannotApplyUntilExplicitSafeConfiguration": true
+  }
+}

@@ -49,15 +49,15 @@ Timelock readiness and future read-only configuration validation: [`TIMELOCK_REA
 - [ ] Confirm deployment loaded the canonical finalized manifest and failed closed on every contradictory campaign value.
 - [ ] Confirm deployment left the discount root unset, unfrozen, and inactive; set, freeze, and activation are separate reviewed operations.
 - [ ] Run the read-only `scripts/mainnet/assert-admin-handoff.js` and require its PASS result before public launch.
-- [ ] Confirm no production frontend switch occurs before deployed addresses and proofs are available.
-- [x] Confirm the inactive frontend helper performs only bundled static proof lookup, validates finalized metadata, and has no RPC, contract, or active UI integration.
-- [x] Confirm the isolated early-adopter UX shell is unmounted from the active app, disabled by default, informational only, and exposes no claim CTA.
-- [ ] Keep discount UI disabled and `registerWithDiscount` unwired until a separate reviewed integration passes every frontend cutover gate.
+- [ ] Confirm no production mainnet switch occurs before deployed addresses, active campaign reads and proofs are available.
+- [x] Confirm bundled proof lookup validates finalized metadata and all onchain eligibility gates fail closed.
+- [x] Confirm the active eligible-wallet UI and `registerWithDiscount` path passed the manual Arc testnet canary, including discounted approval and one-time consumption.
+- [ ] Repeat eligible, ineligible and consumed-wallet checks against the final mainnet deployment before production promotion.
 - [ ] Before presenting a final discount action, confirm approved read paths verify root equality, frozen state, activation state, controller authorization, and already-used state; proof existence alone is insufficient.
 - [x] Confirm reusable DiscountRegistry ABI/schema/event-handler coverage exists and passes indexer codegen/build.
 - [ ] Replace the dormant DiscountRegistry template with reviewed concrete data-source wiring after the final address and exact start block are available.
 - [ ] Deploy, fully sync, and health-check the reviewed mainnet subgraph before frontend cutover.
 
-Safe creation/configuration verification is complete. Timelock deployment is the next authority blocker; its address remains `TBD`. Authority handoff, deployer revocation, deploy-grade RPC selection, Blockscout verification, contract deployment, final DiscountRegistry address/start-block wiring, mainnet indexer/subgraph deployment and sync, root/freeze/activation, final review, active discount integration, and frontend cutover remain unresolved launch blockers. The implemented handler/schema preparation and inactive static proof helper are not evidence of a deployed subgraph, usable discount, or frontend readiness. The production frontend remains testnet-bound, and mainnet remains **NO-GO**. This checklist is not mainnet deployment approval.
+Safe creation/configuration and the Arc testnet discount canary are complete. Timelock deployment is the next authority blocker; its address remains `TBD`. Authority handoff, deployer revocation, deploy-grade RPC selection, Blockscout verification, contract deployment, final DiscountRegistry address/start-block wiring, mainnet indexer/subgraph deployment and sync, root/freeze/activation, final review, mainnet smoke tests, and frontend cutover remain runtime launch blockers. The production frontend remains testnet-bound, and mainnet remains **NO-GO**. This checklist is not mainnet deployment approval.
 
 No deploy/push/on-chain action was performed in this phase.

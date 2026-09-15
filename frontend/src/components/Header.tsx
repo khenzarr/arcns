@@ -136,7 +136,7 @@ export default function Header() {
   const navigation = isLanding
     ? [
         { href: "/#identity", label: "Why ArcNS" },
-        { href: "/#experience", label: "Experience" },
+        { href: "/#experience", label: "Try Demo" },
         { href: "/#how", label: "How it works" },
         { href: "/#resources", label: "Resources" },
       ]
@@ -211,7 +211,12 @@ export default function Header() {
 
         <div className="flex items-center gap-2 flex-shrink-0">
           {isLanding ? (
-            <Link href="/app" className="arcns-header-launch arcns-focus-ring">Launch App <span aria-hidden="true">-&gt;</span></Link>
+            <Link href="/app" className="arcns-header-launch arcns-focus-ring">
+              Launch App
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8h9M9 4.75 12.25 8 9 11.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </Link>
           ) : (
             <WalletButton />
           )}

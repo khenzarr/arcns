@@ -152,6 +152,14 @@ export default function DomainCard({ label, tld, isCommitted = false }: DomainCa
     isPriceLoading, refetch: refetchAvail,
   } = useAvailability(label, tld, duration);
   const discount = useSnapshotDiscount(label, tld, duration);
+
+  // Prefer the verified one-time benefit as soon as it becomes available.
+  // The checkbox remains interactive, so the user can deliberately opt out;
+  // this effect only reruns when the eligibility context itself changes.
+  useEffect(() => {
+    setUseDiscount(discount !== null && discount.total < totalCost);
+  }, [address, label, tld, duration, discount, totalCost]);
+
   const discountSelected = nameState === "AVAILABLE" && useDiscount && discount !== null && discount.total < totalCost;
   const payableCost = discountSelected ? discount.total : totalCost;
 

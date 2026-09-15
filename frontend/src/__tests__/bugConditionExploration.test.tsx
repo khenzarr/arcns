@@ -18,7 +18,7 @@ import path from "path";
 
 // Mock wagmi hooks used by DomainCard and its dependencies
 vi.mock("wagmi", () => ({
-  useAccount: () => ({ address: "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D", isConnected: true }),
+  useAccount: () => ({ address: "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D", isConnected: true, chainId: 5042002 }),
   useReadContract: vi.fn(),
   useWriteContract: () => ({ writeContractAsync: vi.fn() }),
   useReadContracts: vi.fn(() => ({ data: undefined })),
@@ -76,6 +76,9 @@ describe("Test 1 — Approval Label Bug", () => {
       if (args?.functionName === "available") {
         return { data: true, isLoading: false, isError: false, isFetching: false };
       }
+      if (args?.functionName === "rentPrice") {
+        return { data: { base: 2_000_000n, premium: 0n }, isLoading: false, isError: false, isFetching: false };
+      }
       return { data: undefined, isLoading: false, isError: false, isFetching: false };
     });
   });
@@ -118,7 +121,7 @@ describe("Test 1 — Approval Label Bug", () => {
 
 describe("Test 2 — Balance Chain Bug (Structural)", () => {
   it("useUSDCBalance source code should use publicClient, not useReadContract", () => {
-    const sourceFile = path.resolve(__dirname, "../hooks/useArcNS.ts");
+    const sourceFile = path.resolve(__dirname, "../hooks/useAvailability.ts");
     const source = readFileSync(sourceFile, "utf-8");
 
     const fnStart = source.indexOf("export function useUSDCBalance()");

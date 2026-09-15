@@ -5,9 +5,21 @@ const path = require("path");
 const { ethers } = require("hardhat");
 const { ARC_MAINNET_CHAIN_ID, requiredAddress } = require("./discount-operation-guards");
 
-const REQUIRED_CONTRACTS = ["registry", "arcRegistrar", "circleRegistrar", "arcController", "circleController", "resolver", "reverseRegistrar", "priceOracle", "discountRegistry"];
+const REQUIRED_CONTRACTS = ["usdc", "registry", "arcRegistrar", "circleRegistrar", "arcController", "circleController", "resolver", "reverseRegistrar", "priceOracle", "discountRegistry"];
 const OWNABLE_ABI = ["function owner() view returns (address)"];
 const ACCESS_ABI = ["function hasRole(bytes32,address) view returns (bool)", "function DEFAULT_ADMIN_ROLE() view returns (bytes32)", "function ADMIN_ROLE() view returns (bytes32)", "function PAUSER_ROLE() view returns (bytes32)", "function ORACLE_ROLE() view returns (bytes32)", "function UPGRADER_ROLE() view returns (bytes32)", "function treasury() view returns (address)"];
+const CONTROLLER_WIRING_ABI = [
+  "function base() view returns(address)", "function priceOracle() view returns(address)",
+  "function usdc() view returns(address)", "function registry() view returns(address)",
+  "function resolver() view returns(address)", "function reverseRegistrar() view returns(address)",
+  "function discountRegistry() view returns(address)", "function approvedResolvers(address) view returns(bool)",
+  "function paused() view returns(bool)",
+];
+const REGISTRAR_ABI = ["function controllers(address) view returns(bool)", "function registry() view returns(address)", "function baseNode() view returns(bytes32)"];
+const RESOLVER_WIRING_ABI = ["function CONTROLLER_ROLE() view returns(bytes32)", "function hasRole(bytes32,address) view returns(bool)", "function registry() view returns(address)"];
+const REVERSE_ABI = ["function registry() view returns(address)", "function defaultResolver() view returns(address)"];
+const ORACLE_ABI = ["function price1Char() view returns(uint256)", "function price2Char() view returns(uint256)", "function price3Char() view returns(uint256)", "function price4Char() view returns(uint256)", "function price5Plus() view returns(uint256)"];
+const DISCOUNT_ABI = ["function authorizedControllers(address) view returns(bool)"];
 
 function loadAssertionConfig(env = process.env) {
   const config = {
@@ -41,6 +53,49 @@ async function main() {
     if (!(await resolver.hasRole(role, holder))) throw new Error("resolver expected holder role assertion failed");
     if (c.deployer !== holder && await resolver.hasRole(role, c.deployer)) throw new Error("resolver deployer role revocation assertion failed");
   }
+
+  const expectedControllerWiring = {
+    arcController: c.contracts.arcRegistrar,
+    circleController: c.contracts.circleRegistrar,
+  };
+  for (const [key, registrarAddress] of Object.entries(expectedControllerWiring)) {
+    const x = new ethers.Contract(c.contracts[key], CONTROLLER_WIRING_ABI, ethers.provider);
+    for (const [label, actual, expected] of [
+      ["base", await x.base(), registrarAddress], ["priceOracle", await x.priceOracle(), c.contracts.priceOracle],
+      ["usdc", await x.usdc(), c.contracts.usdc], ["registry", await x.registry(), c.contracts.registry],
+      ["resolver", await x.resolver(), c.contracts.resolver], ["reverseRegistrar", await x.reverseRegistrar(), c.contracts.reverseRegistrar],
+      ["discountRegistry", await x.discountRegistry(), c.contracts.discountRegistry],
+    ]) eq(`${key} ${label}`, actual, expected);
+    if (!(await x.approvedResolvers(c.contracts.resolver))) throw new Error(`${key} resolver is not approved`);
+    if (await x.paused()) throw new Error(`${key} is paused`);
+  }
+
+  for (const [key, controllerKey] of [["arcRegistrar", "arcController"], ["circleRegistrar", "circleController"]]) {
+    const registrar = new ethers.Contract(c.contracts[key], REGISTRAR_ABI, ethers.provider);
+    if (!(await registrar.controllers(c.contracts[controllerKey]))) throw new Error(`${key} controller allowlist mismatch`);
+    eq(`${key} registry`, await registrar.registry(), c.contracts.registry);
+  }
+
+  const resolverWiring = new ethers.Contract(c.contracts.resolver, RESOLVER_WIRING_ABI, ethers.provider);
+  eq("resolver registry", await resolverWiring.registry(), c.contracts.registry);
+  const controllerRole = await resolverWiring.CONTROLLER_ROLE();
+  for (const key of ["arcController", "circleController", "reverseRegistrar"]) {
+    if (!(await resolverWiring.hasRole(controllerRole, c.contracts[key]))) throw new Error(`resolver missing CONTROLLER_ROLE for ${key}`);
+  }
+
+  const reverse = new ethers.Contract(c.contracts.reverseRegistrar, REVERSE_ABI, ethers.provider);
+  eq("reverse registrar registry", await reverse.registry(), c.contracts.registry);
+  eq("reverse registrar resolver", await reverse.defaultResolver(), c.contracts.resolver);
+
+  const discount = new ethers.Contract(c.contracts.discountRegistry, DISCOUNT_ABI, ethers.provider);
+  for (const key of ["arcController", "circleController"]) {
+    if (!(await discount.authorizedControllers(c.contracts[key]))) throw new Error(`discount registry has not authorized ${key}`);
+  }
+
+  const oracle = new ethers.Contract(c.contracts.priceOracle, ORACLE_ABI, ethers.provider);
+  const prices = await Promise.all([oracle.price1Char(), oracle.price2Char(), oracle.price3Char(), oracle.price4Char(), oracle.price5Plus()]);
+  const expectedPrices = [100_000_000n, 50_000_000n, 25_000_000n, 15_000_000n, 5_000_000n];
+  if (prices.some((value, index) => value !== expectedPrices[index])) throw new Error(`mainnet oracle price mismatch: ${prices.join("/")}`);
   console.log("PASS: all configured ownership, role, treasury, and deployer-revocation assertions passed (read-only).");
 }
 

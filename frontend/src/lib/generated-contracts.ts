@@ -29,10 +29,10 @@ export const ADDR_CIRCLE_REGISTRAR   = "0xE1fdE46df4bAC6F433C52a337F4818822735Bf
 export const ADDR_REVERSE_REGISTRAR  = "0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304"   as `0x${string}`;
 export const ADDR_TREASURY           = "0xbbDF5bC7D63B1b7223556d4899905d56589A682d"           as `0x${string}`;
 export const ADDR_ARC_CONTROLLER     = "0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46"      as `0x${string}`;
-export const ADDR_ARC_CTRL_IMPL      = "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB"  as `0x${string}`;
+export const ADDR_ARC_CTRL_IMPL      = "0xb095cece945C08b793cEc07191ae9A2225b6f9Da"  as `0x${string}`;
 export const ADDR_CIRCLE_CONTROLLER  = "0x4CB0650847459d9BbDd5823cc6D320C900D883dA"   as `0x${string}`;
-export const ADDR_CIRCLE_CTRL_IMPL   = "0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB" as `0x${string}`;
-export const ADDR_DISCOUNT_REGISTRY  = "0x0000000000000000000000000000000000000000" as `0x${string}`;
+export const ADDR_CIRCLE_CTRL_IMPL   = "0xb095cece945C08b793cEc07191ae9A2225b6f9Da" as `0x${string}`;
+export const ADDR_DISCOUNT_REGISTRY  = "0x654C98c3452944Be06fF79A79641739249be553E" as `0x${string}`;
 
 // ─── Canonical namehashes ─────────────────────────────────────────────────────
 

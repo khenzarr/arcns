@@ -1,5 +1,7 @@
 # Arc Mainnet Deployment Runbook (Preparation Only)
 
+For the concise, ordered mainnet-day ceremony and the exact boundary between prebuilt tooling and runtime-only inputs, start with [`MAINNET_DAY_QUICKSTART.md`](./MAINNET_DAY_QUICKSTART.md).
+
 > Tooling guard update: `snapshots/arc-testnet-v3-early-adopters/manifest.json` is the canonical campaign source. Mainnet tooling fails closed on missing, malformed, or contradictory facts. `deployV3.js` may deploy and wire the registry but never sets the root, freezes it, or activates the campaign. Those are three separate reviewed operations, and activation is blocked until verification, read-only authority handoff assertion, indexer readiness, proof delivery, and frontend cutover readiness are complete.
 
 The finalized launch authority model and unresolved administration blockers are recorded in [`ADMIN_OWNERSHIP_PLAN.md`](./ADMIN_OWNERSHIP_PLAN.md).

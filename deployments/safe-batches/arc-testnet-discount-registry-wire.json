@@ -1,0 +1,43 @@
+{
+  "version": "1.0",
+  "chainId": "5042002",
+  "createdAt": 1789498425512,
+  "meta": {
+    "name": "ArcNS testnet discount registry - authorize and wire",
+    "description": "Atomically authorizes both ArcNS controllers in the inert Discount Registry and points both controllers to that registry. Does not set or freeze the Merkle root and does not activate discounts.",
+    "txBuilderVersion": "2.0.1",
+    "createdFromSafeAddress": "0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3",
+    "createdFromOwnerAddress": "",
+    "checksum": "0x696a3eaae3597213790d700134127478f8e3b477b0f1a2694c522c8d206e730d"
+  },
+  "transactions": [
+    {
+      "to": "0x654C98c3452944Be06fF79A79641739249be553E",
+      "value": "0",
+      "data": "0xd81c80d4000000000000000000000000e0a67f2e74bcb740f0446ff2acf32081db877d460000000000000000000000000000000000000000000000000000000000000001",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x654C98c3452944Be06fF79A79641739249be553E",
+      "value": "0",
+      "data": "0xd81c80d40000000000000000000000004cb0650847459d9bbdd5823cc6d320c900d883da0000000000000000000000000000000000000000000000000000000000000001",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46",
+      "value": "0",
+      "data": "0xaa6afd0d000000000000000000000000654c98c3452944be06ff79a79641739249be553e",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x4CB0650847459d9BbDd5823cc6D320C900D883dA",
+      "value": "0",
+      "data": "0xaa6afd0d000000000000000000000000654c98c3452944be06ff79a79641739249be553e",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

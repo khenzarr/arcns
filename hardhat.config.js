@@ -61,6 +61,7 @@ module.exports = {
   etherscan: {
     apiKey: {
       arc_testnet: process.env.ARCSCAN_API_KEY || "placeholder",
+      arc_mainnet: process.env.ARC_MAINNET_EXPLORER_API_KEY || "placeholder",
     },
     customChains: [
       {

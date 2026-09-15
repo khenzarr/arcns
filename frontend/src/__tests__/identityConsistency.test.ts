@@ -365,9 +365,9 @@ describe("I — Commitment maturity wait rule", () => {
       "utf-8"
     );
     // v3 uses MIN_COMMITMENT_AGE_MS (62s) — must be >= 60000
-    const match = src.match(/MIN_COMMITMENT_AGE_MS\s*=\s*(\d+)/);
+    const match = src.match(/MIN_COMMITMENT_AGE_MS\s*=\s*([\d_]+)/);
     expect(match).not.toBeNull();
-    const value = parseInt(match![1], 10);
+    const value = parseInt(match![1].replaceAll("_", ""), 10);
     expect(value).toBeGreaterThanOrEqual(60_000);
   });
 });

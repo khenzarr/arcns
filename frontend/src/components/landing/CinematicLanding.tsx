@@ -8,7 +8,11 @@ import { IS_MAINNET_UI, NETWORK_DISPLAY } from "@/lib/networkDisplay";
 
 const SUFFIXES = [".arc", ".circle"] as const;
 type Suffix = (typeof SUFFIXES)[number];
-const Arrow = () => <span aria-hidden="true">-&gt;</span>;
+const Arrow = () => (
+  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18" fill="none">
+    <path d="M3.75 9h10.5M10.25 5l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
 
 export default function CinematicLanding() {
   const [name, setName] = useState("yourname");
@@ -32,12 +36,12 @@ export default function CinematicLanding() {
       <section className="cinematic-hero cinematic-shell" aria-labelledby="landing-title">
         <div className="cinematic-hero-copy">
           <p className="cinematic-eyebrow"><span aria-hidden="true" />{IS_MAINNET_UI ? "Independent name service · Built on Arc" : "Arc public testnet - Pre-mainnet"}</p>
-          <h1 id="landing-title">One name.<br /><em>Every interaction.</em></h1>
+          <h1 id="landing-title">One name<br /><em>every interaction</em></h1>
           <p className="cinematic-lede">Turn a wallet address into a human-readable identity on {NETWORK_DISPLAY.networkDisplayName}. Explore ArcNS, then use the real application to search, register, and resolve names.</p>
           <p className="cinematic-disclosure">ArcNS is an independent naming protocol built on Arc. Neither its name nor the <code>.circle</code> namespace implies affiliation with, sponsorship by, or endorsement from Arc or Circle.</p>
           <div className="cinematic-actions">
             <Link className="cinematic-primary-button" href="/app">Visit ArcNS <Arrow /></Link>
-            <a className="cinematic-text-link" href="#experience">Explore the experience</a>
+            <a className="cinematic-text-link" href="#experience">Try the demo</a>
           </div>
         </div>
         <div className="cinematic-identity-visual" aria-hidden="true">
@@ -50,7 +54,7 @@ export default function CinematicLanding() {
       </section>
 
       <section className="cinematic-experience" id="experience" aria-labelledby="experience-title">
-        <div className="cinematic-section-heading cinematic-shell"><div><span>01</span><p>Interactive experience</p></div><h2 id="experience-title">Claim your place<br />on Arc.</h2><p>Explore the registration flow with a safe visual simulation. No wallet, funds, or transaction required.</p></div>
+        <div className="cinematic-section-heading cinematic-shell"><div><span>01</span><p>Try the demo</p></div><h2 id="experience-title">Claim a name<br />on Arc</h2><p>Explore the registration flow with a safe visual simulation. No wallet, funds, or transaction required.</p></div>
         <div className="cinematic-app-window cinematic-shell">
           <div className="cinematic-app-topbar"><div className="cinematic-mini-brand"><Image src="/arcns/arcns-emblem.svg" alt="" width={32} height={32} />Arc<span>NS</span></div><div className="cinematic-network-pill"><i aria-hidden="true" />{NETWORK_DISPLAY.networkDisplayName}</div><Link className="cinematic-demo-connect" href="/app">Connect</Link></div>
           <div className="cinematic-app-body">
@@ -77,7 +81,7 @@ export default function CinematicLanding() {
       </section>
 
       <section className="cinematic-identity cinematic-shell" id="identity" aria-labelledby="identity-title">
-        <div className="cinematic-section-heading cinematic-compact"><div><span>02</span><p>Identity layer</p></div><h2 id="identity-title">More than<br />an address.</h2></div>
+        <div className="cinematic-section-heading cinematic-compact"><div><span>02</span><p>Identity layer</p></div><h2 id="identity-title">More than an address</h2></div>
         <div className="cinematic-feature-grid">
           <article className="cinematic-feature-main"><span aria-hidden="true">ID</span><p>Human-readable identity</p><h3>Use a memorable name instead of a long hexadecimal address.</h3><div><span>0x9c90...ACBC</span><b aria-hidden="true">-&gt;</b><strong>yourname.arc</strong></div><Link className="cinematic-text-link" href="/send">Send assets to a name <Arrow /></Link></article>
           <article><span aria-hidden="true">NFT</span><p>Onchain ownership</p><h3>Registered names are represented by ERC-721 ownership for the selected registration period.</h3></article>
@@ -86,7 +90,7 @@ export default function CinematicLanding() {
       </section>
 
       <section className="cinematic-how" id="how" aria-labelledby="how-title"><div className="cinematic-shell">
-        <div className="cinematic-section-heading cinematic-light"><div><span>03</span><p>How it works</p></div><h2 id="how-title">From search to onchain identity<br />in three steps.</h2></div>
+        <div className="cinematic-section-heading cinematic-light"><div><span>03</span><p>How it works</p></div><h2 id="how-title">From search to identity<br />in three steps</h2></div>
         <div className="cinematic-steps"><article><b>01</b><span aria-hidden="true">FIND</span><h3>Find a name</h3><p>Search the real application for an available <code>.arc</code> or <code>.circle</code> name.</p></article><article><b>02</b><span aria-hidden="true">SET</span><h3>Register on Arc</h3><p>Review the verified in-app quote and confirm the registration flow.</p></article><article><b>03</b><span aria-hidden="true">OK</span><h3>Resolve it</h3><p>Inspect ownership and configure supported records using ArcNS application tools.</p></article></div>
         <div className="cinematic-closing"><div><Image src="/arcns/arcns-emblem.svg" alt="" width={100} height={100} /><h2>Make yourself<br /><em>recognizable.</em></h2></div><Link className="cinematic-primary-button cinematic-pale-button" href="/app">Launch App <Arrow /></Link></div>
         <nav className="cinematic-resource-links" id="resources" aria-label="ArcNS resources"><Link href="/app">Search names</Link><Link href="/send">Send assets</Link><Link href="/resolve">Resolve</Link><Link href="/developers/integrate">Integrate ArcNS</Link><Link href="/terms">Terms</Link><Link href="/privacy">Privacy</Link><Link href="/trademark">Trademark</Link></nav>
