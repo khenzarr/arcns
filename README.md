@@ -6,6 +6,15 @@
 
 **Independent decentralized naming protocol · Built on Arc.**
 
+<p>
+  <a href="https://github.com/khenzarr/arcns/actions/workflows/frontend-ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/khenzarr/arcns/frontend-ci.yml?branch=master&amp;label=CI&amp;logo=githubactions" alt="Frontend CI status" /></a>
+  <a href="#license"><img src="https://img.shields.io/badge/License-Mixed-64748b" alt="License: mixed, see directory-specific terms" /></a>
+  <a href="https://arcname.services/app"><img src="https://img.shields.io/badge/Live_App-Open-00b8d9" alt="Open the live ArcNS app" /></a>
+  <a href="https://github.com/khenzarr/arcns/stargazers"><img src="https://img.shields.io/github/stars/khenzarr/arcns?style=flat&amp;logo=github&amp;label=Stars&amp;color=00b8d9" alt="GitHub stars" /></a>
+</p>
+
+[Live app](https://arcname.services/app) · [Try demo](https://arcname.services/#experience) · [Integration guide](https://arcname.services/developers/integrate) · [Documentation](#documentation)
+
 ArcNS maps human-readable names ending in `.arc` and `.circle` to on-chain addresses, issues names as ERC-721 NFTs for selected registration periods, and lets any address set a verified primary name.
 
 ArcNS is an independent naming protocol built on Arc. It is not operated by, affiliated with, sponsored by, or endorsed by Circle or the Arc team. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.
