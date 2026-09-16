@@ -54,6 +54,8 @@ typechain-types/
 # ─── Next.js build output ─────────────────────────────────────────────────────
 frontend/.next/
 frontend/out/
+indexer/build-mainnet/
+indexer/build-graph-mainnet/
 
 # ─── Misc tooling caches ──────────────────────────────────────────────────────
 .npm

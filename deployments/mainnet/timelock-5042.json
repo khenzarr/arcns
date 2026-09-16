@@ -1,0 +1,21 @@
+{
+  "chainId": 5042,
+  "deployedAt": "2026-09-16T00:17:20.220Z",
+  "deployer": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D",
+  "adminSafe": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+  "minDelay": "172800",
+  "proposer": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+  "executor": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+  "canceller": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+  "timelock": "0x609B9dAb0AC21c0863A5297f86BDd4C500647e3c",
+  "txHash": "0x7c746d2ca6989336caad3ce0fefefa86f8f15b181690e7859dec54a5116f7ea8",
+  "blockNumber": 21070696,
+  "blockHash": "0x0dfb4e24a490d3d3e894766456c6771282c54b6f9196a6e5be011ae88e0eedd5",
+  "constructorArgs": {
+    "minDelay": "172800",
+    "proposers": ["0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72"],
+    "executors": ["0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72"],
+    "admin": "0x0000000000000000000000000000000000000000"
+  },
+  "verificationStatus": "PENDING"
+}

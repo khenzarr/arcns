@@ -1,106 +1,112 @@
-/**
- * ArcNS v3 contract verification.
- *
- * Usage:
- *   npx hardhat run scripts/v3/verifyV3.js --network arc_testnet
- *   npx hardhat run scripts/v3/verifyV3.js --network arc_mainnet
- */
-
+/** ArcNS v3 mainnet source verification. */
 "use strict";
 
-const { ethers, run, network } = require("hardhat");
+const { ethers, network, run } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
+const MAINNET_CHAIN_ID = 5042;
+const deploymentPath = path.resolve(__dirname, "../../deployments/arc_mainnet-v3.json");
+const timelockPath = path.resolve(__dirname, "../../deployments/mainnet/timelock-5042.json");
 
-const NETWORKS = Object.freeze({
-  arc_testnet: { chainId: 5042002, explorer: "https://testnet.arcscan.app" },
-  arc_mainnet: { chainId: 5042, explorer: "https://arc-mainnet.cloud.blockscout.com" },
-});
-
-function readJson(filePath, label) {
-  if (!fs.existsSync(filePath)) throw new Error(`${label} not found: ${filePath}`);
-  return JSON.parse(fs.readFileSync(filePath, "utf8"));
+function readJson(file) {
+  if (!fs.existsSync(file)) throw new Error(`Required verification artifact not found: ${file}`);
+  return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
-function requireAddress(value, label) {
-  if (!ethers.isAddress(value) || value === ethers.ZeroAddress) throw new Error(`${label} must be a non-zero address`);
-  return ethers.getAddress(value);
+function buildPlan(deployment, timelock) {
+  const c = deployment.contracts;
+  const nh = deployment.namehashes;
+  const ownerAtDeploy = deployment.deployer;
+  const discount = deployment.earlyAdopterDiscount;
+  const resolverInit = new ethers.Interface([
+    "function initialize(address registry_, address admin_)",
+  ]).encodeFunctionData("initialize", [c.registry, ownerAtDeploy]);
+  const controllerInterface = new ethers.Interface([
+    "function initialize(address registrar_,address priceOracle_,address usdc_,address registry_,address resolver_,address reverseRegistrar_,address treasury_,address admin_)",
+  ]);
+  const controllerInit = (registrar) => controllerInterface.encodeFunctionData("initialize", [
+    registrar, c.priceOracle, c.usdc, c.registry, c.resolver,
+    c.reverseRegistrar, c.treasury, ownerAtDeploy,
+  ]);
+  const proxyContract = "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol:ERC1967Proxy";
+
+  return [
+    ["ArcNSRegistry", c.registry, [], "contracts/v3/registry/ArcNSRegistry.sol:ArcNSRegistry"],
+    ["ArcNSPriceOracle", c.priceOracle, [], "contracts/v3/registrar/ArcNSPriceOracle.sol:ArcNSPriceOracle"],
+    ["ArcNSBaseRegistrar (.arc)", c.arcRegistrar, [c.registry, nh.arc, "arc"], "contracts/v3/registrar/ArcNSBaseRegistrar.sol:ArcNSBaseRegistrar"],
+    ["ArcNSBaseRegistrar (.circle)", c.circleRegistrar, [c.registry, nh.circle, "circle"], "contracts/v3/registrar/ArcNSBaseRegistrar.sol:ArcNSBaseRegistrar"],
+    ["ArcNSReverseRegistrar", c.reverseRegistrar, [c.registry, c.resolver], "contracts/v3/registrar/ArcNSReverseRegistrar.sol:ArcNSReverseRegistrar"],
+    ["ArcNSEarlyAdopterDiscountRegistry", c.discountRegistry, [discount.campaignId, discount.snapshotBlock, ownerAtDeploy], "contracts/v3/discount/ArcNSEarlyAdopterDiscountRegistry.sol:ArcNSEarlyAdopterDiscountRegistry"],
+    ["ArcNSResolver implementation", c.resolverImpl, [], "contracts/v3/resolver/ArcNSResolver.sol:ArcNSResolver"],
+    ["ArcNSController implementation", c.arcControllerImpl, [], "contracts/v3/controller/ArcNSController.sol:ArcNSController"],
+    ["ArcNSResolver proxy", c.resolver, [c.resolverImpl, resolverInit], proxyContract],
+    ["ArcNSController .arc proxy", c.arcController, [c.arcControllerImpl, controllerInit(c.arcRegistrar)], proxyContract],
+    ["ArcNSController .circle proxy", c.circleController, [c.circleControllerImpl, controllerInit(c.circleRegistrar)], proxyContract],
+    ["ArcNSTimelock", timelock.timelock, [
+      timelock.constructorArgs.minDelay,
+      timelock.constructorArgs.proposers,
+      timelock.constructorArgs.executors,
+      timelock.constructorArgs.admin,
+    ], "contracts/v3/governance/ArcNSTimelock.sol:ArcNSTimelock"],
+  ].map(([name, address, constructorArguments, contract]) => ({
+    name, address: ethers.getAddress(address), constructorArguments, contract,
+  }));
 }
 
-function loadVerificationPlan(networkName = network.name, env = process.env) {
-  const expected = NETWORKS[networkName];
-  if (!expected) throw new Error(`Unsupported verification network: ${networkName}`);
-  if (networkName === "arc_mainnet") {
-    let api;
-    try { api = new URL(env.ARC_MAINNET_EXPLORER_API_URL); } catch (_) { throw new Error("ARC_MAINNET_EXPLORER_API_URL must be a validated HTTPS verification endpoint"); }
-    if (api.protocol !== "https:") throw new Error("ARC_MAINNET_EXPLORER_API_URL must use HTTPS");
-  }
-  const deploymentPath = path.resolve(env.DEPLOYMENT_ARTIFACT_PATH || path.join(__dirname, `../../deployments/${networkName}-v3.json`));
-  const deployment = readJson(deploymentPath, "Deployment artifact");
-  if (deployment.network !== networkName || Number(deployment.chainId) !== expected.chainId) throw new Error("Deployment artifact network/chain mismatch");
-  const c = deployment.contracts || {};
-  for (const key of ["registry", "priceOracle", "arcRegistrar", "circleRegistrar", "reverseRegistrar", "resolver", "arcController", "circleController"]) requireAddress(c[key], key);
-  if (networkName === "arc_mainnet") requireAddress(c.discountRegistry, "discountRegistry");
-
-  let discountArgs = deployment.deploymentArguments?.discountRegistry?.constructor;
-  if (!discountArgs && deployment.earlyAdopterDiscount?.enabled) discountArgs = [deployment.earlyAdopterDiscount.campaignId, deployment.earlyAdopterDiscount.snapshotBlock, deployment.deployer];
-  if (networkName === "arc_mainnet" && (!Array.isArray(discountArgs) || discountArgs.length !== 3)) throw new Error("Mainnet DiscountRegistry constructor arguments are missing from the deployment artifact");
-
-  let timelock;
-  if (networkName === "arc_mainnet") {
-    const timelockPath = path.resolve(env.TIMELOCK_ARTIFACT_PATH || path.join(__dirname, "../../deployments/mainnet/timelock-5042.json"));
-    timelock = readJson(timelockPath, "Timelock artifact");
-    requireAddress(timelock.timelock, "timelock");
-    if (Number(timelock.chainId) !== expected.chainId || !timelock.constructorArgs) throw new Error("Timelock artifact chain/constructor mismatch");
-  }
-  return Object.freeze({ deployment, deploymentPath, discountArgs, expected, timelock });
-}
-
-async function verify(name, address, constructorArguments, contract) {
-  process.stdout.write(`Verifying ${name} at ${address}... `);
+async function verifyOne(item) {
+  process.stdout.write(`Verifying ${item.name} at ${item.address}... `);
   try {
-    const request = { address };
-    if (constructorArguments) request.constructorArguments = constructorArguments;
-    if (contract) request.contract = contract;
-    await run("verify:verify", request);
+    await run("verify:verify", {
+      address: item.address,
+      constructorArguments: item.constructorArguments,
+      contract: item.contract,
+    });
     console.log("verified");
   } catch (error) {
-    const message = String(error.message || "");
-    if (/already (been )?verified/i.test(message)) console.log("already verified");
-    else { console.log(`FAILED: ${message.slice(0, 160)}`); throw error; }
+    const message = String(error?.message || error);
+    if (/already verified|already been verified/i.test(message)) {
+      console.log("already verified");
+      return;
+    }
+    console.log("FAILED");
+    throw error;
   }
 }
 
 async function main() {
-  const plan = loadVerificationPlan();
-  const actualChainId = Number((await ethers.provider.getNetwork()).chainId);
-  if (actualChainId !== plan.expected.chainId) throw new Error(`Provider chain mismatch: expected ${plan.expected.chainId}, received ${actualChainId}`);
-  const c = plan.deployment.contracts;
-  const nh = plan.deployment.namehashes;
-
-  console.log(`\nVerifying ArcNS v3 on ${network.name}...\n`);
-  await verify("ArcNSRegistry", c.registry, [], "contracts/v3/registry/ArcNSRegistry.sol:ArcNSRegistry");
-  await verify("ArcNSPriceOracle", c.priceOracle, [], "contracts/v3/registrar/ArcNSPriceOracle.sol:ArcNSPriceOracle");
-  await verify("ArcNSBaseRegistrar (.arc)", c.arcRegistrar, [c.registry, nh.arc, "arc"], "contracts/v3/registrar/ArcNSBaseRegistrar.sol:ArcNSBaseRegistrar");
-  await verify("ArcNSBaseRegistrar (.circle)", c.circleRegistrar, [c.registry, nh.circle, "circle"], "contracts/v3/registrar/ArcNSBaseRegistrar.sol:ArcNSBaseRegistrar");
-  await verify("ArcNSReverseRegistrar", c.reverseRegistrar, [c.registry, c.resolver], "contracts/v3/registrar/ArcNSReverseRegistrar.sol:ArcNSReverseRegistrar");
-
-  // The OpenZeppelin upgrades plugin extends verify:verify for proxy addresses
-  // and verifies the proxy, implementation and implementation linkage.
-  await verify("ArcNSResolver proxy", c.resolver);
-  await verify("ArcNSController (.arc proxy)", c.arcController);
-  await verify("ArcNSController (.circle proxy)", c.circleController);
-
-  if (c.discountRegistry && plan.discountArgs) await verify("ArcNSEarlyAdopterDiscountRegistry", c.discountRegistry, plan.discountArgs, "contracts/v3/discount/ArcNSEarlyAdopterDiscountRegistry.sol:ArcNSEarlyAdopterDiscountRegistry");
-  if (plan.timelock) {
-    const args = plan.timelock.constructorArgs;
-    await verify("ArcNSTimelock", plan.timelock.timelock, [args.minDelay, args.proposers, args.executors, args.admin], "contracts/v3/governance/ArcNSTimelock.sol:ArcNSTimelock");
+  if (network.name !== "arc_mainnet") throw new Error("Mainnet verification requires --network arc_mainnet");
+  const providerNetwork = await ethers.provider.getNetwork();
+  if (Number(providerNetwork.chainId) !== MAINNET_CHAIN_ID) {
+    throw new Error(`Expected Arc mainnet chain ${MAINNET_CHAIN_ID}, received ${providerNetwork.chainId}`);
   }
-
-  console.log("\nPASS: verification requests completed for the canonical deployment set.");
-  console.log(`${plan.expected.explorer}/address/${c.registry}`);
+  const deployment = readJson(deploymentPath);
+  const timelock = readJson(timelockPath);
+  if (deployment.chainId !== MAINNET_CHAIN_ID || timelock.chainId !== MAINNET_CHAIN_ID) {
+    throw new Error("Verification artifacts are not for Arc mainnet");
+  }
+  const plan = buildPlan(deployment, timelock);
+  const seen = new Set();
+  for (const item of plan) {
+    if (await ethers.provider.getCode(item.address) === "0x") throw new Error(`No bytecode for ${item.name}`);
+    const key = `${item.address}:${item.contract}`;
+    if (seen.has(key)) throw new Error(`Duplicate verification plan item: ${item.name}`);
+    seen.add(key);
+  }
+  console.log(`ArcNS mainnet verification coverage: ${plan.length} contracts`);
+  for (const item of plan) console.log(`- ${item.name}: ${item.address}`);
+  if (process.env.VERIFY_DRY_RUN === "1") {
+    console.log("PASS: verification plan and on-chain bytecode preflight complete; no submission sent.");
+    return;
+  }
+  if (!String(process.env.ARC_MAINNET_EXPLORER_API_URL || "").startsWith("https://")) {
+    throw new Error("ARC_MAINNET_EXPLORER_API_URL must be a confirmed HTTPS verification endpoint");
+  }
+  for (const item of plan) await verifyOne(item);
+  console.log("PASS: all ArcNS mainnet verification requests completed.");
 }
 
-if (require.main === module) main().catch((error) => { console.error(`\nFAIL: ${error.message}`); process.exit(1); });
-
-module.exports = { NETWORKS, loadVerificationPlan, main, requireAddress };
+if (require.main === module) main().catch((error) => {
+  console.error(String(error?.message || error).replace(/https:\/\/[^\s]+/g, "[masked URL]"));
+  process.exit(1);
+});
+module.exports = { buildPlan, main };
