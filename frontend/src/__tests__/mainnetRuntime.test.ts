@@ -26,8 +26,8 @@ describe("mainnet runtime isolation", () => {
   });
 
   it("accepts the mainnet indexers", async () => {
-    vi.stubEnv("NEXT_PUBLIC_SUBGRAPH_URL", "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn");
-    vi.stubEnv("NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL", "https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.0");
+    vi.stubEnv("NEXT_PUBLIC_SUBGRAPH_URL", "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.1/gn");
+    vi.stubEnv("NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL", "https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.1");
     await expect(import("../lib/graphql")).resolves.toBeDefined();
   });
 

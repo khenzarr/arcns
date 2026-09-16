@@ -106,7 +106,7 @@ contract ArcNSBaseRegistrar is ERC721, Ownable, IArcNSBaseRegistrar {
         uint256 id,
         address owner_,
         uint256 duration
-    ) external override live onlyController returns (uint256) {
+    ) external virtual override live onlyController returns (uint256) {
         if (!available(id)) revert NameNotAvailable(id);
 
         uint256 expiry = block.timestamp + duration;
@@ -135,7 +135,7 @@ contract ArcNSBaseRegistrar is ERC721, Ownable, IArcNSBaseRegistrar {
         address owner_,
         uint256 duration,
         address resolver_
-    ) external override live onlyController returns (uint256) {
+    ) external virtual override live onlyController returns (uint256) {
         if (!available(id)) revert NameNotAvailable(id);
 
         uint256 expiry = block.timestamp + duration;
@@ -226,7 +226,7 @@ contract ArcNSBaseRegistrar is ERC721, Ownable, IArcNSBaseRegistrar {
     /// @notice Returns the token URI with fully on-chain base64-encoded JSON metadata
     /// @param tokenId The token ID to query
     /// @return Base64-encoded data URI containing JSON metadata with inline SVG
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         _requireOwned(tokenId);
 
         // In v3 the label is stored as the hex of the labelhash since we only have the hash on-chain

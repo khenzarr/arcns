@@ -48,9 +48,9 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 | Indexed data layer | Mainnet Goldsky primary and The Graph Studio fallback deployed and checked |
 | Source verification | 12/12 exact-match on the official Arc explorer |
 | Frontend and resolver API | Live on Arc Mainnet (`5042`) at arcname.services |
-| Early-adopter campaign | Registry deployed; campaign not activated |
+| Early-adopter campaign | Active; snapshot-eligible wallets receive a one-time first-registration price |
 
-The references below describe the deployed, source-verified protocol and the production mainnet application. The early-adopter campaign remains fail-closed until its finalized root is set, read back, frozen, and explicitly activated through the Admin Safe.
+The references below describe the deployed, source-verified protocol and the production mainnet application. The early-adopter root is frozen and the campaign is active on mainnet.
 
 **Website and app:** [arcname.services](https://arcname.services)
 
@@ -143,8 +143,8 @@ Payment flow:
 | ArcNSRegistry | `0xcA4d60A6d237EDa59aA1F57EbAe6B3150BcAb8Fb` |
 | ArcNSResolver (proxy) | `0x68Bb5D43E8c7394876de2174d1BA320745D47023` |
 | ArcNSReverseRegistrar | `0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a` |
-| ArcBaseRegistrar (.arc) | `0x6C6C0d5B38B3a69F53301CEe0ba360E02d53933d` |
-| CircleBaseRegistrar (.circle) | `0x1c23D75E0c7a3B9E9eD4CcEea0e97CDCFB0E9A9C` |
+| ArcBaseRegistrarV2 (.arc) | `0x1a99540B48A21db03c768760052c3F915F9852aB` |
+| CircleBaseRegistrarV2 (.circle) | `0xC3568DF382599495ed7f10188a417858E00eb720` |
 | ArcController (.arc proxy) | `0xE62De42eAcb270D2f2465c017C30bbf24F3f9350` |
 | CircleController (.circle proxy) | `0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1` |
 | ArcNSPriceOracle | `0x61baCC1623Eb5C1Ccd5D46B05CF6EB8Dd8130cc8` |
@@ -154,12 +154,12 @@ Payment flow:
 | Treasury | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` |
 | USDC | `0x3600000000000000000000000000000000000000` |
 
-**Primary indexed endpoint (Goldsky):** `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn`
-**Fallback indexed endpoint (The Graph Studio):** `https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.0`
+**Primary indexed endpoint (Goldsky):** `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.1/gn`
+**Fallback indexed endpoint (The Graph Studio):** `https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.1`
 **RPC:** `https://rpc.mainnet.arc.io`
 **Canonical mainnet addresses:** [deployment record](deployments/arc_mainnet-v3.json)
 
-These deployments are not yet source-verified. Historical deployment records remain available for reproducibility.
+All active ArcNS contracts are exact-match source-verified on the official Arc Explorer. Historical deployment records remain available for reproducibility.
 
 ---
 
@@ -175,7 +175,7 @@ These deployments are not yet source-verified. Historical deployment records rem
 
 Pricing is computed by the PriceOracle in USDC with 6 decimal places. Duration is pro-rated. A 5% slippage guard is applied at registration time.
 
-After campaign activation, verified snapshot-eligible wallets may use their one-time first-registration benefit: $2 / $10 / $15 / $25 / $50 for 5+ / 4 / 3 / 2 / 1 characters respectively. The benefit applies to one registration across `.arc` and `.circle`; multi-year registrations discount only the first year, and renewals use standard pricing. The mainnet campaign is not yet active; the final on-chain quote determines the amount payable.
+Verified snapshot-eligible wallets may use their active one-time first-registration benefit: $2 / $10 / $15 / $25 / $50 for 5+ / 4 / 3 / 2 / 1 characters respectively. The benefit applies to one registration across `.arc` and `.circle`; multi-year registrations discount only the first year, and renewals use standard pricing. The final on-chain quote determines the amount payable.
 
 ---
 
@@ -236,8 +236,8 @@ cp .env.example .env
 Frontend environment:
 ```bash
 # frontend/.env.local
-NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn
-NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.0
+NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.1/gn
+NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.1
 NEXT_PUBLIC_RPC_URL=https://rpc.mainnet.arc.io
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
 ```
@@ -281,7 +281,7 @@ cd frontend && npm run dev
 cd indexer
 graph codegen subgraph.mainnet.yaml
 graph build subgraph.mainnet.yaml --output-dir build-mainnet
-# Goldsky: arcns-mainnet/1.0.0
+# Goldsky: arcns-mainnet/1.0.1
 # The Graph Studio uses subgraph.graph-mainnet.yaml and slug arc-ns-mainnet
 ```
 

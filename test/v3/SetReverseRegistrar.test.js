@@ -100,10 +100,10 @@ async function deployFull() {
 
   // BaseRegistrar (.arc)
   const Registrar = await ethers.getContractFactory(
-    "contracts/v3/registrar/ArcNSBaseRegistrar.sol:ArcNSBaseRegistrar"
+    "contracts/v3/registrar/ArcNSBaseRegistrarV2.sol:ArcNSBaseRegistrarV2"
   );
   const registrar = await Registrar.deploy(
-    await registry.getAddress(), ARC_NAMEHASH, "arc"
+    await registry.getAddress(), ARC_NAMEHASH, "arc", [], [], []
   );
   await registrar.waitForDeployment();
 

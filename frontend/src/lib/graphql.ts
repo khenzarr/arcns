@@ -14,8 +14,8 @@ import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
 
 const ARC_TESTNET_CHAIN_ID = 5_042_002;
 export const ARC_TESTNET_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/1748590/arcnslatest/v3";
-export const ARC_MAINNET_PRIMARY_SUBGRAPH_URL = "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn";
-export const ARC_MAINNET_FALLBACK_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.0";
+export const ARC_MAINNET_PRIMARY_SUBGRAPH_URL = "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.1/gn";
+export const ARC_MAINNET_FALLBACK_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.1";
 const isMainnetDeployment = Number(DEPLOYED_CHAIN_ID) === 5042;
 
 function validMainnetSubgraphUrl(url: string | undefined): url is string {

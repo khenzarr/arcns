@@ -96,5 +96,9 @@ interface IArcNSController {
     /// @param newReverseRegistrar The new ArcNSReverseRegistrar contract address
     function setReverseRegistrar(address newReverseRegistrar) external;
 
+    /// @notice Switches the controller to a label-aware V2 base registrar.
+    /// @dev ADMIN_ROLE required and the controller must be paused.
+    function setBaseRegistrar(address newBaseRegistrar) external;
+
     function setDiscountRegistry(address newDiscountRegistry) external;
 }

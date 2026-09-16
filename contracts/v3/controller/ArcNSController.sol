@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/utils/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "../interfaces/IArcNSBaseRegistrar.sol";
+import "../interfaces/IArcNSBaseRegistrarV2.sol";
 import "../interfaces/IArcNSPriceOracle.sol";
 import "../interfaces/IArcNSRegistry.sol";
 import "../interfaces/IArcNSResolver.sol";
@@ -74,6 +75,7 @@ contract ArcNSController is
 
     error DiscountRegistryNotConfigured();
     error DiscountOwnerMustBeSender();
+    error InvalidBaseRegistrar();
 
     // ─── Events ───────────────────────────────────────────────────────────────
 
@@ -99,6 +101,7 @@ contract ArcNSController is
     event ReverseRegistrarUpdated(address indexed oldReverseRegistrar, address indexed newReverseRegistrar);
 
     event DiscountRegistryUpdated(address indexed oldRegistry, address indexed newRegistry);
+    event BaseRegistrarUpdated(address indexed oldRegistrar, address indexed newRegistrar);
 
     // ─── Roles ────────────────────────────────────────────────────────────────
 
@@ -353,10 +356,14 @@ contract ArcNSController is
         // 11. Register with or without resolver
         uint256 expires;
         if (resolverAddr != address(0)) {
-            expires = base.registerWithResolver(tokenId, owner_, duration, resolverAddr);
+            expires = IArcNSBaseRegistrarV2(address(base)).registerWithResolverAndLabel(
+                tokenId, name_, owner_, duration, resolverAddr
+            );
             resolver.setAddr(nodehash, owner_);
         } else {
-            expires = base.register(tokenId, owner_, duration);
+            expires = IArcNSBaseRegistrarV2(address(base)).registerWithLabel(
+                tokenId, name_, owner_, duration
+            );
         }
 
         // 12. Optionally set reverse record — silently swallow failures so registration never reverts
@@ -404,10 +411,14 @@ contract ArcNSController is
         bytes32 nodehash = keccak256(abi.encodePacked(base.baseNode(), label));
         uint256 expires;
         if (resolverAddr != address(0)) {
-            expires = base.registerWithResolver(tokenId, owner_, duration, resolverAddr);
+            expires = IArcNSBaseRegistrarV2(address(base)).registerWithResolverAndLabel(
+                tokenId, name_, owner_, duration, resolverAddr
+            );
             resolver.setAddr(nodehash, owner_);
         } else {
-            expires = base.register(tokenId, owner_, duration);
+            expires = IArcNSBaseRegistrarV2(address(base)).registerWithLabel(
+                tokenId, name_, owner_, duration
+            );
         }
         if (reverseRecord && resolverAddr != address(0)) {
             try reverseRegistrar.setReverseRecord(owner_, string(abi.encodePacked(name_, ".", base.tld()))) {} catch {}
@@ -538,6 +549,30 @@ contract ArcNSController is
         address old = address(reverseRegistrar);
         reverseRegistrar = IArcNSReverseRegistrar(newReverseRegistrar);
         emit ReverseRegistrarUpdated(old, newReverseRegistrar);
+    }
+
+    /// @notice Switches this controller to a label-aware registrar for the same TLD.
+    /// @dev The controller must be paused during migration. Registry, base node, TLD,
+    ///      and metadata version are checked before the storage pointer is updated.
+    function setBaseRegistrar(address newBaseRegistrar) external onlyRole(ADMIN_ROLE) whenPaused {
+        if (newBaseRegistrar == address(0)) revert ZeroAddress();
+
+        IArcNSBaseRegistrar candidate = IArcNSBaseRegistrar(newBaseRegistrar);
+        (bool versionOk, bytes memory versionData) = newBaseRegistrar.staticcall(
+            abi.encodeCall(IArcNSBaseRegistrarV2.metadataVersion, ())
+        );
+        if (!versionOk || versionData.length != 32 || abi.decode(versionData, (uint256)) < 2) {
+            revert InvalidBaseRegistrar();
+        }
+        if (address(candidate.registry()) != address(registry)) revert InvalidBaseRegistrar();
+        if (candidate.baseNode() != base.baseNode()) revert InvalidBaseRegistrar();
+        if (keccak256(bytes(candidate.tld())) != keccak256(bytes(base.tld()))) {
+            revert InvalidBaseRegistrar();
+        }
+
+        address old = address(base);
+        base = candidate;
+        emit BaseRegistrarUpdated(old, newBaseRegistrar);
     }
 
     function setDiscountRegistry(address newDiscountRegistry) external override onlyRole(ADMIN_ROLE) {

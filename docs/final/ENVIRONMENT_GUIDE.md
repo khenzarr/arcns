@@ -40,8 +40,8 @@ Copy from `frontend/.env.local.example` if it exists, or create manually:
 ```bash
 # frontend/.env.local
 
-NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn
-NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
+NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.1/gn
+NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.1
 NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL=
 NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
@@ -73,8 +73,8 @@ When deploying to Vercel, set the following environment variables in the Vercel 
 
 | Variable | Value |
 |----------|-------|
-| `NEXT_PUBLIC_SUBGRAPH_URL` | `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn` |
-| `NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL` | `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3` |
+| `NEXT_PUBLIC_SUBGRAPH_URL` | `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.1/gn` |
+| `NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL` | `https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.1` |
 | `NEXT_PUBLIC_RPC_URL` | `https://rpc.testnet.arc.network` |
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | Your WalletConnect project ID |
 
