@@ -40,4 +40,31 @@ describe("portfolio subgraph routing", () => {
 
     expect(result).toEqual({ domains: [], indexAvailable: false });
   });
+
+  it("rejects stale 1.0.0 production overrides and uses the canonical 1.0.1 failover pair", async () => {
+    vi.stubEnv(
+      "NEXT_PUBLIC_SUBGRAPH_URL",
+      "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn",
+    );
+    vi.stubEnv(
+      "NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL",
+      "https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.0",
+    );
+    const fetchMock = vi.fn()
+      .mockRejectedValueOnce(new Error("primary unavailable"))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: { domains: [] } }),
+      });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { getDomainsByOwnerResult } = await import("../lib/graphql");
+    const result = await getDomainsByOwnerResult("0xABCDEFabcdefABCDEFabcdefABCDEFabcdefABCD");
+
+    expect(fetchMock.mock.calls.map(call => call[0])).toEqual([
+      "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.1/gn",
+      "https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.1",
+    ]);
+    expect(result).toEqual({ domains: [], indexAvailable: true });
+  });
 });

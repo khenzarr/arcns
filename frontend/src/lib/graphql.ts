@@ -21,7 +21,7 @@ const isMainnetDeployment = Number(DEPLOYED_CHAIN_ID) === 5042;
 function validMainnetSubgraphUrl(url: string | undefined): url is string {
   return Boolean(
     url?.startsWith("https://")
-    && !/testnet|arcnslatest|arcns-product|\/arcns\/v0\.2\.2/i.test(url)
+    && !/testnet|arcnslatest|arcns-product|\/arcns\/v0\.2\.2|\/1\.0\.0(?:\/|$)/i.test(url)
   );
 }
 
