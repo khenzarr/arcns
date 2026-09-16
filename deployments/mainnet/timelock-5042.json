@@ -17,5 +17,5 @@
     "executors": ["0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72"],
     "admin": "0x0000000000000000000000000000000000000000"
   },
-  "verificationStatus": "PENDING"
+  "verificationStatus": "EXACT_MATCH"
 }

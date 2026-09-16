@@ -46,11 +46,11 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 | Protocol contracts | Deployed on Arc Mainnet (2026-09-16) |
 | Administration | Safe custody and Timelock role handoff completed |
 | Indexed data layer | Mainnet Goldsky primary and The Graph Studio fallback deployed and checked |
-| Source verification | Pending explorer verification service availability |
+| Source verification | 12/12 exact-match on the official Arc explorer |
 | Frontend and resolver API | Mainnet cutover pending; deployment alone does not switch the live app |
 | Early-adopter campaign | Registry deployed; campaign not activated |
 
-The references below describe the deployed mainnet protocol. Production will switch after source verification and the remaining launch checks; do not interpret these references as confirmation that the live application has already switched.
+The references below describe the deployed and source-verified mainnet protocol. The production application remains on its existing runtime until the final release configuration and smoke checks are promoted.
 
 **Website and app:** [arcname.services](https://arcname.services)
 

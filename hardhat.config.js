@@ -61,7 +61,6 @@ module.exports = {
   etherscan: {
     apiKey: {
       arc_testnet: process.env.ARCSCAN_API_KEY || "placeholder",
-      arc_mainnet: process.env.ARC_MAINNET_EXPLORER_API_KEY || "blockscout-no-key",
       arc_mainnet: process.env.ARC_MAINNET_EXPLORER_API_KEY || "placeholder",
     },
     customChains: [
@@ -77,9 +76,9 @@ module.exports = {
         network: "arc_mainnet",
         chainId: 5042,
         urls: {
-          // Configure only after validating the provider's API endpoint.
-          apiURL: process.env.ARC_MAINNET_EXPLORER_API_URL || "",
-          browserURL: "https://arc-mainnet.cloud.blockscout.com",
+          // Official Arc explorer backend; verification requires a Blockscout API key.
+          apiURL: process.env.ARC_MAINNET_EXPLORER_API_URL || "https://api.blockscout.com/5042/api",
+          browserURL: "https://explorer.arc.io",
         },
       },
     ],
