@@ -86,11 +86,13 @@ describe("resolveName — subgraph-lag RPC fallback (integration)", () => {
   const rpc = {
     addrResult:  RPC_ADDRESS,
     ownerResult: RPC_ADDRESS,
+    resolverResult: FAKE_RESOLVER,
   };
 
   beforeEach(() => {
     rpc.addrResult  = RPC_ADDRESS;
     rpc.ownerResult = RPC_ADDRESS;
+    rpc.resolverResult = FAKE_RESOLVER;
 
     vi.resetModules();
 
@@ -104,7 +106,7 @@ describe("resolveName — subgraph-lag RPC fallback (integration)", () => {
     vi.doMock("../lib/publicClient", () => ({
       publicClient: {
         readContract: vi.fn(({ functionName }: { functionName: string }) => {
-          if (functionName === "resolver") return Promise.resolve(FAKE_RESOLVER);
+          if (functionName === "resolver") return Promise.resolve(rpc.resolverResult);
           if (functionName === "owner")    return Promise.resolve(rpc.ownerResult);
           if (functionName === "addr")     return Promise.resolve(rpc.addrResult);
           return Promise.resolve(null);
@@ -223,5 +225,15 @@ describe("resolveName — subgraph-lag RPC fallback (integration)", () => {
 
     expect(result.source).toBe("rpc");
     expect(result.address).toBe(RPC_ADDRESS);
+  });
+
+  it("subgraph returns no domain and RPC confirms no resolver → returns not found from rpc", async () => {
+    stubSubgraph(null);
+    rpc.resolverResult = ZERO_ADDRESS;
+
+    const { resolveName } = await import("../lib/graphql");
+    const result = await resolveName("missing.arc");
+
+    expect(result).toEqual({ address: null, owner: null, expiry: null, source: "rpc" });
   });
 });

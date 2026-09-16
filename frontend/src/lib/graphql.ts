@@ -303,7 +303,11 @@ export async function resolveName(name: string): Promise<{
       functionName: "resolver",
       args: [node],
     }) as string;
-    if (!resolverAddr || resolverAddr === ZERO) return { address: null, owner: null, expiry: null, source: null };
+    // The RPC call succeeded and proved that no resolver is configured. This
+    // is a valid not-found result, not an upstream outage.
+    if (!resolverAddr || resolverAddr === ZERO) {
+      return { address: null, owner: null, expiry: null, source: "rpc" };
+    }
     const owner = await publicClient.readContract({
       address: ADDR_REGISTRY,
       abi: REGISTRY_ABI,
