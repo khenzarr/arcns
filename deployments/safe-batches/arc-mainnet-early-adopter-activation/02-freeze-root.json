@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "chainId": "5042",
+  "createdAt": 1789563286548,
+  "meta": {
+    "name": "ArcNS mainnet discount: freeze root",
+    "description": "Irreversibly freeze the already verified root. Execute only after independent read-back.",
+    "txBuilderVersion": "2.0.1",
+    "createdFromSafeAddress": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+    "createdFromOwnerAddress": ""
+  },
+  "transactions": [
+    {
+      "to": "0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2",
+      "value": "0",
+      "data": "0xaa968988",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "version": "1.0",
+  "chainId": "5042",
+  "createdAt": 1789563286547,
+  "meta": {
+    "name": "ArcNS mainnet discount: set finalized root",
+    "description": "Set the finalized 849-wallet root. Review exact root before signing.",
+    "txBuilderVersion": "2.0.1",
+    "createdFromSafeAddress": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+    "createdFromOwnerAddress": ""
+  },
+  "transactions": [
+    {
+      "to": "0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2",
+      "value": "0",
+      "data": "0x7cb64759f18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

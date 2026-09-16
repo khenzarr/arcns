@@ -39,7 +39,7 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 
 ## Current Status
 
-**Mainnet contracts deployed · Production cutover pending**
+**Live on Arc Mainnet**
 
 | Component | Status |
 |-----------|--------|
@@ -47,10 +47,10 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 | Administration | Safe custody and Timelock role handoff completed |
 | Indexed data layer | Mainnet Goldsky primary and The Graph Studio fallback deployed and checked |
 | Source verification | 12/12 exact-match on the official Arc explorer |
-| Frontend and resolver API | Mainnet cutover pending; deployment alone does not switch the live app |
+| Frontend and resolver API | Live on Arc Mainnet (`5042`) at arcname.services |
 | Early-adopter campaign | Registry deployed; campaign not activated |
 
-The references below describe the deployed and source-verified mainnet protocol. The production application remains on its existing runtime until the final release configuration and smoke checks are promoted.
+The references below describe the deployed, source-verified protocol and the production mainnet application. The early-adopter campaign remains fail-closed until its finalized root is set, read back, frozen, and explicitly activated through the Admin Safe.
 
 **Website and app:** [arcname.services](https://arcname.services)
 

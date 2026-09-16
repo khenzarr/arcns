@@ -1,0 +1,36 @@
+{
+  "chainId": "5042",
+  "safe": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+  "registry": "0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2",
+  "snapshot": {
+    "campaignId": "ARCNS_TESTNET_V3_EARLY_ADOPTER_2026_V1",
+    "campaignIdBytes32": "0xae3c7462e46cc76b3e0349e7d211264ada95257da9d9d7a797abed70b7eb83e3",
+    "snapshotBlock": 54933646,
+    "snapshotBlockHash": "0x0a450d7fb8055de409084ddb9942f31431aa017a3b3241c4eb8e2e655b8c024d",
+    "merkleRoot": "0xf18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e",
+    "eligibleWalletCount": 849
+  },
+  "files": [
+    {
+      "filename": "01-set-root.json",
+      "to": "0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2",
+      "data": "0x7cb64759f18c50fa221162f76d0b88f21aa26e4211c5a77ee72d4dd58240a40406f38d9e",
+      "calldataKeccak256": "0x88ca5e5f11bbc89d4bc80c199d8a4739917a519ce6ab7cad038c67269bd4e2c9",
+      "sha256": "ef54a3dfc23c350f59e47bc8a3c512fbf4e80fea4de70306347cba7f31bf0b93"
+    },
+    {
+      "filename": "02-freeze-root.json",
+      "to": "0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2",
+      "data": "0xaa968988",
+      "calldataKeccak256": "0x0304395bf8b5294f47a6d70f942c9baf85a94276a1b2722d07c8eb964a5f14b0",
+      "sha256": "f42e1997d128a3c98a6b6fc850605190c742e1cafb5a3e0d748bdb37906f0dfb"
+    },
+    {
+      "filename": "03-activate.json",
+      "to": "0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2",
+      "data": "0x6885b03c0000000000000000000000000000000000000000000000000000000000000001",
+      "calldataKeccak256": "0x400a82fc5b71e4145918a8804cb5a715d22136c960a1dec5826e30882609368c",
+      "sha256": "9b27280e47420dedfc07810b5ddc11899bbdcd409d19c6ef7a8fe7547d120fbe"
+    }
+  ]
+}
