@@ -95,13 +95,19 @@ export const NAMEHASH_CIRCLE       = "${namehashes.circle}"       as \`0x\${stri
 export const NAMEHASH_ADDR_REVERSE = "${namehashes.addrReverse}"  as \`0x\${string}\`;
 `;
 
-const outDir  = path.join(__dirname, "../frontend/src/lib");
-const outFile = path.join(outDir, "generated-contracts.ts");
+const outputArgIndex = process.argv.indexOf("--output");
+if (outputArgIndex >= 0 && !process.argv[outputArgIndex + 1]) {
+  throw new Error("--output requires a destination path");
+}
+const outFile = outputArgIndex >= 0
+  ? path.resolve(__dirname, "..", process.argv[outputArgIndex + 1])
+  : path.join(__dirname, "../frontend/src/lib/generated-contracts.ts");
+const outDir = path.dirname(outFile);
 
 if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outFile, output, "utf8");
 
-console.log(`[generate-frontend-config] Written: frontend/src/lib/generated-contracts.ts`);
+console.log(`[generate-frontend-config] Written: ${path.relative(path.join(__dirname, ".."), outFile)}`);
 console.log(`  Network:  ${network}`);
 console.log(`  Chain ID: ${chainId}`);
 console.log(`  Version:  ${version}`);

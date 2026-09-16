@@ -1,7 +1,7 @@
 /**
  * graphql.ts — ArcNS subgraph client.
  *
- * Target subgraph: arcnslatest (Arc testnet, v3 canonical)
+ * Target subgraph: configured deployment-specific primary and fallback providers.
  *
  * Failsafe: every function catches all errors and returns null/[] so the
  * frontend always falls back to RPC silently. Never throws to the caller.
@@ -18,6 +18,15 @@ const PRIMARY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL
   || (DEPLOYED_CHAIN_ID === ARC_TESTNET_CHAIN_ID ? ARC_TESTNET_SUBGRAPH_URL : "");
 const FALLBACK_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL || "";
 const GOLDSKY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL || "";
+
+// Refuse known legacy endpoints during cutover rather than mixing two networks.
+if (Number(DEPLOYED_CHAIN_ID) === 5042) {
+  for (const url of [PRIMARY_SUBGRAPH_URL, FALLBACK_SUBGRAPH_URL, GOLDSKY_SUBGRAPH_URL]) {
+    if (url && (!url.startsWith("https://") || /testnet|arcnslatest|arcns-product|\/arcns\/v0\.2\.2/i.test(url))) {
+      throw new Error("ArcNS mainnet subgraph configuration contains an invalid or legacy endpoint.");
+    }
+  }
+}
 
 function isConfiguredSubgraphUrl(url: string): boolean {
   return Boolean(url) && !url.includes("YOUR_ID");

@@ -28,7 +28,7 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 ## What ArcNS Enables
 
 - **Human-readable identity** — register `alice.arc` or `bob.circle` and point it to any EVM address
-- **USDC-native registration** — pay with USDC on Arc Testnet; no native gas token required for name purchases
+- **USDC-native registration** — pay registration fees with USDC on Arc
 - **On-chain resolution** — forward resolution (`name → address`) and reverse resolution (`address → primary name`) are both fully on-chain
 - **NFT ownership** — every registered name is an ERC-721 token with on-chain SVG metadata
 - **Primary name** — any address can set a verified primary name; the protocol enforces forward-confirmation so stale records are detectable
@@ -39,17 +39,18 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 
 ## Current Status
 
-**Live on Arc Testnet · Demo-ready · Pre-mainnet**
+**Mainnet contracts deployed · Production cutover pending**
 
 | Component | Status |
 |-----------|--------|
-| All 8 v3 contracts | Deployed on Arc Testnet (2026-04-24) |
-| Indexed data layer | Goldsky primary (Arc Testnet), The Graph Studio fallback, RPC fallback preserved |
-| Frontend (Next.js) | Live at [arcname.services](https://arcname.services), launch-ready UI on testnet runtime |
-| Contract test suite | ~180 passing tests, zero failures |
-| Live smoke tests | 10 flows verified on-chain |
+| Protocol contracts | Deployed on Arc Mainnet (2026-09-16) |
+| Administration | Safe custody and Timelock role handoff completed |
+| Indexed data layer | Mainnet Goldsky primary and The Graph Studio fallback deployed and checked |
+| Source verification | Pending explorer verification service availability |
+| Frontend and resolver API | Mainnet cutover pending; deployment alone does not switch the live app |
+| Early-adopter campaign | Registry deployed; campaign not activated |
 
-The application currently runs against Arc Testnet contracts. Mainnet network references and deployment addresses will be published after the mainnet deployment is verified; testnet addresses must not be used as mainnet addresses.
+The references below describe the deployed mainnet protocol. Production will switch after source verification and the remaining launch checks; do not interpret these references as confirmation that the live application has already switched.
 
 **Website and app:** [arcname.services](https://arcname.services)
 
@@ -73,7 +74,7 @@ Any address can set a primary name via the ReverseRegistrar. The protocol stores
 Names are ERC-721 tokens on the BaseRegistrar contracts. Token ID is `uint256(keccak256(label))`. `tokenURI` returns fully on-chain JSON metadata with an inline SVG image — no external fetch required.
 
 ### Indexed Data Layer
-The live testnet frontend uses Goldsky as the primary indexed data source on Arc Testnet. The legacy The Graph Studio endpoint is retained as a fallback, and direct RPC fallback is preserved for resilience.
+The mainnet indexed data layer uses Goldsky as its primary provider and a separately deployed The Graph Studio endpoint as fallback. Both endpoints have passed schema and indexed-block checks. Studio hosting is not a decentralized publication or a production availability guarantee.
 
 The indexed data layer powers registrations/renewals history, transfers, resolver record changes, reverse record changes, and portfolio views in the frontend.
 
@@ -135,25 +136,30 @@ Payment flow:
 
 ## Live Deployment
 
-**Network:** Arc Testnet · **Chain ID:** 5042002 · **Deployed:** 2026-04-24
+**Network:** Arc Mainnet · **Chain ID:** 5042 · **Deployed:** 2026-09-16
 
 | Contract | Address |
 |----------|---------|
-| ArcNSRegistry | `0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A` |
-| ArcNSResolver (proxy) | `0x4c3a2D4245346732CE498937fEAD6343e77Eb097` |
-| ArcNSReverseRegistrar | `0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304` |
-| ArcBaseRegistrar (.arc) | `0xD600B8D80e921ec48845fC1769c292601e5e90C4` |
-| CircleBaseRegistrar (.circle) | `0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a` |
-| ArcController (.arc proxy) | `0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46` |
-| CircleController (.circle proxy) | `0x4CB0650847459d9BbDd5823cc6D320C900D883dA` |
-| ArcNSPriceOracle | `0xde9b95B560f5e803f5Cc045f27285F0226913548` |
-| USDC (Arc Testnet) | `0x3600000000000000000000000000000000000000` |
+| ArcNSRegistry | `0xcA4d60A6d237EDa59aA1F57EbAe6B3150BcAb8Fb` |
+| ArcNSResolver (proxy) | `0x68Bb5D43E8c7394876de2174d1BA320745D47023` |
+| ArcNSReverseRegistrar | `0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a` |
+| ArcBaseRegistrar (.arc) | `0x6C6C0d5B38B3a69F53301CEe0ba360E02d53933d` |
+| CircleBaseRegistrar (.circle) | `0x1c23D75E0c7a3B9E9eD4CcEea0e97CDCFB0E9A9C` |
+| ArcController (.arc proxy) | `0xE62De42eAcb270D2f2465c017C30bbf24F3f9350` |
+| CircleController (.circle proxy) | `0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1` |
+| ArcNSPriceOracle | `0x61baCC1623Eb5C1Ccd5D46B05CF6EB8Dd8130cc8` |
+| DiscountRegistry | `0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2` |
+| Timelock | `0x609B9dAb0AC21c0863A5297f86BDd4C500647e3c` |
+| Admin Safe | `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` |
+| Treasury | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` |
+| USDC | `0x3600000000000000000000000000000000000000` |
 
-**Primary indexed endpoint (Goldsky):** `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn`
-**Fallback indexed endpoint (The Graph Studio):** `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3`
-**RPC fallback:** `https://rpc.testnet.arc.network`
-**Explorer:** `https://testnet.arcscan.app`  
-**Canonical addresses:** `deployments/arc_testnet-v3.json` → `frontend/src/lib/generated-contracts.ts`
+**Primary indexed endpoint (Goldsky):** `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn`
+**Fallback indexed endpoint (The Graph Studio):** `https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.0`
+**RPC:** `https://rpc.mainnet.arc.io`
+**Canonical mainnet addresses:** [deployment record](deployments/arc_mainnet-v3.json)
+
+These deployments are not yet source-verified. Historical deployment records remain available for reproducibility.
 
 ---
 
@@ -169,7 +175,7 @@ Payment flow:
 
 Pricing is computed by the PriceOracle in USDC with 6 decimal places. Duration is pro-rated. A 5% slippage guard is applied at registration time.
 
-Verified snapshot-eligible wallets may use their one-time first-registration benefit at the former testnet annual rates: $2 / $10 / $15 / $25 / $50 for 5+ / 4 / 3 / 2 / 1 characters respectively. The benefit applies to one registration across `.arc` and `.circle`; multi-year registrations discount only the first year, and renewals use standard pricing. Eligibility and claim availability are checked in the app; the final on-chain quote determines the amount payable.
+After campaign activation, verified snapshot-eligible wallets may use their one-time first-registration benefit: $2 / $10 / $15 / $25 / $50 for 5+ / 4 / 3 / 2 / 1 characters respectively. The benefit applies to one registration across `.arc` and `.circle`; multi-year registrations discount only the first year, and renewals use standard pricing. The mainnet campaign is not yet active; the final on-chain quote determines the amount payable.
 
 ---
 
@@ -230,9 +236,9 @@ cp .env.example .env
 Frontend environment:
 ```bash
 # frontend/.env.local
-NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn
-NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/v3
-NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
+NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn
+NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.0
+NEXT_PUBLIC_RPC_URL=https://rpc.mainnet.arc.io
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<your_project_id>
 ```
 
@@ -254,12 +260,13 @@ npx hardhat test test/v3/
 cd frontend && npx vitest run
 ```
 
-### 5. Deploy to Arc Testnet
+### 5. Prepare the existing mainnet deployment configuration
 
 ```bash
-node scripts/v3/deployV3.js --network arc_testnet
-node scripts/generate-frontend-config.js --network arc_testnet
+node scripts/generate-frontend-config.js --network arc_mainnet --output deployments/mainnet/generated-contracts.ts
 ```
+
+This stages a configuration file without switching the live frontend. Do not redeploy the existing contracts to configure the app. Activate the generated mainnet configuration only as part of the approved production cutover.
 
 ### 6. Run frontend
 
@@ -272,9 +279,10 @@ cd frontend && npm run dev
 
 ```bash
 cd indexer
-npm run codegen
-npm run build
-graph deploy --studio arcnslatest
+graph codegen subgraph.mainnet.yaml
+graph build subgraph.mainnet.yaml --output-dir build-mainnet
+# Goldsky: arcns-mainnet/1.0.0
+# The Graph Studio uses subgraph.graph-mainnet.yaml and slug arc-ns-mainnet
 ```
 
 See [Subgraph Guide](docs/final/SUBGRAPH_GUIDE.md) for the full deployment flow.
@@ -303,12 +311,10 @@ Historical reports and internal preparation documents remain in `docs/`; they ar
 
 | Field | Value |
 |-------|-------|
-| Network | Arc Testnet |
-| Chain ID | 5042002 |
-| RPC | https://rpc.testnet.arc.network |
-| Explorer | https://testnet.arcscan.app |
+| Network | Arc Mainnet |
+| Chain ID | 5042 |
+| RPC | https://rpc.mainnet.arc.io |
 | USDC | `0x3600000000000000000000000000000000000000` |
-| Faucet | https://faucet.circle.com |
 
 ---
 
