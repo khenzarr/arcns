@@ -43,7 +43,7 @@ const EXPIRY_EXPIRED = BigInt(Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 90)
 const mockAccountState = {
   address:     OWNER_ADDRESS as string | undefined,
   isConnected: true,
-  chainId:     5042002 as number | undefined,
+  chainId:     5042 as number | undefined,
 };
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
@@ -215,7 +215,7 @@ describe("Preservation — Available name: Register button shown, no Renew butto
     // Reset account state to default (owner, connected, correct chain)
     mockAccountState.address     = OWNER_ADDRESS;
     mockAccountState.isConnected = true;
-    mockAccountState.chainId     = 5042002;
+    mockAccountState.chainId     = 5042;
     mockWriteContractAsync = vi.fn().mockResolvedValue("0xdeadbeef");
   });
 
@@ -256,7 +256,7 @@ describe("Preservation — TAKEN + owner wallet: Renew button enabled", () => {
     // Reset account state to default (owner, connected, correct chain)
     mockAccountState.address     = OWNER_ADDRESS;
     mockAccountState.isConnected = true;
-    mockAccountState.chainId     = 5042002;
+    mockAccountState.chainId     = 5042;
     mockWriteContractAsync = vi.fn().mockResolvedValue("0xdeadbeef");
   });
 
@@ -373,11 +373,11 @@ describe("Preservation — TAKEN + wrong network: wrong-network warning shown", 
 
     // Wait for the component to settle and show the wrong-network warning
     await waitFor(() => {
-      expect(screen.queryByText(/switch to arc testnet/i)).not.toBeNull();
+      expect(screen.queryByText(/switch to arc \(chain id 5042\)/i)).not.toBeNull();
     }, { timeout: 2000 });
 
     // Wrong-network warning should be shown
-    expect(screen.queryByText(/switch to arc testnet/i)).not.toBeNull();
+    expect(screen.queryByText(/switch to arc \(chain id 5042\)/i)).not.toBeNull();
 
     // No Renew button should be present
     const renewButton = screen.queryByRole("button", { name: /renew/i });
@@ -391,7 +391,7 @@ describe("Preservation — TAKEN + expired: 'This name is taken' shown, no Renew
     // Reset account state to default (owner, connected, correct chain)
     mockAccountState.address     = OWNER_ADDRESS;
     mockAccountState.isConnected = true;
-    mockAccountState.chainId     = 5042002;
+    mockAccountState.chainId     = 5042;
     mockWriteContractAsync = vi.fn().mockResolvedValue("0xdeadbeef");
   });
 
@@ -430,7 +430,7 @@ describe("Preservation — Owner submit path: writeContractAsync IS called", () 
     // Reset account state to default (owner, connected, correct chain)
     mockAccountState.address     = OWNER_ADDRESS;
     mockAccountState.isConnected = true;
-    mockAccountState.chainId     = 5042002;
+    mockAccountState.chainId     = 5042;
     mockWriteContractAsync = vi.fn().mockResolvedValue("0xdeadbeef");
   });
 

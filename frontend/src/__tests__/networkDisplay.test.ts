@@ -21,8 +21,8 @@ describe("network-aware public labels", () => {
   it("uses launch presentation while preserving the deployed runtime identity", () => {
     expect(NETWORK_DISPLAY.networkDisplayName).toBe("Arc");
     expect(NETWORK_DISPLAY.chainIdLabel).toBe("");
-    expect(RUNTIME_NETWORK_DISPLAY.networkDisplayName).toBe("Arc Testnet");
-    expect(RUNTIME_NETWORK_DISPLAY.chainIdLabel).toBe("Chain ID 5042002");
+    expect(RUNTIME_NETWORK_DISPLAY.networkDisplayName).toBe("Arc");
+    expect(RUNTIME_NETWORK_DISPLAY.chainIdLabel).toBe("");
   });
 
   it("uses the launch price schedule on discovery surfaces", () => {

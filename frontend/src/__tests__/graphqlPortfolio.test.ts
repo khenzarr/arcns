@@ -10,20 +10,23 @@ describe("portfolio subgraph routing", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
-  it("uses the canonical Arc testnet index when no local env file exists", async () => {
+  it("uses the configured canonical mainnet index", async () => {
+    const endpoint = "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn";
+    vi.stubEnv("NEXT_PUBLIC_SUBGRAPH_URL", endpoint);
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ data: { domains: [] } }),
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const { ARC_TESTNET_SUBGRAPH_URL, getDomainsByOwnerResult } = await import("../lib/graphql");
+    const { getDomainsByOwnerResult } = await import("../lib/graphql");
     const result = await getDomainsByOwnerResult("0xABCDEFabcdefABCDEFabcdefABCDEFabcdefABCD");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      ARC_TESTNET_SUBGRAPH_URL,
+      endpoint,
       expect.objectContaining({ method: "POST" })
     );
     expect(result).toEqual({ domains: [], indexAvailable: true });

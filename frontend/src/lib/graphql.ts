@@ -15,7 +15,7 @@ import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
 const ARC_TESTNET_CHAIN_ID = 5_042_002;
 export const ARC_TESTNET_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/1748590/arcnslatest/v3";
 const PRIMARY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL
-  || (DEPLOYED_CHAIN_ID === ARC_TESTNET_CHAIN_ID ? ARC_TESTNET_SUBGRAPH_URL : "");
+  || (Number(DEPLOYED_CHAIN_ID) === ARC_TESTNET_CHAIN_ID ? ARC_TESTNET_SUBGRAPH_URL : "");
 const FALLBACK_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL || "";
 const GOLDSKY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL || "";
 

@@ -48,7 +48,7 @@ vi.mock("wagmi", () => ({
   useAccount: () => ({
     address:    NON_OWNER_ADDRESS,
     isConnected: true,
-    chainId:    5042002, // DEPLOYED_CHAIN_ID
+    chainId:    5042, // DEPLOYED_CHAIN_ID
   }),
   useReadContract: vi.fn(),
   useWriteContract: () => ({ writeContractAsync: vi.fn() }),
@@ -220,7 +220,7 @@ describe("Surface 2 — useRenew: Non-owner renew should abort before any transa
       useAccount: () => ({
         address:    NON_OWNER_ADDRESS,
         isConnected: true,
-        chainId:    5042002,
+        chainId:    5042,
       }),
       useReadContract: vi.fn(() => ({ data: undefined, isLoading: false })),
       useWriteContract: () => ({ writeContractAsync }),
