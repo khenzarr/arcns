@@ -53,23 +53,50 @@ function buildPlan(deployment, timelock) {
   }));
 }
 
-async function verifyOne(item) {
-  process.stdout.write(`Verifying ${item.name} at ${item.address}... `);
+async function explorerReportsVerified(address) {
   try {
-    await run("verify:verify", {
-      address: item.address,
-      constructorArguments: item.constructorArguments,
-      contract: item.contract,
-    });
-    console.log("verified");
-  } catch (error) {
-    const message = String(error?.message || error);
-    if (/already verified|already been verified/i.test(message)) {
-      console.log("already verified");
+    const url = new URL(process.env.ARC_MAINNET_EXPLORER_API_URL);
+    url.searchParams.set("module", "contract");
+    url.searchParams.set("action", "getsourcecode");
+    url.searchParams.set("address", address);
+    const response = await fetch(url, { headers: { accept: "application/json" } });
+    if (!response.ok) return false;
+    const body = await response.json();
+    return Boolean(body?.result?.[0]?.SourceCode);
+  } catch {
+    return false;
+  }
+}
+
+async function verifyOne(item) {
+  if (await explorerReportsVerified(item.address)) {
+    console.log(`Already publicly verified: ${item.name} at ${item.address}`);
+    return;
+  }
+  for (let attempt = 1; attempt <= 4; attempt += 1) {
+    process.stdout.write(`Verifying ${item.name} at ${item.address} (attempt ${attempt}/4)... `);
+    try {
+      await run("verify:verify", {
+        address: item.address,
+        constructorArguments: item.constructorArguments,
+        contract: item.contract,
+      });
+      console.log("verified");
       return;
+    } catch (error) {
+      const message = String(error?.message || error);
+      if (/already verified|already been verified/i.test(message)) {
+        console.log("already verified");
+        return;
+      }
+      const transient = /network request failed|unexpected token|service unavailable|fetch failed|timeout/i.test(message);
+      if (!transient || attempt === 4) {
+        console.log("FAILED");
+        throw error;
+      }
+      console.log("temporary explorer error; retrying");
+      await new Promise((resolve) => setTimeout(resolve, attempt * 3_000));
     }
-    console.log("FAILED");
-    throw error;
   }
 }
 
