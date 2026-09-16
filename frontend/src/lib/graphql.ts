@@ -14,19 +14,32 @@ import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
 
 const ARC_TESTNET_CHAIN_ID = 5_042_002;
 export const ARC_TESTNET_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/1748590/arcnslatest/v3";
-const PRIMARY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_URL
-  || (Number(DEPLOYED_CHAIN_ID) === ARC_TESTNET_CHAIN_ID ? ARC_TESTNET_SUBGRAPH_URL : "");
-const FALLBACK_SUBGRAPH_URL = process.env.NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL || "";
-const GOLDSKY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL || "";
+export const ARC_MAINNET_PRIMARY_SUBGRAPH_URL = "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn";
+export const ARC_MAINNET_FALLBACK_SUBGRAPH_URL = "https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/1.0.0";
+const isMainnetDeployment = Number(DEPLOYED_CHAIN_ID) === 5042;
 
-// Refuse known legacy endpoints during cutover rather than mixing two networks.
-if (Number(DEPLOYED_CHAIN_ID) === 5042) {
-  for (const url of [PRIMARY_SUBGRAPH_URL, FALLBACK_SUBGRAPH_URL, GOLDSKY_SUBGRAPH_URL]) {
-    if (url && (!url.startsWith("https://") || /testnet|arcnslatest|arcns-product|\/arcns\/v0\.2\.2/i.test(url))) {
-      throw new Error("ArcNS mainnet subgraph configuration contains an invalid or legacy endpoint.");
-    }
-  }
+function validMainnetSubgraphUrl(url: string | undefined): url is string {
+  return Boolean(
+    url?.startsWith("https://")
+    && !/testnet|arcnslatest|arcns-product|\/arcns\/v0\.2\.2/i.test(url)
+  );
 }
+
+export const PRIMARY_SUBGRAPH_URL = isMainnetDeployment
+  ? (validMainnetSubgraphUrl(process.env.NEXT_PUBLIC_SUBGRAPH_URL)
+      ? process.env.NEXT_PUBLIC_SUBGRAPH_URL
+      : ARC_MAINNET_PRIMARY_SUBGRAPH_URL)
+  : (process.env.NEXT_PUBLIC_SUBGRAPH_URL || ARC_TESTNET_SUBGRAPH_URL);
+const FALLBACK_SUBGRAPH_URL = isMainnetDeployment
+  ? (validMainnetSubgraphUrl(process.env.NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL)
+      ? process.env.NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL
+      : ARC_MAINNET_FALLBACK_SUBGRAPH_URL)
+  : (process.env.NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL || "");
+const GOLDSKY_SUBGRAPH_URL = isMainnetDeployment
+  ? (validMainnetSubgraphUrl(process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL)
+      ? process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL
+      : "")
+  : (process.env.NEXT_PUBLIC_GOLDSKY_SUBGRAPH_URL || "");
 
 function isConfiguredSubgraphUrl(url: string): boolean {
   return Boolean(url) && !url.includes("YOUR_ID");

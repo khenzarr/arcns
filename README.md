@@ -192,8 +192,8 @@ arcns/
 ├── scripts/generate-frontend-config.js  ← Address → TS config generator
 ├── test/v3/                   ← Active v3 test suite (~180 tests)
 ├── deployments/
-│   └── arc_testnet-v3.json    ← Canonical deployed addresses
-├── indexer/                   ← Active subgraph (arcnslatest)
+│   └── arc_mainnet-v3.json    ← Canonical deployed addresses
+├── indexer/                   ← Active mainnet subgraph
 ├── frontend/                  ← Next.js 14 frontend
 │   └── src/
 │       ├── app/               Pages: home, my-domains, resolve
@@ -204,7 +204,7 @@ arcns/
 │           ├── abis.ts                 ← v3 ABI exports
 │           └── contracts.ts            ← Contract descriptors
 ├── docs/
-│   ├── final/                 ← Finalization, audit, demo, gap docs
+│   ├── final/                 ← Finalization and release records
 │   ├── integration/           ← Ecosystem integration packages
 │   ├── design/                ← Architecture design docs
 │   └── release/               ← Release runbook and checklists

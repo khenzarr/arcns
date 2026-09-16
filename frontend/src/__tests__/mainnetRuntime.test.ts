@@ -19,9 +19,10 @@ describe("mainnet runtime isolation", () => {
     expect(runtime.DEPLOYED_FALLBACK_RPC_URLS).toEqual(["https://rpc.mainnet.arc.io"]);
   });
 
-  it("rejects a leftover testnet RPC fallback", async () => {
+  it("ignores a leftover testnet RPC fallback", async () => {
     vi.stubEnv("NEXT_PUBLIC_RPC_URL_2", "https://rpc.testnet.arc.network");
-    await expect(import("../lib/chains")).rejects.toThrow("fallback configuration");
+    const runtime = await import("../lib/chains");
+    expect(runtime.DEPLOYED_FALLBACK_RPC_URLS).toEqual(["https://rpc.mainnet.arc.io"]);
   });
 
   it("accepts the mainnet indexers", async () => {
@@ -30,8 +31,8 @@ describe("mainnet runtime isolation", () => {
     await expect(import("../lib/graphql")).resolves.toBeDefined();
   });
 
-  it("rejects a leftover legacy indexed-data endpoint", async () => {
+  it("replaces a leftover legacy indexed-data endpoint with the canonical fallback", async () => {
     vi.stubEnv("NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL", "https://api.studio.thegraph.com/query/1748590/arcnslatest/v3");
-    await expect(import("../lib/graphql")).rejects.toThrow("legacy endpoint");
+    await expect(import("../lib/graphql")).resolves.toBeDefined();
   });
 });

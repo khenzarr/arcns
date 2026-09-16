@@ -71,6 +71,7 @@ export function getChainConfig(chainId?: number): ChainConfig {
 
 import { DEPLOYED_CHAIN_ID } from "./generated-contracts";
 import { DEPLOYED_FALLBACK_RPC_URLS, DEPLOYED_PRIMARY_RPC_URL, deployedChain } from "./chains";
+import { PRIMARY_SUBGRAPH_URL } from "./graphql";
 import {
   ADDR_ARC_CONTROLLER, ADDR_ARC_REGISTRAR, ADDR_CIRCLE_CONTROLLER,
   ADDR_CIRCLE_REGISTRAR, ADDR_PRICE_ORACLE, ADDR_REGISTRY, ADDR_RESOLVER,
@@ -83,7 +84,7 @@ CHAIN_CONFIGS[ACTIVE_CHAIN_ID] = {
   name: deployedChain.name,
   rpcUrl: DEPLOYED_PRIMARY_RPC_URL,
   fallbackRpcUrls: DEPLOYED_FALLBACK_RPC_URLS.slice(1),
-  blockExplorer: deployedChain.blockExplorers?.default.url ?? "https://arc-mainnet.cloud.blockscout.com",
+  blockExplorer: deployedChain.blockExplorers?.default.url ?? "https://explorer.arc.io",
   contracts: {
     registry: ADDR_REGISTRY,
     arcController: ADDR_ARC_CONTROLLER,
@@ -96,7 +97,7 @@ CHAIN_CONFIGS[ACTIVE_CHAIN_ID] = {
     circleRegistrar: ADDR_CIRCLE_REGISTRAR,
     treasury: ADDR_TREASURY,
   },
-  subgraphUrl: process.env.NEXT_PUBLIC_SUBGRAPH_URL ?? "",
+  subgraphUrl: PRIMARY_SUBGRAPH_URL,
   minCommitmentAge: 60,
   maxCommitmentAge: 86_400,
 };
