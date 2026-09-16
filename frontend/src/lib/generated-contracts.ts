@@ -24,14 +24,14 @@ export const ADDR_REGISTRY           = "0xcA4d60A6d237EDa59aA1F57EbAe6B3150BcAb8
 export const ADDR_RESOLVER           = "0x68Bb5D43E8c7394876de2174d1BA320745D47023"           as `0x${string}`;
 export const ADDR_RESOLVER_IMPL      = "0xcd42969750b2C69E60aB0afEE9B53a7f118CbB05"       as `0x${string}`;
 export const ADDR_PRICE_ORACLE       = "0x61baCC1623Eb5C1Ccd5D46B05CF6EB8Dd8130cc8"        as `0x${string}`;
-export const ADDR_ARC_REGISTRAR      = "0x6C6C0d5B38B3a69F53301CEe0ba360E02d53933d"       as `0x${string}`;
-export const ADDR_CIRCLE_REGISTRAR   = "0x1c23D75E0c7a3B9E9eD4CcEea0e97CDCFB0E9A9C"    as `0x${string}`;
+export const ADDR_ARC_REGISTRAR      = "0x1a99540B48A21db03c768760052c3F915F9852aB"       as `0x${string}`;
+export const ADDR_CIRCLE_REGISTRAR   = "0xC3568DF382599495ed7f10188a417858E00eb720"    as `0x${string}`;
 export const ADDR_REVERSE_REGISTRAR  = "0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a"   as `0x${string}`;
 export const ADDR_TREASURY           = "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D"           as `0x${string}`;
 export const ADDR_ARC_CONTROLLER     = "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350"      as `0x${string}`;
-export const ADDR_ARC_CTRL_IMPL      = "0xA637a1574dC4CF9da40D3B36B21eBaB301e64bC3"  as `0x${string}`;
+export const ADDR_ARC_CTRL_IMPL      = "0xb343b3fca4e52238b21F8fDb41211a03556DD232"  as `0x${string}`;
 export const ADDR_CIRCLE_CONTROLLER  = "0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1"   as `0x${string}`;
-export const ADDR_CIRCLE_CTRL_IMPL   = "0xA637a1574dC4CF9da40D3B36B21eBaB301e64bC3" as `0x${string}`;
+export const ADDR_CIRCLE_CTRL_IMPL   = "0xb343b3fca4e52238b21F8fDb41211a03556DD232" as `0x${string}`;
 export const ADDR_DISCOUNT_REGISTRY  = "0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2" as `0x${string}`;
 
 // ─── Canonical namehashes ─────────────────────────────────────────────────────

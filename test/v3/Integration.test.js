@@ -90,12 +90,12 @@ async function deployAll() {
   await usdc.waitForDeployment();
 
   // BaseRegistrar .arc
-  const RegF = await ethers.getContractFactory("contracts/v3/registrar/ArcNSBaseRegistrar.sol:ArcNSBaseRegistrar");
-  const arcReg = await RegF.deploy(await registry.getAddress(), ARC_NAMEHASH, "arc");
+  const RegF = await ethers.getContractFactory("contracts/v3/registrar/ArcNSBaseRegistrarV2.sol:ArcNSBaseRegistrarV2");
+  const arcReg = await RegF.deploy(await registry.getAddress(), ARC_NAMEHASH, "arc", [], [], []);
   await arcReg.waitForDeployment();
 
   // BaseRegistrar .circle
-  const circleReg = await RegF.deploy(await registry.getAddress(), CIRCLE_NAMEHASH, "circle");
+  const circleReg = await RegF.deploy(await registry.getAddress(), CIRCLE_NAMEHASH, "circle", [], [], []);
   await circleReg.waitForDeployment();
 
   // ReverseRegistrar

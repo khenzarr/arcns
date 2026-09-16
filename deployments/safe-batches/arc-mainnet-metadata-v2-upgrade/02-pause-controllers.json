@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "chainId": "5042",
+  "createdAt": 1789584000000,
+  "meta": {
+    "name": "ArcNS mainnet metadata V2 - pause controllers",
+    "description": "Pause both registration controllers immediately before the final snapshot. Do not execute until the Timelock upgrade operation is ready.",
+    "txBuilderVersion": "2.0.1",
+    "createdFromSafeAddress": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+    "createdFromOwnerAddress": ""
+  },
+  "transactions": [
+    {
+      "to": "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350",
+      "value": "0",
+      "data": "0x8456cb59",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1",
+      "value": "0",
+      "data": "0x8456cb59",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

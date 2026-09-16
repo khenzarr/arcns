@@ -10,13 +10,13 @@
     "resolver": "0x68Bb5D43E8c7394876de2174d1BA320745D47023",
     "resolverImpl": "0xcd42969750b2C69E60aB0afEE9B53a7f118CbB05",
     "priceOracle": "0x61baCC1623Eb5C1Ccd5D46B05CF6EB8Dd8130cc8",
-    "arcRegistrar": "0x6C6C0d5B38B3a69F53301CEe0ba360E02d53933d",
-    "circleRegistrar": "0x1c23D75E0c7a3B9E9eD4CcEea0e97CDCFB0E9A9C",
+    "arcRegistrar": "0x1a99540B48A21db03c768760052c3F915F9852aB",
+    "circleRegistrar": "0xC3568DF382599495ed7f10188a417858E00eb720",
     "reverseRegistrar": "0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a",
     "arcController": "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350",
-    "arcControllerImpl": "0xA637a1574dC4CF9da40D3B36B21eBaB301e64bC3",
+    "arcControllerImpl": "0xb343b3fca4e52238b21F8fDb41211a03556DD232",
     "circleController": "0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1",
-    "circleControllerImpl": "0xA637a1574dC4CF9da40D3B36B21eBaB301e64bC3",
+    "circleControllerImpl": "0xb343b3fca4e52238b21F8fDb41211a03556DD232",
     "treasury": "0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D",
     "discountRegistry": "0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2"
   },
@@ -25,7 +25,18 @@
     "circle": "0xb3f3947bd9b363b1955fa597e342731ea6bde24d057527feb2cdfdeb807c2084",
     "addrReverse": "0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2"
   },
-  "upgrades": [],
+  "upgrades": [
+    {
+      "name": "metadata-v2",
+      "completedAt": "2026-09-16",
+      "controllerImplementation": "0xb343b3fca4e52238b21F8fDb41211a03556DD232",
+      "arcRegistrar": "0x1a99540B48A21db03c768760052c3F915F9852aB",
+      "circleRegistrar": "0xC3568DF382599495ed7f10188a417858E00eb720",
+      "pauseTransaction": "0xc43c94fcd6622a02353ad9cd5834ca1d2167e37e61e04ed8a38a0929b634e73e",
+      "cutoverTransaction": "0x826228516b3a37ebd69b05c6fabc4699cab982e538ac759ff70f398b1526ad86",
+      "unpauseTransaction": "0xf5ae5486f5f8741c629780fc8537451b64dd49f5669ad5f8be2e36e4e0c2f23"
+    }
+  ],
   "earlyAdopterDiscount": {
     "enabled": true,
     "campaignId": "0xae3c7462e46cc76b3e0349e7d211264ada95257da9d9d7a797abed70b7eb83e3",

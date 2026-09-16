@@ -1,124 +1,74 @@
 # ArcNS — Deployed Contract Addresses
 
-**Canonical source:** `deployments/arc_testnet-v3.json` → `frontend/src/lib/generated-contracts.ts`  
-**Network:** Arc Testnet  
-**Chain ID:** 5042002  
-**Initial Deployment:** 2026-04-24  
-**Security Migration:** 2026-04-29  
-**Timelock Deployment:** 2026-04-29  
+**Canonical source:** `deployments/arc_mainnet-v3.json` → `frontend/src/lib/generated-contracts.ts`
 
-> If any address in this document conflicts with `deployments/arc_testnet-v3.json` or `frontend/src/lib/generated-contracts.ts`, the JSON/TS files are the source of truth.
+**Network:** Arc Mainnet
 
----
+**Chain ID:** 5042
+
+**Initial deployment:** 2026-09-16
+**Metadata V2 cutover:** 2026-09-16
+
+> If any address in this document conflicts with `deployments/arc_mainnet-v3.json`, the canonical deployment JSON is the source of truth.
 
 ## Network Reference
 
 | Field | Value |
-|-------|-------|
-| Network | Arc Testnet |
-| Chain ID | 5042002 |
-| RPC | https://rpc.testnet.arc.network |
-| Explorer | https://testnet.arcscan.app |
-| USDC (testnet) | `0x3600000000000000000000000000000000000000` |
-| Faucet | https://faucet.circle.com |
-
----
+|---|---|
+| RPC | `https://rpc.mainnet.arc.io` |
+| Explorer | `https://explorer.arc.io` |
+| USDC | `0x3600000000000000000000000000000000000000` |
 
 ## Active Production Contracts
 
-### Core Protocol
-
-| Contract | Address | Upgradeability |
-|----------|---------|----------------|
-| ArcNSRegistry | `0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A` | Non-upgradeable |
-| ArcNSResolver (proxy) | `0x4c3a2D4245346732CE498937fEAD6343e77Eb097` | UUPS proxy |
-| ArcNSResolver (implementation) | `0x19Df0277A47da2CCa244a3702f3fC2B52F97A4a3` | — |
-| ArcNSReverseRegistrar | `0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304` | Non-upgradeable |
-| ArcNSPriceOracle | `0xde9b95B560f5e803f5Cc045f27285F0226913548` | Non-upgradeable |
-
-### Registrars
-
-| Contract | Address | TLD |
-|----------|---------|-----|
-| ArcBaseRegistrar | `0xD600B8D80e921ec48845fC1769c292601e5e90C4` | `.arc` |
-| CircleBaseRegistrar | `0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a` | `.circle` |
-
-### Controllers
-
-| Contract | Address | Upgradeability |
-|----------|---------|----------------|
-| ArcController (proxy) | `0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46` | UUPS proxy |
-| ArcController (implementation) | `0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB` | — |
-| CircleController (proxy) | `0x4CB0650847459d9BbDd5823cc6D320C900D883dA` | UUPS proxy |
-| CircleController (implementation) | `0x0E84B34bAa5E865C2Dc1CDe907D41b86F6031cCB` | — |
-
-> Both Controller proxies share the same implementation contract.
-
-### Governance
-
 | Contract | Address | Notes |
-|----------|---------|-------|
-| Safe Multisig (2-of-3) | `0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3` | Holds all operational roles |
-| Timelock (48h delay) | `0x0f9d898D74f29c69cAD1a66918b41891E73e08f0` | Holds `UPGRADER_ROLE` on all UUPS proxies |
-| Treasury (EOA) | `0xbbDF5bC7D63B1b7223556d4899905d56589A682d` | Receives USDC fees. Migration to multisig contract is deferred. |
+|---|---|---|
+| ArcNSRegistry | [`0xcA4d60A6d237EDa59aA1F57EbAe6B3150BcAb8Fb`](https://explorer.arc.io/address/0xcA4d60A6d237EDa59aA1F57EbAe6B3150BcAb8Fb?tab=contract) | Non-upgradeable |
+| ArcNSResolver proxy | [`0x68Bb5D43E8c7394876de2174d1BA320745D47023`](https://explorer.arc.io/address/0x68Bb5D43E8c7394876de2174d1BA320745D47023?tab=contract) | UUPS proxy |
+| ArcNSResolver implementation | [`0xcd42969750b2C69E60aB0afEE9B53a7f118CbB05`](https://explorer.arc.io/address/0xcd42969750b2C69E60aB0afEE9B53a7f118CbB05?tab=contract) | Exact-match verified |
+| ArcNSReverseRegistrar | [`0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a`](https://explorer.arc.io/address/0x3731b7c9F1830aD2880020DfcB0A4714E7fc252a?tab=contract) | Non-upgradeable |
+| ArcNSPriceOracle | [`0x61baCC1623Eb5C1Ccd5D46B05CF6EB8Dd8130cc8`](https://explorer.arc.io/address/0x61baCC1623Eb5C1Ccd5D46B05CF6EB8Dd8130cc8?tab=contract) | Non-upgradeable |
+| ArcBaseRegistrarV2 (.arc) | [`0x1a99540B48A21db03c768760052c3F915F9852aB`](https://explorer.arc.io/address/0x1a99540B48A21db03c768760052c3F915F9852aB?tab=contract) | Label-aware NFT metadata |
+| CircleBaseRegistrarV2 (.circle) | [`0xC3568DF382599495ed7f10188a417858E00eb720`](https://explorer.arc.io/address/0xC3568DF382599495ed7f10188a417858E00eb720?tab=contract) | Label-aware NFT metadata |
+| ArcController proxy | [`0xE62De42eAcb270D2f2465c017C30bbf24F3f9350`](https://explorer.arc.io/address/0xE62De42eAcb270D2f2465c017C30bbf24F3f9350?tab=contract) | UUPS proxy |
+| CircleController proxy | [`0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1`](https://explorer.arc.io/address/0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1?tab=contract) | UUPS proxy |
+| Shared Controller implementation | [`0xb343b3fca4e52238b21F8fDb41211a03556DD232`](https://explorer.arc.io/address/0xb343b3fca4e52238b21F8fDb41211a03556DD232?tab=contract) | Metadata V2 compatible |
+| EarlyAdopterDiscountRegistry | [`0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2`](https://explorer.arc.io/address/0xEec7ac0d3C3bE402b6F2b492c7479B2897e64BA2?tab=contract) | Active, frozen snapshot root |
 
----
+All active contracts above are exact-match source-verified on the official Arc Explorer.
+
+## Administration
+
+| Component | Address | Notes |
+|---|---|---|
+| Admin Safe (2-of-3) | `0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72` | Operational administration |
+| ArcNSTimelock | `0x609B9dAb0AC21c0863A5297f86BDd4C500647e3c` | Holds persistent controller upgrade authority |
+| Treasury | `0x0b943Fe9f1f8135e0751BA8B43dc0cD688ad209D` | Receives registration fees |
 
 ## Indexed Data Layer
 
-| Field | Value |
-|-------|-------|
-| Primary indexed endpoint | Goldsky `arcns-product/v0.1.0` |
-| Primary query URL | `https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/v0.1.0/gn` |
-| Fallback indexed endpoint | The Graph Studio `arcnslatest/v3` |
-| Fallback query URL | `https://api.studio.thegraph.com/query/1748590/arcnslatest/v3` |
-| RPC fallback | `https://rpc.testnet.arc.network` |
+| Role | Endpoint |
+|---|---|
+| Primary | Goldsky `arcns-mainnet` |
+| Fallback | The Graph Studio `arc-ns-mainnet` |
+| RPC fallback | `https://rpc.mainnet.arc.io` |
 
----
-
-## Public Testnet App
-
-| Field | Value |
-|-------|-------|
-| URL | https://arcname.services |
-| Previous Vercel URL (legacy) | https://arcns-app.vercel.app |
-| Hosting | Vercel |
-| Status | Live |
-
----
+The active subgraph manifests are `indexer/subgraph.mainnet.yaml` and `indexer/subgraph.graph-mainnet.yaml`.
 
 ## Namehash Reference
 
 | Name | Namehash |
-|------|----------|
-| `.arc` TLD | `0x9a7ad1c5d8b1c60ef156c6723dbf462681d6462768a9e60c53665d7fc1337bae` |
-| `.circle` TLD | `0xb3f3947bd9b363b1955fa597e342731ea6bde24d057527feb2cdfdeb807c2084` |
+|---|---|
+| `.arc` | `0x9a7ad1c5d8b1c60ef156c6723dbf462681d6462768a9e60c53665d7fc1337bae` |
+| `.circle` | `0xb3f3947bd9b363b1955fa597e342731ea6bde24d057527feb2cdfdeb807c2084` |
 | `addr.reverse` | `0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2` |
 
----
+## Metadata V2 Migration Evidence
 
-## Retired Addresses (Historical Reference)
+| Step | Transaction |
+|---|---|
+| Pause controllers | [`0xc43c94fc…34e73e`](https://explorer.arc.io/tx/0xc43c94fcd6622a02353ad9cd5834ca1d2167e37e61e04ed8a38a0929b634e73e) |
+| Atomic upgrade and registrar cutover | [`0x82622851…26ad86`](https://explorer.arc.io/tx/0x826228516b3a37ebd69b05c6fabc4699cab982e538ac759ff70f398b1526ad86) |
+| Unpause controllers | [`0xf5ae5486…0c2f23`](https://explorer.arc.io/tx/0xf5ae5486f5f8741c629780fc8537451b64dd49f5669ad5f8be2e36e4e0c2f23) |
 
-These addresses are no longer active. Do not use them.
-
-| Contract | Address | Reason Retired |
-|----------|---------|----------------|
-| ArcNSReverseRegistrar (old) | `0x961FC222eDDb9ab83f78a255EbB1DB1255F3DF57` | Replaced 2026-04-29. `claimWithResolver` authorization fix required redeployment. |
-| ArcNSController impl (old) | `0x64b7494A0f1E9000ee1F2c28183dB314c9b7eeA6` | Replaced 2026-04-29. `initialize` zero-address fix required new implementation. |
-
----
-
-## ArcScan Links
-
-| Contract | ArcScan |
-|----------|---------|
-| Registry | https://testnet.arcscan.app/address/0xc20B3F8C7A7B4FcbFfe35c6C63331a1D9D12fD1A |
-| Resolver (proxy) | https://testnet.arcscan.app/address/0x4c3a2D4245346732CE498937fEAD6343e77Eb097 |
-| ReverseRegistrar | https://testnet.arcscan.app/address/0x352a1917Dd82158eC9bc71A0AC84F1b95Af26304 |
-| ArcBaseRegistrar | https://testnet.arcscan.app/address/0xD600B8D80e921ec48845fC1769c292601e5e90C4 |
-| CircleBaseRegistrar | https://testnet.arcscan.app/address/0xE1fdE46df4bAC6F433C52a337F4818822735Bf8a |
-| ArcController (proxy) | https://testnet.arcscan.app/address/0xe0A67F2E74Bcb740F0446fF2aCF32081DB877D46 |
-| CircleController (proxy) | https://testnet.arcscan.app/address/0x4CB0650847459d9BbDd5823cc6D320C900D883dA |
-| PriceOracle | https://testnet.arcscan.app/address/0xde9b95B560f5e803f5Cc045f27285F0226913548 |
-| Safe Multisig | https://testnet.arcscan.app/address/0x01BaeBec34dd426E98cA7e550Eb652235Ea7e4f3 |
-| Timelock | https://testnet.arcscan.app/address/0x0f9d898D74f29c69cAD1a66918b41891E73e08f0 |
+The migration preserved the existing `circle.arc` owner and expiry while changing its on-chain NFT title to `circle.arc` and its description to Arc Mainnet.

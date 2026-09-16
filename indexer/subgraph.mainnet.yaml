@@ -61,9 +61,9 @@ dataSources:
     name: ArcRegistrar
     network: arc-mainnet
     source:
-      address: "0x6C6C0d5B38B3a69F53301CEe0ba360E02d53933d"
+      address: "0x1a99540B48A21db03c768760052c3F915F9852aB"
       abi: BaseRegistrar
-      startBlock: 21070696
+      startBlock: 21196748
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -83,9 +83,9 @@ dataSources:
     name: CircleRegistrar
     network: arc-mainnet
     source:
-      address: "0x1c23D75E0c7a3B9E9eD4CcEea0e97CDCFB0E9A9C"
+      address: "0xC3568DF382599495ed7f10188a417858E00eb720"
       abi: BaseRegistrar
-      startBlock: 21070696
+      startBlock: 21196760
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

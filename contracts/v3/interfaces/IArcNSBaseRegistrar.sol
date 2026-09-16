@@ -26,6 +26,9 @@ interface IArcNSBaseRegistrar {
     /// @param controller The controller address to remove
     function removeController(address controller) external;
 
+    /// @notice Returns the canonical ArcNS registry used by this registrar
+    function registry() external view returns (IArcNSRegistry);
+
     /// @notice Registers a new name
     /// @param id The token ID (labelhash)
     /// @param owner_ The owner of the new name

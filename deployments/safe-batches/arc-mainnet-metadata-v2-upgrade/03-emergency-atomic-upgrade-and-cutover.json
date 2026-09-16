@@ -1,0 +1,84 @@
+{
+  "version": "1.0",
+  "chainId": "5042",
+  "createdAt": 1789581788955,
+  "meta": {
+    "name": "ArcNS mainnet metadata V2 - emergency atomic upgrade and cutover",
+    "description": "Temporarily grants the Safe upgrade authority, upgrades both paused controllers, revokes that temporary authority, and switches both TLDs to exact-match verified V2 registrars atomically.",
+    "txBuilderVersion": "2.0.1",
+    "createdFromSafeAddress": "0xFd48189D3Feb99a5cC6fcC6896744DAa73F3BF72",
+    "createdFromOwnerAddress": ""
+  },
+  "transactions": [
+    {
+      "to": "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350",
+      "value": "0",
+      "data": "0x2f2ff15d189ab7a9244df0848122154315af71fe140f3db0fe014031783b0946b8c9d2e3000000000000000000000000fd48189d3feb99a5cc6fcc6896744daa73f3bf72",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1",
+      "value": "0",
+      "data": "0x2f2ff15d189ab7a9244df0848122154315af71fe140f3db0fe014031783b0946b8c9d2e3000000000000000000000000fd48189d3feb99a5cc6fcc6896744daa73f3bf72",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350",
+      "value": "0",
+      "data": "0x4f1ef286000000000000000000000000b343b3fca4e52238b21f8fdb41211a03556dd23200000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1",
+      "value": "0",
+      "data": "0x4f1ef286000000000000000000000000b343b3fca4e52238b21f8fdb41211a03556dd23200000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350",
+      "value": "0",
+      "data": "0xd547741f189ab7a9244df0848122154315af71fe140f3db0fe014031783b0946b8c9d2e3000000000000000000000000fd48189d3feb99a5cc6fcc6896744daa73f3bf72",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1",
+      "value": "0",
+      "data": "0xd547741f189ab7a9244df0848122154315af71fe140f3db0fe014031783b0946b8c9d2e3000000000000000000000000fd48189d3feb99a5cc6fcc6896744daa73f3bf72",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xcA4d60A6d237EDa59aA1F57EbAe6B3150BcAb8Fb",
+      "value": "0",
+      "data": "0x06ab59230000000000000000000000000000000000000000000000000000000000000000632b4be84e76657ffc9f7b17118646f4c4ec003c4db5de3aedcd9247bdabc6250000000000000000000000001a99540b48a21db03c768760052c3f915f9852ab",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xcA4d60A6d237EDa59aA1F57EbAe6B3150BcAb8Fb",
+      "value": "0",
+      "data": "0x06ab592300000000000000000000000000000000000000000000000000000000000000000a673551c14516dd05803ac42eca5a293a8ad89b657a45cbb05cfe7b444734ab000000000000000000000000c3568df382599495ed7f10188a417858e00eb720",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0xE62De42eAcb270D2f2465c017C30bbf24F3f9350",
+      "value": "0",
+      "data": "0x6a8be89e0000000000000000000000001a99540b48a21db03c768760052c3f915f9852ab",
+      "contractMethod": null,
+      "contractInputsValues": null
+    },
+    {
+      "to": "0x5A1275Ed5638C9aD5005d6087c696BFb3848e9E1",
+      "value": "0",
+      "data": "0x6a8be89e000000000000000000000000c3568df382599495ed7f10188a417858e00eb720",
+      "contractMethod": null,
+      "contractInputsValues": null
+    }
+  ]
+}

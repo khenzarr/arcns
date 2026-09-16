@@ -125,8 +125,8 @@ When endpoint versions change:
 1. Get the primary Goldsky URL and fallback Graph Studio URL
 2. Update `frontend/.env.local`:
    ```
-   NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-product/<version>/gn
-   NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arcnslatest/<new-version>
+   NEXT_PUBLIC_SUBGRAPH_URL=https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/<version>/gn
+   NEXT_PUBLIC_SUBGRAPH_FALLBACK_URL=https://api.studio.thegraph.com/query/1748590/arc-ns-mainnet/<version>
    NEXT_PUBLIC_RPC_URL=https://rpc.testnet.arc.network
    ```
 3. Update the Vercel environment variable in the Vercel project settings

@@ -59,8 +59,8 @@ describe("ArcNSController (v3)", function () {
     await reverseRegistrar.waitForDeployment();
 
     // BaseRegistrar (.arc)
-    const Registrar = await ethers.getContractFactory("contracts/v3/registrar/ArcNSBaseRegistrar.sol:ArcNSBaseRegistrar");
-    registrar = await Registrar.deploy(await registry.getAddress(), ARC_NAMEHASH, "arc");
+    const Registrar = await ethers.getContractFactory("contracts/v3/registrar/ArcNSBaseRegistrarV2.sol:ArcNSBaseRegistrarV2");
+    registrar = await Registrar.deploy(await registry.getAddress(), ARC_NAMEHASH, "arc", [], [], []);
     await registrar.waitForDeployment();
 
     // PriceOracle
@@ -641,6 +641,31 @@ describe("ArcNSController (v3)", function () {
 
   // ─── 14. Admin functions ────────────────────────────────────────────────────
   describe("admin functions", function () {
+    it("switches to a compatible V2 registrar only while paused", async function () {
+      const Registrar = await ethers.getContractFactory("contracts/v3/registrar/ArcNSBaseRegistrarV2.sol:ArcNSBaseRegistrarV2");
+      const replacement = await Registrar.deploy(await registry.getAddress(), ARC_NAMEHASH, "arc", [], [], []);
+      await replacement.waitForDeployment();
+
+      await expect(controller.setBaseRegistrar(await replacement.getAddress()))
+        .to.be.revertedWithCustomError(controller, "ExpectedPause");
+
+      await controller.pause();
+      await expect(controller.setBaseRegistrar(await replacement.getAddress()))
+        .to.emit(controller, "BaseRegistrarUpdated")
+        .withArgs(await registrar.getAddress(), await replacement.getAddress());
+      expect(await controller.base()).to.equal(await replacement.getAddress());
+    });
+
+    it("rejects a V2 registrar for a different TLD", async function () {
+      const Registrar = await ethers.getContractFactory("contracts/v3/registrar/ArcNSBaseRegistrarV2.sol:ArcNSBaseRegistrarV2");
+      const wrongTld = await Registrar.deploy(await registry.getAddress(), ARC_NAMEHASH, "circle", [], [], []);
+      await wrongTld.waitForDeployment();
+      await controller.pause();
+
+      await expect(controller.setBaseRegistrar(await wrongTld.getAddress()))
+        .to.be.revertedWithCustomError(controller, "InvalidBaseRegistrar");
+    });
+
     it("setPriceOracle: ORACLE_ROLE can update", async function () {
       const Oracle2 = await ethers.getContractFactory("contracts/v3/registrar/ArcNSPriceOracle.sol:ArcNSPriceOracle");
       const oracle2 = await Oracle2.deploy();

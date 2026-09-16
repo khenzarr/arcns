@@ -14,7 +14,7 @@ describe("portfolio subgraph routing", () => {
   });
 
   it("uses the configured canonical mainnet index", async () => {
-    const endpoint = "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.0/gn";
+    const endpoint = "https://api.goldsky.com/api/public/project_cmpn4idciwist01th4uejh86p/subgraphs/arcns-mainnet/1.0.1/gn";
     vi.stubEnv("NEXT_PUBLIC_SUBGRAPH_URL", endpoint);
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
