@@ -1,10 +1,9 @@
 # ArcNS Public Resolution Adapter — API Reference
 
 **Version:** v1  
-**Network:** Arc Testnet (Chain ID: 5042002)  
+**Network:** Arc Mainnet (Chain ID: 5042)
 **Status:** Live · Publicly hosted  
 **Public base URL:** `https://arcname.services`
-**Previous Vercel URL (legacy):** `https://arcns-app.vercel.app`
 **Base path:** `/api/v1`
 
 ---
@@ -25,7 +24,32 @@ The adapter is live and publicly accessible:
 
 The ArcNS Resolution Adapter is the canonical HTTP interface for resolving ArcNS names and addresses. It wraps the on-chain resolution protocol in a simple, versioned REST API that explorers, wallets, and third-party integrators can consume without implementing namehash computation or direct RPC calls.
 
-The adapter does not replace on-chain resolution — it implements it correctly. All resolution is ultimately grounded in `eth_call` against Arc Testnet contracts. The subgraph is used as a speed layer only.
+The adapter does not replace on-chain resolution — it implements it against the deployed Arc Mainnet contracts. Resolution is ultimately grounded in on-chain resolver records. The indexed data layer is used as a speed layer, with direct RPC fallback.
+
+## Five-minute integration
+
+No API key, SDK, contract ABI, or namehash implementation is required for the HTTP integration.
+
+```ts
+const API = "https://arcname.services/api/v1";
+
+export async function resolveArcNSName(name: string) {
+  const normalized = name.trim().toLowerCase();
+  const response = await fetch(
+    `${API}/resolve/name/${encodeURIComponent(normalized)}`,
+    { headers: { Accept: "application/json" } },
+  );
+  const result = await response.json();
+
+  if (!response.ok || result.status !== "ok") {
+    throw new Error(result.hint ?? "ArcNS resolution failed");
+  }
+
+  return result.address as `0x${string}`;
+}
+```
+
+For recipient fields, resolve again immediately before constructing the transaction and show both the entered name and the complete destination address before requesting a signature. Always retain direct `0x` address input as a fallback.
 
 ---
 
@@ -49,7 +73,7 @@ Every response has a top-level `status` field. Consumers should switch on `statu
 |----------|------|---------|
 | `"ok"` | 200 | Request succeeded; result fields are populated |
 | `"not_found"` | 200 | Request was valid but no on-chain result exists |
-| `"error"` | 400 / 503 / 500 | Request failed; `code` and `hint` describe the failure |
+| `"error"` | 400 / 429 / 503 / 500 | Request failed; `code` and `hint` describe the failure |
 
 ---
 
@@ -63,6 +87,7 @@ Every response has a top-level `status` field. Consumers should switch on `statu
 | `MALFORMED_INPUT` | 400 | Input is missing or wrong type |
 | `NOT_FOUND` | 400 | Reserved for explicit not-found error cases |
 | `VERIFICATION_FAILED` | 400 | Reserved for explicit verification failure cases |
+| `RATE_LIMITED` | 429 | Too many requests from the current client; respect `Retry-After` |
 | `UPSTREAM_UNAVAILABLE` | 503 | RPC or subgraph is unreachable |
 | `INTERNAL_ERROR` | 500 | Unexpected adapter-level failure |
 
@@ -78,8 +103,24 @@ Access-Control-Allow-Methods: GET, OPTIONS
 Access-Control-Allow-Headers: Content-Type
 Cache-Control: public, max-age=30   (0 for health)
 X-ArcNS-Version: v1
-X-Cache: HIT | MISS
+X-RateLimit-Limit: <endpoint limit>
+X-RateLimit-Remaining: <requests remaining in the current window>
+X-RateLimit-Reset: <Unix timestamp>
 ```
+
+Cached `ok` and `not_found` resolution responses also include `X-Cache: HIT | MISS`. Validation and upstream-error responses may omit it. The health endpoint does not use the resolution cache.
+
+Current published limits are 60 resolution requests per minute per IP and 120 health requests per minute per IP. Enforcement is per running edge instance, so consumers must treat the headers as the current instance's limit rather than as a global quota guarantee. A rate-limited request returns HTTP 429:
+
+```json
+{
+  "status": "error",
+  "code": "RATE_LIMITED",
+  "hint": "Too many requests. Please slow down and retry after the reset time."
+}
+```
+
+The response includes `Retry-After`. High-volume explorers, trading terminals, activity feeds, and portfolio tables should use a backend proxy with caching and request coalescing instead of making one browser request per rendered row. Contact the ArcNS team before relying on the public adapter for sustained high-volume traffic.
 
 ---
 
@@ -95,21 +136,23 @@ Resolves a full ArcNS name to its EVM address record.
 ### Successful resolution
 
 ```
-GET /api/v1/resolve/name/alice.arc
+GET /api/v1/resolve/name/iscander.arc
 ```
 
 ```json
 {
   "status":  "ok",
-  "name":    "alice.arc",
-  "address": "0xabc123def456abc123def456abc123def456abc1",
-  "owner":   "0xabc123def456abc123def456abc123def456abc1",
-  "expiry":  1800000000,
-  "source":  "subgraph"
+  "name":    "iscander.arc",
+  "address": "0x503B20B4342261a205830Fd55794788463bdE74B",
+  "owner":   "0x503B20B4342261a205830Fd55794788463bdE74B",
+  "expiry":  null,
+  "source":  "rpc"
 }
 ```
 
 `source` is `"subgraph"` when the result came from the indexed data layer, `"rpc"` when it came from a direct contract call.
+
+`owner` and `expiry` are nullable context fields. Consumers must use `address` as the resolution result and must not treat missing ownership or expiry context as a failed resolution.
 
 ### Name exists but no address record set
 
@@ -179,16 +222,16 @@ Consumers **must** check `status === "ok"` before displaying a primary name. A `
 ### Verified primary name found
 
 ```
-GET /api/v1/resolve/address/0xabc123def456abc123def456abc123def456abc1
+GET /api/v1/resolve/address/0x503B20B4342261a205830Fd55794788463bdE74B
 ```
 
 ```json
 {
   "status":   "ok",
-  "address":  "0xabc123def456abc123def456abc123def456abc1",
-  "name":     "alice.arc",
+  "address":  "0x503b20b4342261a205830fd55794788463bde74b",
+  "name":     "iscander.arc",
   "verified": true,
-  "source":   "subgraph"
+  "source":   "rpc"
 }
 ```
 
@@ -204,7 +247,7 @@ GET /api/v1/resolve/address/0xabc123def456abc123def456abc123def456abc1
 }
 ```
 
-HTTP 200. This covers both "no primary name set" and "reverse record exists but forward-confirmation failed (stale)". Consumers should treat both identically — do not display a name.
+HTTP 200. This covers "no primary name set", "reverse record exists but forward-confirmation failed (stale)", and the safe fallback where the adapter cannot establish a verified candidate. Consumers should treat all of these identically for display — do not display a name. Retry or use direct RPC if the product must distinguish temporary upstream failure from a genuinely absent primary name.
 
 ### Invalid address
 
@@ -231,10 +274,10 @@ Returns adapter liveness and chain context. Does not make RPC calls.
 ```json
 {
   "status":    "ok",
-  "chainId":   5042002,
-  "network":   "arc_testnet",
+  "chainId":   5042,
+  "network":   "arc_mainnet",
   "version":   "v1",
-  "timestamp": 1745600000
+  "timestamp": 1789645660
 }
 ```
 
@@ -282,6 +325,48 @@ Step 3 is **always performed via RPC** — never from the subgraph. The subgraph
 ### Cache TTL
 
 The adapter uses a 30-second in-process cache. A `verified: true` result cached at time T may become stale if the name is transferred within the TTL window. This is acceptable for display latency. Consumers requiring real-time accuracy should not rely on cached results and should call the adapter with cache-busting or implement direct RPC.
+
+## Integration semantics
+
+### Name to address
+
+Use forward resolution when a user enters `name.arc` or `name.circle` as a recipient:
+
+```text
+name.arc -> 0x destination address
+```
+
+### Address to primary name
+
+Use verified reverse resolution to decorate an existing address in profiles, transaction history, activity feeds, leaderboards, portfolio views, and account menus:
+
+```text
+0x address -> verified primary name
+```
+
+Display the returned name only when `status === "ok"` and `verified === true`. For transaction review, multisig approval, allowlists, withdrawals, and other security-sensitive screens, show the primary name alongside the full address rather than replacing the address.
+
+### Multiple names and apparent name-to-name mapping
+
+Several ArcNS names may resolve to the same address, but an address has at most one primary name. ArcNS does not provide a direct name-to-name redirect. An interface may derive an alias relationship by composing the two APIs:
+
+```text
+alias.arc -> 0x address -> verified primary.circle
+```
+
+Do not describe this as an on-chain redirect from `alias.arc` to `primary.circle`; it is a forward lookup followed by a verified reverse lookup.
+
+## Production checklist
+
+- Normalize and URL-encode names before calling the API.
+- Accept only `.arc` and `.circle` names; keep direct `0x` input available.
+- Use a short timeout and handle `not_found`, `429`, and `503` separately.
+- Cache display-only lookups briefly and respect response headers.
+- Re-resolve recipients immediately before transaction construction.
+- Show the entered name and full resolved address on the final confirmation screen.
+- Display reverse names only when `verified: true`.
+- Use a backend proxy and request coalescing for list-heavy or high-volume products.
+- Monitor API version, latency, error rate, and fallback behavior.
 
 ---
 

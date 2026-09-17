@@ -5,13 +5,13 @@ import { NETWORK_DISPLAY } from "../../../lib/networkDisplay";
 const BASE_URL = "https://arcname.services/api/v1";
 
 const CURL_EXAMPLE = `curl --request GET \\
-  --url https://arcname.services/api/v1/resolve/name/alice.arc \\
+  --url https://arcname.services/api/v1/resolve/name/iscander.arc \\
   --header 'Accept: application/json'`;
 
 const TYPESCRIPT_EXAMPLE = `type ArcNSResolution =
   | { status: "ok"; name: string; address: \`0x\${string}\`; owner: string | null; expiry: number | null; source: "subgraph" | "rpc" }
   | { status: "not_found"; hint: string }
-  | { status: "error"; code: string; hint: string };
+  | { status: "error"; code: "INVALID_NAME" | "UNSUPPORTED_TLD" | "MALFORMED_INPUT" | "RATE_LIMITED" | "UPSTREAM_UNAVAILABLE" | "INTERNAL_ERROR"; hint: string };
 
 export async function resolveArcNSName(name: string) {
   const normalized = name.trim().toLowerCase();
@@ -49,7 +49,7 @@ export function RecipientPreview({ name }: { name: string }) {
   return <p>{name} → {address}</p>;
 }`;
 
-const REVERSE_EXAMPLE = `const address = "0x1234...";
+const REVERSE_EXAMPLE = `const address = "0x503B20B4342261a205830Fd55794788463bdE74B";
 const response = await fetch(
   \`https://arcname.services/api/v1/resolve/address/\${address}\`,
 );
@@ -119,20 +119,20 @@ export default function IntegratePage() {
           <article className="min-w-0 rounded-[28px] border border-white/10 bg-[rgba(8,14,31,0.72)] p-5 shadow-[0_34px_110px_rgba(0,0,0,0.28)] backdrop-blur-2xl sm:p-8 lg:p-10">
             <div id="step-01"><Step number="01" title="Test the endpoint"><p>Start with a known name. The API normalizes case, validates the namespace, and returns the resolved address plus ownership and expiry context when available.</p><CodeBlock title="Resolve a name" language="shell" code={CURL_EXAMPLE} /><div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4"><p className="font-semibold text-white">Expected success</p><pre className="mt-3 overflow-x-auto text-xs leading-6 text-[#b8c7dd]"><code>{`{
   "status": "ok",
-  "name": "alice.arc",
-  "address": "0x...",
-  "owner": "0x...",
-  "expiry": 1800000000,
-  "source": "subgraph"
+  "name": "iscander.arc",
+  "address": "0x503B20B4342261a205830Fd55794788463bdE74B",
+  "owner": "0x503B20B4342261a205830Fd55794788463bdE74B",
+  "expiry": null,
+  "source": "rpc"
 }`}</code></pre></div></Step></div>
 
-            <div id="step-02"><Step number="02" title="Add a typed client"><p>Keep the adapter behind one function so your application has a single place for normalization, error handling, caching, and future version changes.</p><CodeBlock title="arcns.ts" language="TypeScript" code={TYPESCRIPT_EXAMPLE} /><div className="grid gap-3 sm:grid-cols-3">{[["200 / ok","Resolved address returned"],["200 / not_found","Valid input, no record"],["400 / error","Malformed name or TLD"],["503 / error","Upstream temporarily unavailable"]].map(([status,meaning]) => <div key={status} className="rounded-xl border border-white/10 bg-white/[0.025] p-3"><code className="text-xs text-[var(--arcns-cyan)]">{status}</code><p className="mt-2 text-xs leading-5">{meaning}</p></div>)}</div></Step></div>
+            <div id="step-02"><Step number="02" title="Add a typed client"><p>Keep the adapter behind one function so your application has a single place for normalization, error handling, caching, and future version changes.</p><CodeBlock title="arcns.ts" language="TypeScript" code={TYPESCRIPT_EXAMPLE} /><div className="grid gap-3 sm:grid-cols-3">{[["200 / ok","Resolved address returned"],["200 / not_found","Valid input, no record"],["400 / error","Malformed name or TLD"],["429 / error","Rate limit reached; respect Retry-After"],["503 / error","Upstream temporarily unavailable"]].map(([status,meaning]) => <div key={status} className="rounded-xl border border-white/10 bg-white/[0.025] p-3"><code className="text-xs text-[var(--arcns-cyan)]">{status}</code><p className="mt-2 text-xs leading-5">{meaning}</p></div>)}</div></Step></div>
 
             <div id="step-03"><Step number="03" title="Build safe recipient UX"><p>Resolve after the user pauses or leaves the input, then show the complete destination address before any signature request. Never replace the address with the name in the final review screen.</p><CodeBlock title="RecipientPreview.tsx" language="React" code={REACT_EXAMPLE} /><div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-amber-100"><strong>Payment safety:</strong> cache only briefly, re-resolve immediately before transaction construction, and display the final address that will receive funds.</div></Step></div>
 
-            <div id="step-04"><Step number="04" title="Add reverse names"><p>Use reverse resolution to decorate wallet addresses in activity feeds and account menus. ArcNS only returns a primary name after forward confirmation, preventing a name from claiming an unrelated address.</p><CodeBlock title="Reverse lookup" language="TypeScript" code={REVERSE_EXAMPLE} /></Step></div>
+            <div id="step-04"><Step number="04" title="Add reverse names"><p>Use reverse resolution to decorate wallet addresses in activity feeds and account menus. ArcNS only returns a primary name after forward confirmation, preventing a name from claiming an unrelated address.</p><p>Several names may resolve to one address, but that address has at most one primary name. A flow such as <code>alias.arc → address → primary.circle</code> is a composed forward and verified reverse lookup, not a direct name-to-name redirect.</p><CodeBlock title="Reverse lookup" language="TypeScript" code={REVERSE_EXAMPLE} /></Step></div>
 
-            <div id="step-05"><Step number="05" title="Harden production"><p>For backend-heavy applications, proxy and cache the public adapter so you control retries, observability, and your user-facing availability policy.</p><CodeBlock title="Server-side proxy" language="Next.js" code={SERVER_PROXY_EXAMPLE} /><div className="grid gap-3 sm:grid-cols-2">{["Validate .arc or .circle before calling the API","Use AbortController and a short timeout","Respect Cache-Control and retry only safe GET requests","Treat 200 not_found differently from 503 unavailable","Show the final 0x address before transfers","Keep a direct-address fallback available","Monitor latency, error rate, and resolution source","Pin API v1 and test error schemas in CI"].map(item => <div key={item} className="flex gap-3 rounded-xl border border-white/10 bg-white/[0.025] p-3"><span className="text-emerald-300" aria-hidden="true">✓</span><span className="text-xs leading-5">{item}</span></div>)}</div></Step></div>
+            <div id="step-05"><Step number="05" title="Harden production"><p>For backend-heavy applications, proxy and cache the public adapter so you control retries, observability, and your user-facing availability policy. The public limit is 60 resolution requests per minute per IP; list-heavy explorers, trading terminals, and activity feeds should coalesce and cache lookups server-side.</p><CodeBlock title="Server-side proxy" language="Next.js" code={SERVER_PROXY_EXAMPLE} /><div className="grid gap-3 sm:grid-cols-2">{["Validate .arc or .circle before calling the API","Use AbortController and a short timeout","Respect Cache-Control and Retry-After","Treat 200 not_found differently from 429 or 503","Show the final 0x address before transfers","Keep a direct-address fallback available","Monitor latency, error rate, and resolution source","Pin API v1 and test error schemas in CI"].map(item => <div key={item} className="flex gap-3 rounded-xl border border-white/10 bg-white/[0.025] p-3"><span className="text-emerald-300" aria-hidden="true">✓</span><span className="text-xs leading-5">{item}</span></div>)}</div></Step></div>
 
             <footer className="mt-4 flex flex-col gap-5 rounded-2xl border border-[rgba(0,212,255,0.22)] bg-[rgba(0,212,255,0.055)] p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-lg font-bold text-white">Ready to ship?</h2><p className="mt-1 text-sm text-[var(--arcns-text-secondary)]">Try resolution in the live app or inspect the full API contract on GitHub.</p></div><div className="flex flex-wrap gap-3"><Link href="/resolve" className="rounded-xl bg-[var(--arcns-gradient-primary)] px-4 py-2.5 text-sm font-bold text-white">Open Resolver</Link><a href="https://github.com/khenzarr/arcns/blob/master/docs/integration/public-adapter-api.md" target="_blank" rel="noopener noreferrer" className="rounded-xl border border-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:border-[var(--arcns-cyan)]">Full API reference ↗</a></div></footer>
           </article>

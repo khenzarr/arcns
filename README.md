@@ -179,6 +179,48 @@ Verified snapshot-eligible wallets may use their active one-time first-registrat
 
 ---
 
+## Integration Quickstart
+
+Wallets, explorers, bridges, payment applications, trading interfaces, and other Arc applications can integrate ArcNS without running the ArcNS repository or implementing namehash logic.
+
+### Resolve a name to an address
+
+```ts
+const response = await fetch(
+  `https://arcname.services/api/v1/resolve/name/${encodeURIComponent("iscander.arc")}`,
+);
+const result = await response.json();
+
+if (response.ok && result.status === "ok") {
+  console.log(result.address);
+}
+```
+
+### Display a verified primary name
+
+```ts
+const address = "0x503B20B4342261a205830Fd55794788463bdE74B";
+const response = await fetch(
+  `https://arcname.services/api/v1/resolve/address/${address}`,
+);
+const result = await response.json();
+
+if (response.ok && result.status === "ok" && result.verified === true) {
+  console.log(result.name);
+}
+```
+
+For transfers, resolve again immediately before transaction construction and show both the entered name and the complete destination address before requesting a signature. Keep direct `0x` address input available as a fallback.
+
+Several names may resolve to the same address, but an address has at most one primary name. ArcNS does not provide direct name-to-name redirects; `alias.arc -> address -> primary.circle` is a composed forward and verified reverse lookup.
+
+- [Step-by-step integration guide](https://arcname.services/developers/integrate)
+- [Complete API reference](docs/integration/public-adapter-api.md)
+- [Wallet integration package](docs/integration/wallet-integration-package.md)
+- [Explorer integration package](docs/integration/arcscan-integration-package.md)
+
+---
+
 ## Repo Structure
 
 ```
@@ -216,7 +258,9 @@ Legacy v1/v2 contracts remain in the repo as reference under `contracts/registra
 
 ---
 
-## Developer Quickstart
+## Local Development and Protocol Contributor Quickstart
+
+This section is for contributors running the ArcNS codebase, contract tests, frontend, or indexer locally. Application integrators should use the [Integration Quickstart](#integration-quickstart) instead.
 
 ### 1. Install
 
