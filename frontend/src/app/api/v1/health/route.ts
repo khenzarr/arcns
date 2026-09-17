@@ -8,8 +8,8 @@
  * HTTP 200:
  *   {
  *     status:    "ok" | "degraded",
- *     chainId:   5042002,
- *     network:   "arc_testnet",
+ *     chainId:   5042,
+ *     network:   "arc_mainnet",
  *     version:   "v1",
  *     timestamp: number   // Unix seconds
  *   }
