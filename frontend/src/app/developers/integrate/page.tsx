@@ -5,7 +5,7 @@ import { NETWORK_DISPLAY } from "../../../lib/networkDisplay";
 const BASE_URL = "https://arcname.services/api/v1";
 
 const CURL_EXAMPLE = `curl --request GET \\
-  --url https://arcname.services/api/v1/resolve/name/iscander.arc \\
+  --url https://arcname.services/api/v1/resolve/name/circle.arc \\
   --header 'Accept: application/json'`;
 
 const TYPESCRIPT_EXAMPLE = `type ArcNSResolution =
@@ -49,7 +49,7 @@ export function RecipientPreview({ name }: { name: string }) {
   return <p>{name} → {address}</p>;
 }`;
 
-const REVERSE_EXAMPLE = `const address = "0x503B20B4342261a205830Fd55794788463bdE74B";
+const REVERSE_EXAMPLE = `const address = "0xce42Bd12330D30B55A1d5a366bDa64f5736b54AC";
 const response = await fetch(
   \`https://arcname.services/api/v1/resolve/address/\${address}\`,
 );
@@ -119,9 +119,9 @@ export default function IntegratePage() {
           <article className="min-w-0 rounded-[28px] border border-white/10 bg-[rgba(8,14,31,0.72)] p-5 shadow-[0_34px_110px_rgba(0,0,0,0.28)] backdrop-blur-2xl sm:p-8 lg:p-10">
             <div id="step-01"><Step number="01" title="Test the endpoint"><p>Start with a known name. The API normalizes case, validates the namespace, and returns the resolved address plus ownership and expiry context when available.</p><CodeBlock title="Resolve a name" language="shell" code={CURL_EXAMPLE} /><div className="rounded-2xl border border-white/10 bg-white/[0.025] p-4"><p className="font-semibold text-white">Expected success</p><pre className="mt-3 overflow-x-auto text-xs leading-6 text-[#b8c7dd]"><code>{`{
   "status": "ok",
-  "name": "iscander.arc",
-  "address": "0x503B20B4342261a205830Fd55794788463bdE74B",
-  "owner": "0x503B20B4342261a205830Fd55794788463bdE74B",
+  "name": "circle.arc",
+  "address": "0xce42Bd12330D30B55A1d5a366bDa64f5736b54AC",
+  "owner": "0xce42Bd12330D30B55A1d5a366bDa64f5736b54AC",
   "expiry": null,
   "source": "rpc"
 }`}</code></pre></div></Step></div>
