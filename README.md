@@ -187,7 +187,7 @@ Wallets, explorers, bridges, payment applications, trading interfaces, and other
 
 ```ts
 const response = await fetch(
-  `https://arcname.services/api/v1/resolve/name/${encodeURIComponent("iscander.arc")}`,
+  `https://arcname.services/api/v1/resolve/name/${encodeURIComponent("circle.arc")}`,
 );
 const result = await response.json();
 
@@ -199,7 +199,7 @@ if (response.ok && result.status === "ok") {
 ### Display a verified primary name
 
 ```ts
-const address = "0x503B20B4342261a205830Fd55794788463bdE74B";
+const address = "0xce42Bd12330D30B55A1d5a366bDa64f5736b54AC";
 const response = await fetch(
   `https://arcname.services/api/v1/resolve/address/${address}`,
 );
