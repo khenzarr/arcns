@@ -2,9 +2,11 @@
   <img src=".github/assets/arcns-readme-banner.png" alt="ArcNS — Identity for everything on Arc. .arc and .circle names with on-chain reverse resolution." width="100%" />
 </p>
 
-# ArcNS — Arc Name Service
+# ArcNS — Arc Name Services (ANS)
 
 **Independent decentralized naming protocol · Built on Arc.**
+
+**Official production site:** [arcname.services](https://arcname.services/)
 
 <p>
   <a href="https://github.com/khenzarr/arcns/actions/workflows/frontend-ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/khenzarr/arcns/frontend-ci.yml?branch=master&amp;label=CI&amp;logo=githubactions" alt="Frontend CI status" /></a>
@@ -15,7 +17,7 @@
 
 [Live app](https://arcname.services/app) · [Try demo](https://arcname.services/#experience) · [Integration guide](https://arcname.services/developers/integrate) · [Documentation](#documentation)
 
-ArcNS maps human-readable names ending in `.arc` and `.circle` to on-chain addresses, issues names as ERC-721 NFTs for selected registration periods, and lets any address set a verified primary name.
+ArcNS, also known as Arc Name Services (ANS), is the independent naming protocol for human-readable `.arc` and `.circle` domains on Arc Mainnet. It maps names to on-chain addresses, issues registrations as ERC-721 NFTs for selected periods, and lets an address set a forward-confirmed primary name.
 
 ArcNS is an independent naming protocol built on Arc. It is not operated by, affiliated with, sponsored by, or endorsed by Circle or the Arc team. Arc is a trademark of Circle Internet Group, Inc. and/or its affiliates.
 
@@ -27,7 +29,7 @@ Names are registered with USDC, owned as NFTs, and resolved entirely on-chain. N
 
 ## What ArcNS Enables
 
-- **Human-readable identity** — register `alice.arc` or `bob.circle` and point it to any EVM address
+- **Human-readable identity** — register `yourname.arc` or `yourname.circle` and point it to any EVM address
 - **USDC-native registration** — pay registration fees with USDC on Arc
 - **On-chain resolution** — forward resolution (`name → address`) and reverse resolution (`address → primary name`) are both fully on-chain
 - **NFT ownership** — every registered name is an ERC-721 token with on-chain SVG metadata
